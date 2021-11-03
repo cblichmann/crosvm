@@ -381,6 +381,28 @@
 <span id="381">381</span>
 <span id="382">382</span>
 <span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -399,7 +421,7 @@
 <span class="kw">use</span> <span class="ident">thiserror::Error</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::bus::ConfigWriteResult</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">BusAccessInfo</span>, <span class="ident">BusDevice</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">BusAccessInfo</span>, <span class="ident">BusDevice</span>, <span class="ident">BusRange</span>, <span class="ident">BusType</span>};
 
 <span class="doccomment">/// Errors for proxy devices.</span>
 <span class="attribute">#[<span class="ident">sorted</span>]</span>
@@ -434,6 +456,7 @@
         <span class="ident">data</span>: [<span class="ident">u8</span>; <span class="number">4</span>],
     },
     <span class="ident">Shutdown</span>,
+    <span class="ident">GetRanges</span>,
 }
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">enum</span> <span class="ident">CommandResult</span> {
@@ -441,9 +464,12 @@
     <span class="ident">ReadResult</span>([<span class="ident">u8</span>; <span class="number">8</span>]),
     <span class="ident">ReadConfigResult</span>(<span class="ident">u32</span>),
     <span class="ident">WriteConfigResult</span> {
-        <span class="ident">mem_bus_new_state</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
-        <span class="ident">io_bus_new_state</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
+        <span class="ident">mmio_remove</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BusRange</span><span class="op">&gt;</span>,
+        <span class="ident">mmio_add</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BusRange</span><span class="op">&gt;</span>,
+        <span class="ident">io_remove</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BusRange</span><span class="op">&gt;</span>,
+        <span class="ident">io_add</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BusRange</span><span class="op">&gt;</span>,
     },
+    <span class="ident">GetRangesResult</span>(<span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">BusRange</span>, <span class="ident">BusType</span>)<span class="op">&gt;</span>),
 }
 
 <span class="kw">fn</span> <span class="ident">child_proc</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">BusDevice</span><span class="op">&gt;</span>(<span class="ident">tube</span>: <span class="ident">Tube</span>, <span class="ident">device</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>) {
@@ -484,13 +510,19 @@
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span>
                     <span class="ident">device</span>.<span class="ident">config_register_write</span>(<span class="ident">reg_idx</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">offset</span> <span class="kw">as</span> <span class="ident">u64</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>[<span class="number">0</span>..<span class="ident">len</span>]);
                 <span class="ident">tube</span>.<span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="ident">CommandResult::WriteConfigResult</span> {
-                    <span class="ident">mem_bus_new_state</span>: <span class="ident">res</span>.<span class="ident">mem_bus_new_state</span>,
-                    <span class="ident">io_bus_new_state</span>: <span class="ident">res</span>.<span class="ident">io_bus_new_state</span>,
+                    <span class="ident">mmio_remove</span>: <span class="ident">res</span>.<span class="ident">mmio_remove</span>,
+                    <span class="ident">mmio_add</span>: <span class="ident">res</span>.<span class="ident">mmio_add</span>,
+                    <span class="ident">io_remove</span>: <span class="ident">res</span>.<span class="ident">io_remove</span>,
+                    <span class="ident">io_add</span>: <span class="ident">res</span>.<span class="ident">io_add</span>,
                 })
             }
             <span class="ident">Command::Shutdown</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">running</span> <span class="op">=</span> <span class="bool-val">false</span>;
                 <span class="ident">tube</span>.<span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="ident">CommandResult::Ok</span>)
+            }
+            <span class="ident">Command::GetRanges</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">ranges</span> <span class="op">=</span> <span class="ident">device</span>.<span class="ident">get_ranges</span>();
+                <span class="ident">tube</span>.<span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="ident">CommandResult::GetRangesResult</span>(<span class="ident">ranges</span>))
             }
         };
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">res</span> {
@@ -623,8 +655,10 @@
         <span class="kw">let</span> <span class="ident">reg_idx</span> <span class="op">=</span> <span class="ident">reg_idx</span> <span class="kw">as</span> <span class="ident">u32</span>;
         <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">offset</span> <span class="kw">as</span> <span class="ident">u32</span>;
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">CommandResult::WriteConfigResult</span> {
-            <span class="ident">mem_bus_new_state</span>,
-            <span class="ident">io_bus_new_state</span>,
+            <span class="ident">mmio_remove</span>,
+            <span class="ident">mmio_add</span>,
+            <span class="ident">io_remove</span>,
+            <span class="ident">io_add</span>,
         }) <span class="op">=</span> <span class="self">self</span>.<span class="ident">sync_send</span>(<span class="kw-2">&amp;</span><span class="ident">Command::WriteConfig</span> {
             <span class="ident">reg_idx</span>,
             <span class="ident">offset</span>,
@@ -632,8 +666,10 @@
             <span class="ident">data</span>: <span class="ident">buffer</span>,
         }) {
             <span class="ident">ConfigWriteResult</span> {
-                <span class="ident">mem_bus_new_state</span>,
-                <span class="ident">io_bus_new_state</span>,
+                <span class="ident">mmio_remove</span>,
+                <span class="ident">mmio_add</span>,
+                <span class="ident">io_remove</span>,
+                <span class="ident">io_add</span>,
             }
         } <span class="kw">else</span> {
             <span class="ident">Default::default</span>()
@@ -668,6 +704,14 @@
             <span class="ident">info</span>,
             <span class="ident">data</span>: <span class="ident">buffer</span>,
         });
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_ranges</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">BusRange</span>, <span class="ident">BusType</span>)<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">CommandResult::GetRangesResult</span>(<span class="ident">ranges</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">sync_send</span>(<span class="kw-2">&amp;</span><span class="ident">Command::GetRanges</span>) {
+            <span class="ident">ranges</span>
+        } <span class="kw">else</span> {
+            <span class="ident">Default::default</span>()
+        }
     }
 }
 
