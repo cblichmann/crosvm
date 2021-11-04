@@ -1831,6 +1831,46 @@
 <span id="1831">1831</span>
 <span id="1832">1832</span>
 <span id="1833">1833</span>
+<span id="1834">1834</span>
+<span id="1835">1835</span>
+<span id="1836">1836</span>
+<span id="1837">1837</span>
+<span id="1838">1838</span>
+<span id="1839">1839</span>
+<span id="1840">1840</span>
+<span id="1841">1841</span>
+<span id="1842">1842</span>
+<span id="1843">1843</span>
+<span id="1844">1844</span>
+<span id="1845">1845</span>
+<span id="1846">1846</span>
+<span id="1847">1847</span>
+<span id="1848">1848</span>
+<span id="1849">1849</span>
+<span id="1850">1850</span>
+<span id="1851">1851</span>
+<span id="1852">1852</span>
+<span id="1853">1853</span>
+<span id="1854">1854</span>
+<span id="1855">1855</span>
+<span id="1856">1856</span>
+<span id="1857">1857</span>
+<span id="1858">1858</span>
+<span id="1859">1859</span>
+<span id="1860">1860</span>
+<span id="1861">1861</span>
+<span id="1862">1862</span>
+<span id="1863">1863</span>
+<span id="1864">1864</span>
+<span id="1865">1865</span>
+<span id="1866">1866</span>
+<span id="1867">1867</span>
+<span id="1868">1868</span>
+<span id="1869">1869</span>
+<span id="1870">1870</span>
+<span id="1871">1871</span>
+<span id="1872">1872</span>
+<span id="1873">1873</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1884,13 +1924,13 @@
 
 <span class="kw">use</span> <span class="ident">data_model</span>::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">base</span>::{
-    <span class="ident">error</span>, <span class="ident">pipe</span>, <span class="ident">round_up_to_page_size</span>, <span class="ident">warn</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Error</span>, <span class="ident">Event</span>, <span class="ident">EventType</span>, <span class="ident">FileFlags</span>,
-    <span class="ident">FromRawDescriptor</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>, <span class="prelude-ty">Result</span>, <span class="ident">ScmSocket</span>, <span class="ident">SharedMemory</span>, <span class="ident">SharedMemoryUnix</span>,
-    <span class="ident">Tube</span>, <span class="ident">TubeError</span>, <span class="ident">WaitContext</span>,
-};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;minigbm&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">ioctl_iow_nr</span>, <span class="ident">ioctl_with_ref</span>};
+<span class="kw">use</span> <span class="ident">base::ioctl_iow_nr</span>;
+<span class="kw">use</span> <span class="ident">base</span>::{
+    <span class="ident">error</span>, <span class="ident">ioctl_iowr_nr</span>, <span class="ident">ioctl_with_ref</span>, <span class="ident">pipe</span>, <span class="ident">round_up_to_page_size</span>, <span class="ident">warn</span>, <span class="ident">AsRawDescriptor</span>,
+    <span class="ident">Error</span>, <span class="ident">Event</span>, <span class="ident">EventType</span>, <span class="ident">FileFlags</span>, <span class="ident">FromRawDescriptor</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>, <span class="prelude-ty">Result</span>,
+    <span class="ident">ScmSocket</span>, <span class="ident">SharedMemory</span>, <span class="ident">SharedMemoryUnix</span>, <span class="ident">Tube</span>, <span class="ident">TubeError</span>, <span class="ident">WaitContext</span>,
+};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gpu&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">IntoRawDescriptor</span>, <span class="ident">SafeDescriptor</span>};
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
@@ -1936,6 +1976,7 @@
 <span class="kw">const</span> <span class="ident">VIRTIO_WL_VFD_READ</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x2</span>;
 <span class="kw">const</span> <span class="ident">VIRTIO_WL_VFD_MAP</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x2</span>;
 <span class="kw">const</span> <span class="ident">VIRTIO_WL_VFD_CONTROL</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x4</span>;
+<span class="kw">const</span> <span class="ident">VIRTIO_WL_VFD_FENCE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x8</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_WL_F_TRANS_FLAGS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x01</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_WL_F_SEND_FENCES</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x02</span>;
 
@@ -1964,6 +2005,25 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;minigbm&quot;</span>)]</span>
 <span class="macro">ioctl_iow_nr!</span>(<span class="ident">DMA_BUF_IOCTL_SYNC</span>, <span class="ident">DMA_BUF_IOCTL_BASE</span>, <span class="number">0</span>, <span class="ident">dma_buf_sync</span>);
+
+<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>)]</span>
+<span class="kw">struct</span> <span class="ident">sync_file_info</span> {
+    <span class="ident">name</span>: [<span class="ident">u8</span>; <span class="number">32</span>],
+    <span class="ident">status</span>: <span class="ident">i32</span>,
+    <span class="ident">flags</span>: <span class="ident">u32</span>,
+    <span class="ident">num_fences</span>: <span class="ident">u32</span>,
+    <span class="ident">pad</span>: <span class="ident">u32</span>,
+    <span class="ident">sync_fence_info</span>: <span class="ident">u64</span>,
+}
+
+<span class="macro">ioctl_iowr_nr!</span>(<span class="ident">SYNC_IOC_FILE_INFO</span>, <span class="number">0x3e</span>, <span class="number">4</span>, <span class="ident">sync_file_info</span>);
+
+<span class="kw">fn</span> <span class="ident">is_fence</span>(<span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">File</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">sync_file_info::default</span>();
+    <span class="comment">// Safe as f is a valid file</span>
+    <span class="kw">unsafe</span> { <span class="ident">ioctl_with_ref</span>(<span class="ident">f</span>, <span class="ident">SYNC_IOC_FILE_INFO</span>(), <span class="kw-2">&amp;</span><span class="ident">info</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span> }
+}
 
 <span class="kw">const</span> <span class="ident">VIRTIO_WL_CTRL_VFD_SEND_KIND_LOCAL</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
 <span class="kw">const</span> <span class="ident">VIRTIO_WL_CTRL_VFD_SEND_KIND_VIRTGPU</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
@@ -2378,6 +2438,8 @@
     <span class="ident">slot</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">MemSlot</span>, <span class="ident">u64</span> <span class="comment">/* pfn */</span>, <span class="ident">VmRequester</span>)<span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;minigbm&quot;</span>)]</span>
     <span class="ident">is_dmabuf</span>: <span class="ident">bool</span>,
+    <span class="ident">fence</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span>,
+    <span class="ident">is_fence</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">WlVfd</span> {
@@ -2505,32 +2567,34 @@
         <span class="comment">// pipe/socket because those have no end. We can even use that seek location as an indicator</span>
         <span class="comment">// for how big the shared memory chunk to map into guest memory is. If seeking to the end</span>
         <span class="comment">// fails, we assume it&#39;s a socket or pipe with read/write semantics.</span>
-        <span class="kw">match</span> <span class="ident">descriptor</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::End</span>(<span class="number">0</span>)) {
-            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">shm</span> <span class="op">=</span> <span class="ident">SharedMemory::from_file</span>(<span class="ident">descriptor</span>).<span class="ident">map_err</span>(<span class="ident">WlError::FromSharedMemory</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> (<span class="ident">shm</span>, <span class="ident">register_response</span>) <span class="op">=</span> <span class="ident">vm</span>.<span class="ident">register_memory</span>(<span class="ident">shm</span>)<span class="question-mark">?</span>;
+        <span class="kw">if</span> <span class="ident">descriptor</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::End</span>(<span class="number">0</span>)).<span class="ident">is_ok</span>() {
+            <span class="kw">let</span> <span class="ident">shm</span> <span class="op">=</span> <span class="ident">SharedMemory::from_file</span>(<span class="ident">descriptor</span>).<span class="ident">map_err</span>(<span class="ident">WlError::FromSharedMemory</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> (<span class="ident">shm</span>, <span class="ident">register_response</span>) <span class="op">=</span> <span class="ident">vm</span>.<span class="ident">register_memory</span>(<span class="ident">shm</span>)<span class="question-mark">?</span>;
 
-                <span class="kw">match</span> <span class="ident">register_response</span> {
-                    <span class="ident">VmMemoryResponse::RegisterMemory</span> { <span class="ident">pfn</span>, <span class="ident">slot</span> } <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vfd</span> <span class="op">=</span> <span class="ident">WlVfd::default</span>();
-                        <span class="ident">vfd</span>.<span class="ident">guest_shared_memory</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">shm</span>);
-                        <span class="ident">vfd</span>.<span class="ident">slot</span> <span class="op">=</span> <span class="prelude-val">Some</span>((<span class="ident">slot</span>, <span class="ident">pfn</span>, <span class="ident">vm</span>));
-                        <span class="prelude-val">Ok</span>(<span class="ident">vfd</span>)
-                    }
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">WlError::VmBadResponse</span>),
+            <span class="kw">match</span> <span class="ident">register_response</span> {
+                <span class="ident">VmMemoryResponse::RegisterMemory</span> { <span class="ident">pfn</span>, <span class="ident">slot</span> } <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vfd</span> <span class="op">=</span> <span class="ident">WlVfd::default</span>();
+                    <span class="ident">vfd</span>.<span class="ident">guest_shared_memory</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">shm</span>);
+                    <span class="ident">vfd</span>.<span class="ident">slot</span> <span class="op">=</span> <span class="prelude-val">Some</span>((<span class="ident">slot</span>, <span class="ident">pfn</span>, <span class="ident">vm</span>));
+                    <span class="prelude-val">Ok</span>(<span class="ident">vfd</span>)
                 }
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">WlError::VmBadResponse</span>),
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">FileFlags::from_file</span>(<span class="kw-2">&amp;</span><span class="ident">descriptor</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="ident">FileFlags::Read</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VIRTIO_WL_VFD_READ</span>,
-                    <span class="prelude-val">Ok</span>(<span class="ident">FileFlags::Write</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VIRTIO_WL_VFD_WRITE</span>,
-                    <span class="prelude-val">Ok</span>(<span class="ident">FileFlags::ReadWrite</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VIRTIO_WL_VFD_READ</span> <span class="op">|</span> <span class="ident">VIRTIO_WL_VFD_WRITE</span>,
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
-                };
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vfd</span> <span class="op">=</span> <span class="ident">WlVfd::default</span>();
-                <span class="ident">vfd</span>.<span class="ident">local_pipe</span> <span class="op">=</span> <span class="prelude-val">Some</span>((<span class="ident">flags</span>, <span class="ident">descriptor</span>));
-                <span class="prelude-val">Ok</span>(<span class="ident">vfd</span>)
-            }
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_fence</span>(<span class="kw-2">&amp;</span><span class="ident">descriptor</span>) {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vfd</span> <span class="op">=</span> <span class="ident">WlVfd::default</span>();
+            <span class="ident">vfd</span>.<span class="ident">is_fence</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            <span class="ident">vfd</span>.<span class="ident">fence</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">descriptor</span>);
+            <span class="prelude-val">Ok</span>(<span class="ident">vfd</span>)
+        } <span class="kw">else</span> {
+            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">FileFlags::from_file</span>(<span class="kw-2">&amp;</span><span class="ident">descriptor</span>) {
+                <span class="prelude-val">Ok</span>(<span class="ident">FileFlags::Read</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VIRTIO_WL_VFD_READ</span>,
+                <span class="prelude-val">Ok</span>(<span class="ident">FileFlags::Write</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VIRTIO_WL_VFD_WRITE</span>,
+                <span class="prelude-val">Ok</span>(<span class="ident">FileFlags::ReadWrite</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VIRTIO_WL_VFD_READ</span> <span class="op">|</span> <span class="ident">VIRTIO_WL_VFD_WRITE</span>,
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+            };
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vfd</span> <span class="op">=</span> <span class="ident">WlVfd::default</span>();
+            <span class="ident">vfd</span>.<span class="ident">local_pipe</span> <span class="op">=</span> <span class="prelude-val">Some</span>((<span class="ident">flags</span>, <span class="ident">descriptor</span>));
+            <span class="prelude-val">Ok</span>(<span class="ident">vfd</span>)
         }
     }
 
@@ -2542,6 +2606,9 @@
             }
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">f</span>, <span class="kw">_</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">local_pipe</span> {
                 <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">f</span>;
+            }
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_fence</span> {
+                <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">VIRTIO_WL_VFD_FENCE</span>;
             }
         } <span class="kw">else</span> {
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">socket</span>.<span class="ident">is_some</span>() {
@@ -2571,6 +2638,7 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">shm</span><span class="op">|</span> <span class="ident">shm</span>.<span class="ident">as_raw_descriptor</span>())
             .<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">socket</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_raw_descriptor</span>()))
             .<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">remote_pipe</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_raw_descriptor</span>()))
+            .<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">fence</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">as_raw_descriptor</span>()))
     }
 
     <span class="comment">// The FD that is used for polling for events on this VFD.</span>
@@ -2583,6 +2651,7 @@
                     .<span class="ident">as_ref</span>()
                     .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">p</span>)<span class="op">|</span> <span class="ident">p</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">AsRawDescriptor</span>)
             })
+            .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fence</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">AsRawDescriptor</span>))
     }
 
     <span class="comment">// Sends data/files from the guest to the host over this VFD.</span>
@@ -3083,9 +3152,20 @@
 
     <span class="kw">fn</span> <span class="ident">recv</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">vfd_id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">WlResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">buf</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">vfds</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">vfd_id</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">vfd</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vfd</span>.<span class="ident">recv</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">in_file_queue</span>)<span class="question-mark">?</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">vfd</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">vfd</span>.<span class="ident">is_fence</span> {
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">wait_ctx</span>.<span class="ident">delete</span>(<span class="ident">vfd</span>.<span class="ident">wait_descriptor</span>().<span class="ident">unwrap</span>()) {
+                        <span class="macro">warn!</span>(<span class="string">&quot;failed to remove hungup vfd from poll context: {}&quot;</span>, <span class="ident">e</span>);
+                    }
+                    <span class="self">self</span>.<span class="ident">in_queue</span>.<span class="ident">push_back</span>((<span class="ident">vfd_id</span>, <span class="ident">WlRecv::Hup</span>));
+                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+                } <span class="kw">else</span> {
+                    <span class="ident">vfd</span>.<span class="ident">recv</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">in_file_queue</span>)<span class="question-mark">?</span>
+                }
+            }
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(()),
         };
+
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">in_file_queue</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="ident">buf</span>.<span class="ident">is_empty</span>() {
             <span class="self">self</span>.<span class="ident">in_queue</span>.<span class="ident">push_back</span>((<span class="ident">vfd_id</span>, <span class="ident">WlRecv::Hup</span>));
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
