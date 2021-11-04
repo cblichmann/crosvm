@@ -117,6 +117,7 @@
 <span id="117">117</span>
 <span id="118">118</span>
 <span id="119">119</span>
+<span id="120">120</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -158,6 +159,7 @@
         <span class="ident">queue_type</span>: <span class="ident">QueueType</span>,
     },
     <span class="comment">// Used exclusively by the encoder.</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
     <span class="ident">GetParams</span> {
         <span class="ident">stream_id</span>: <span class="ident">u32</span>,
         <span class="ident">queue_type</span>: <span class="ident">QueueType</span>,

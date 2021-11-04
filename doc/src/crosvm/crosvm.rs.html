@@ -485,6 +485,10 @@
 <span id="485">485</span>
 <span id="486">486</span>
 <span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -844,7 +848,9 @@
     <span class="kw">pub</span> <span class="ident">virtio_input_evdevs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">split_irqchip</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">vfio</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VfioCommand</span><span class="op">&gt;</span>,
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-decoder&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">video_dec</span>: <span class="ident">bool</span>,
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">video_enc</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">acpi_tables</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">protected_vm</span>: <span class="ident">ProtectionType</span>,
@@ -940,7 +946,9 @@
             <span class="ident">virtio_input_evdevs</span>: <span class="ident">Vec::new</span>(),
             <span class="ident">split_irqchip</span>: <span class="bool-val">false</span>,
             <span class="ident">vfio</span>: <span class="ident">Vec::new</span>(),
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-decoder&quot;</span>)]</span>
             <span class="ident">video_dec</span>: <span class="bool-val">false</span>,
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
             <span class="ident">video_enc</span>: <span class="bool-val">false</span>,
             <span class="ident">acpi_tables</span>: <span class="ident">Vec::new</span>(),
             <span class="ident">protected_vm</span>: <span class="ident">ProtectionType::Unprotected</span>,

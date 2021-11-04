@@ -1453,6 +1453,22 @@
 <span id="1453">1453</span>
 <span id="1454">1454</span>
 <span id="1455">1455</span>
+<span id="1456">1456</span>
+<span id="1457">1457</span>
+<span id="1458">1458</span>
+<span id="1459">1459</span>
+<span id="1460">1460</span>
+<span id="1461">1461</span>
+<span id="1462">1462</span>
+<span id="1463">1463</span>
+<span id="1464">1464</span>
+<span id="1465">1465</span>
+<span id="1466">1466</span>
+<span id="1467">1467</span>
+<span id="1468">1468</span>
+<span id="1469">1469</span>
+<span id="1470">1470</span>
+<span id="1471">1471</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1467,7 +1483,6 @@
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">warn</span>, <span class="ident">Tube</span>, <span class="ident">WaitContext</span>};
 <span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::resource_bridge</span>::{<span class="self">self</span>, <span class="ident">BufferInfo</span>, <span class="ident">ResourceInfo</span>, <span class="ident">ResourceRequest</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::async_cmd_desc_map::AsyncCmdDescMap</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::command</span>::{<span class="ident">QueueType</span>, <span class="ident">VideoCmd</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::control</span>::<span class="kw-2">*</span>;
@@ -1480,11 +1495,10 @@
 };
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::error</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::event</span>::{<span class="ident">EvtType</span>, <span class="ident">VideoEvt</span>};
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::format</span>::{
-    <span class="ident">Bitrate</span>, <span class="ident">BitrateMode</span>, <span class="ident">Format</span>, <span class="ident">FramePlane</span>, <span class="ident">Level</span>, <span class="ident">PlaneFormat</span>, <span class="ident">Profile</span>,
-};
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::format</span>::{<span class="ident">Bitrate</span>, <span class="ident">BitrateMode</span>, <span class="ident">Format</span>, <span class="ident">Level</span>, <span class="ident">PlaneFormat</span>, <span class="ident">Profile</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::params::Params</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::protocol</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::resource</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::response::CmdResponse</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::EosBufferManager</span>;
 <span class="kw">use</span> <span class="ident">backend</span>::<span class="kw-2">*</span>;
@@ -1497,8 +1511,7 @@
 }
 
 <span class="kw">struct</span> <span class="ident">InputResource</span> {
-    <span class="ident">resource_handle</span>: <span class="ident">u128</span>,
-    <span class="ident">planes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FramePlane</span><span class="op">&gt;</span>,
+    <span class="ident">resource</span>: <span class="ident">GuestResource</span>,
     <span class="ident">queue_params</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">QueuedInputResourceParams</span><span class="op">&gt;</span>,
 }
 
@@ -1510,7 +1523,7 @@
 }
 
 <span class="kw">struct</span> <span class="ident">OutputResource</span> {
-    <span class="ident">resource_handle</span>: <span class="ident">u128</span>,
+    <span class="ident">resource</span>: <span class="ident">GuestResource</span>,
     <span class="ident">offset</span>: <span class="ident">u32</span>,
     <span class="ident">queue_params</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">QueuedOutputResourceParams</span><span class="op">&gt;</span>,
 }
@@ -1526,6 +1539,8 @@
 
 <span class="kw">struct</span> <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">EncoderSession</span><span class="op">&gt;</span> {
     <span class="ident">id</span>: <span class="ident">u32</span>,
+    <span class="ident">src_resource_type</span>: <span class="ident">ResourceType</span>,
+    <span class="ident">dst_resource_type</span>: <span class="ident">ResourceType</span>,
     <span class="ident">src_params</span>: <span class="ident">Params</span>,
     <span class="ident">dst_params</span>: <span class="ident">Params</span>,
     <span class="ident">dst_bitrate</span>: <span class="ident">Bitrate</span>,
@@ -1550,6 +1565,8 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">EncoderSession</span><span class="op">&gt;</span> <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Encoder</span><span class="op">&lt;</span><span class="ident">Session</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">id</span>: <span class="ident">u32</span>,
+        <span class="ident">src_resource_type</span>: <span class="ident">ResourceType</span>,
+        <span class="ident">dst_resource_type</span>: <span class="ident">ResourceType</span>,
         <span class="ident">desired_format</span>: <span class="ident">Format</span>,
         <span class="ident">encoder</span>: <span class="kw-2">&amp;</span><span class="ident">EncoderDevice</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
@@ -1608,6 +1625,8 @@
 
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">id</span>,
+            <span class="ident">src_resource_type</span>,
+            <span class="ident">dst_resource_type</span>,
             <span class="ident">src_params</span>,
             <span class="ident">dst_params</span>,
             <span class="ident">dst_bitrate</span>: <span class="ident">DEFAULT_BITRATE</span>,
@@ -1927,20 +1946,9 @@
     <span class="ident">resource_bridge</span>: <span class="ident">Tube</span>,
 }
 
-<span class="kw">fn</span> <span class="ident">get_resource_info</span>(<span class="ident">res_bridge</span>: <span class="kw-2">&amp;</span><span class="ident">Tube</span>, <span class="ident">uuid</span>: <span class="ident">u128</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="ident">BufferInfo</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">resource_bridge::get_resource_info</span>(
-        <span class="ident">res_bridge</span>,
-        <span class="ident">ResourceRequest::GetBuffer</span> { <span class="ident">id</span>: <span class="ident">uuid</span> <span class="kw">as</span> <span class="ident">u32</span> },
-    ) {
-        <span class="prelude-val">Ok</span>(<span class="ident">ResourceInfo::Buffer</span>(<span class="ident">buffer_info</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">buffer_info</span>),
-        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidArgument</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::ResourceBridgeFailure</span>(<span class="ident">e</span>)),
-    }
-}
-
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Encoder</span><span class="op">&gt;</span> <span class="ident">EncoderDevice</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Build a new encoder using the provided `backend`.</span>
-    <span class="kw">fn</span> <span class="ident">from_backend</span>(<span class="ident">backend</span>: <span class="ident">T</span>, <span class="ident">resource_bridge</span>: <span class="ident">Tube</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">backend</span>: <span class="ident">T</span>, <span class="ident">resource_bridge</span>: <span class="ident">Tube</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">cros_capabilities</span>: <span class="ident">backend</span>.<span class="ident">query_capabilities</span>()<span class="question-mark">?</span>,
             <span class="ident">encoder</span>: <span class="ident">backend</span>,
@@ -1964,11 +1972,19 @@
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">stream_id</span>: <span class="ident">u32</span>,
         <span class="ident">desired_format</span>: <span class="ident">Format</span>,
+        <span class="ident">src_resource_type</span>: <span class="ident">ResourceType</span>,
+        <span class="ident">dst_resource_type</span>: <span class="ident">ResourceType</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="ident">VideoCmdResponseType</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">streams</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">stream_id</span>) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidStreamId</span>(<span class="ident">stream_id</span>));
         }
-        <span class="kw">let</span> <span class="ident">new_stream</span> <span class="op">=</span> <span class="ident">Stream::new</span>(<span class="ident">stream_id</span>, <span class="ident">desired_format</span>, <span class="self">self</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">new_stream</span> <span class="op">=</span> <span class="ident">Stream::new</span>(
+            <span class="ident">stream_id</span>,
+            <span class="ident">src_resource_type</span>,
+            <span class="ident">dst_resource_type</span>,
+            <span class="ident">desired_format</span>,
+            <span class="self">self</span>,
+        )<span class="question-mark">?</span>;
 
         <span class="self">self</span>.<span class="ident">streams</span>.<span class="ident">insert</span>(<span class="ident">stream_id</span>, <span class="ident">new_stream</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">VideoCmdResponseType::Sync</span>(<span class="ident">CmdResponse::NoData</span>))
@@ -2032,7 +2048,7 @@
         <span class="ident">queue_type</span>: <span class="ident">QueueType</span>,
         <span class="ident">resource_id</span>: <span class="ident">u32</span>,
         <span class="ident">plane_offsets</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-        <span class="ident">uuid</span>: <span class="ident">u128</span>,
+        <span class="ident">resource</span>: <span class="ident">UnresolvedGuestResource</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="ident">VideoCmdResponseType</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">stream</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">streams</span>
@@ -2057,21 +2073,19 @@
                     <span class="macro">warn!</span>(<span class="string">&quot;Replacing source resource with id {}&quot;</span>, <span class="ident">resource_id</span>);
                 }
 
-                <span class="kw">let</span> <span class="ident">resource_info</span> <span class="op">=</span> <span class="ident">get_resource_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">resource_bridge</span>, <span class="ident">uuid</span>)<span class="question-mark">?</span>;
-
-                <span class="kw">let</span> <span class="ident">planes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FramePlane</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">resource_info</span>.<span class="ident">planes</span>[<span class="number">0</span>..<span class="ident">num_planes</span>]
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">plane_info</span><span class="op">|</span> <span class="ident">FramePlane</span> {
-                        <span class="ident">offset</span>: <span class="ident">plane_info</span>.<span class="ident">offset</span> <span class="kw">as</span> <span class="ident">usize</span>,
-                        <span class="ident">stride</span>: <span class="ident">plane_info</span>.<span class="ident">stride</span> <span class="kw">as</span> <span class="ident">usize</span>,
-                    })
-                    .<span class="ident">collect</span>();
+                <span class="kw">let</span> <span class="ident">resource</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">stream</span>.<span class="ident">src_resource_type</span> {
+                    <span class="ident">ResourceType::Object</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">GuestResource::from_virtio_object_entry</span>(
+                        <span class="comment">// Safe because we confirmed the correct type for the resource.</span>
+                        <span class="kw">unsafe</span> { <span class="ident">resource</span>.<span class="ident">object</span> },
+                        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">resource_bridge</span>,
+                    )
+                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">VideoError::InvalidArgument</span>)<span class="question-mark">?</span>,
+                };
 
                 <span class="ident">stream</span>.<span class="ident">src_resources</span>.<span class="ident">insert</span>(
                     <span class="ident">resource_id</span>,
                     <span class="ident">InputResource</span> {
-                        <span class="ident">resource_handle</span>: <span class="ident">uuid</span>,
-                        <span class="ident">planes</span>,
+                        <span class="ident">resource</span>,
                         <span class="ident">queue_params</span>: <span class="prelude-val">None</span>,
                     },
                 );
@@ -2085,11 +2099,20 @@
                     <span class="macro">warn!</span>(<span class="string">&quot;Replacing dest resource with id {}&quot;</span>, <span class="ident">resource_id</span>);
                 }
 
+                <span class="kw">let</span> <span class="ident">resource</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">stream</span>.<span class="ident">dst_resource_type</span> {
+                    <span class="ident">ResourceType::Object</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">GuestResource::from_virtio_object_entry</span>(
+                        <span class="comment">// Safe because we confirmed the correct type for the resource.</span>
+                        <span class="kw">unsafe</span> { <span class="ident">resource</span>.<span class="ident">object</span> },
+                        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">resource_bridge</span>,
+                    )
+                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">VideoError::InvalidArgument</span>)<span class="question-mark">?</span>,
+                };
+
                 <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">plane_offsets</span>[<span class="number">0</span>];
                 <span class="ident">stream</span>.<span class="ident">dst_resources</span>.<span class="ident">insert</span>(
                     <span class="ident">resource_id</span>,
                     <span class="ident">OutputResource</span> {
-                        <span class="ident">resource_handle</span>: <span class="ident">uuid</span>,
+                        <span class="ident">resource</span>,
                         <span class="ident">offset</span>,
                         <span class="ident">queue_params</span>: <span class="prelude-val">None</span>,
                     },
@@ -2136,14 +2159,13 @@
                     },
                 )<span class="question-mark">?</span>;
 
-                <span class="kw">let</span> <span class="ident">resource_info</span> <span class="op">=</span>
-                    <span class="ident">get_resource_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">resource_bridge</span>, <span class="ident">src_resource</span>.<span class="ident">resource_handle</span>)<span class="question-mark">?</span>;
-
                 <span class="kw">let</span> <span class="ident">force_keyframe</span> <span class="op">=</span> <span class="ident">std::mem::replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stream</span>.<span class="ident">force_keyframe</span>, <span class="bool-val">false</span>);
 
                 <span class="kw">match</span> <span class="ident">encoder_session</span>.<span class="ident">encode</span>(
-                    <span class="ident">resource_info</span>.<span class="ident">file</span>,
-                    <span class="kw-2">&amp;</span><span class="ident">src_resource</span>.<span class="ident">planes</span>,
+                    <span class="ident">src_resource</span>
+                        .<span class="ident">resource</span>
+                        .<span class="ident">try_clone</span>()
+                        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">VideoError::InvalidArgument</span>)<span class="question-mark">?</span>,
                     <span class="ident">timestamp</span>,
                     <span class="ident">force_keyframe</span>,
                 ) {
@@ -2199,9 +2221,6 @@
                     },
                 )<span class="question-mark">?</span>;
 
-                <span class="kw">let</span> <span class="ident">resource_info</span> <span class="op">=</span>
-                    <span class="ident">get_resource_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">resource_bridge</span>, <span class="ident">dst_resource</span>.<span class="ident">resource_handle</span>)<span class="question-mark">?</span>;
-
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer_size</span> <span class="op">=</span> <span class="ident">data_sizes</span>[<span class="number">0</span>];
 
                 <span class="comment">// It seems that data_sizes[0] is 0 here. For now, take the stride</span>
@@ -2209,7 +2228,9 @@
                 <span class="comment">// blobs..</span>
                 <span class="comment">// TODO(alexlau): Figure out how to fix this.</span>
                 <span class="kw">if</span> <span class="ident">buffer_size</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                    <span class="ident">buffer_size</span> <span class="op">=</span> <span class="ident">resource_info</span>.<span class="ident">planes</span>[<span class="number">0</span>].<span class="ident">offset</span> <span class="op">+</span> <span class="ident">resource_info</span>.<span class="ident">planes</span>[<span class="number">0</span>].<span class="ident">stride</span>;
+                    <span class="ident">buffer_size</span> <span class="op">=</span> (<span class="ident">dst_resource</span>.<span class="ident">resource</span>.<span class="ident">planes</span>[<span class="number">0</span>].<span class="ident">offset</span>
+                        <span class="op">+</span> <span class="ident">dst_resource</span>.<span class="ident">resource</span>.<span class="ident">planes</span>[<span class="number">0</span>].<span class="ident">stride</span>)
+                        <span class="kw">as</span> <span class="ident">u32</span>;
                 }
 
                 <span class="comment">// Stores an output buffer to notify EOS.</span>
@@ -2225,7 +2246,11 @@
                 }
 
                 <span class="kw">match</span> <span class="ident">encoder_session</span>.<span class="ident">use_output_buffer</span>(
-                    <span class="ident">resource_info</span>.<span class="ident">file</span>,
+                    <span class="ident">dst_resource</span>
+                        .<span class="ident">resource</span>
+                        .<span class="ident">handle</span>
+                        .<span class="ident">try_clone</span>()
+                        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">VideoError::InvalidParameter</span>)<span class="question-mark">?</span>,
                     <span class="ident">dst_resource</span>.<span class="ident">offset</span>,
                     <span class="ident">buffer_size</span>,
                 ) {
@@ -2732,7 +2757,14 @@
             <span class="ident">VideoCmd::StreamCreate</span> {
                 <span class="ident">stream_id</span>,
                 <span class="ident">coded_format</span>: <span class="ident">desired_format</span>,
-            } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stream_create</span>(<span class="ident">stream_id</span>, <span class="ident">desired_format</span>),
+                <span class="ident">input_resource_type</span>,
+                <span class="ident">output_resource_type</span>,
+            } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stream_create</span>(
+                <span class="ident">stream_id</span>,
+                <span class="ident">desired_format</span>,
+                <span class="ident">input_resource_type</span>,
+                <span class="ident">output_resource_type</span>,
+            ),
             <span class="ident">VideoCmd::StreamDestroy</span> { <span class="ident">stream_id</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stream_destroy</span>(<span class="ident">stream_id</span>),
             <span class="ident">VideoCmd::StreamDrain</span> { <span class="ident">stream_id</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stream_drain</span>(<span class="ident">stream_id</span>),
             <span class="ident">VideoCmd::ResourceCreate</span> {
@@ -2740,14 +2772,14 @@
                 <span class="ident">queue_type</span>,
                 <span class="ident">resource_id</span>,
                 <span class="ident">plane_offsets</span>,
-                <span class="ident">uuid</span>,
+                <span class="ident">resource</span>,
             } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">resource_create</span>(
                 <span class="ident">wait_ctx</span>,
                 <span class="ident">stream_id</span>,
                 <span class="ident">queue_type</span>,
                 <span class="ident">resource_id</span>,
                 <span class="ident">plane_offsets</span>,
-                <span class="ident">uuid</span>,
+                <span class="ident">resource</span>,
             ),
             <span class="ident">VideoCmd::ResourceQueue</span> {
                 <span class="ident">stream_id</span>,

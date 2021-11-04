@@ -1089,6 +1089,15 @@
 <span id="1089">1089</span>
 <span id="1090">1090</span>
 <span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1098,12 +1107,10 @@
 
 <span class="kw">use</span> <span class="ident">std::collections::btree_map::Entry</span>;
 <span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>, <span class="ident">VecDeque</span>};
-<span class="kw">use</span> <span class="ident">std::convert::TryInto</span>;
 
 <span class="kw">use</span> <span class="ident">backend</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">IntoRawDescriptor</span>, <span class="ident">Tube</span>, <span class="ident">WaitContext</span>};
+<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Tube</span>, <span class="ident">WaitContext</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::resource_bridge</span>::{<span class="self">self</span>, <span class="ident">BufferInfo</span>, <span class="ident">ResourceInfo</span>, <span class="ident">ResourceRequest</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::async_cmd_desc_map::AsyncCmdDescMap</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::command</span>::{<span class="ident">QueueType</span>, <span class="ident">VideoCmd</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::control</span>::{<span class="ident">CtrlType</span>, <span class="ident">CtrlVal</span>, <span class="ident">QueryCtrlType</span>};
@@ -1113,9 +1120,10 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::format</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::params::Params</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::protocol</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::resource</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::response::CmdResponse</span>;
 
-<span class="kw">mod</span> <span class="ident">backend</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">backend</span>;
 <span class="kw">mod</span> <span class="ident">capability</span>;
 
 <span class="kw">use</span> <span class="ident">capability</span>::<span class="kw-2">*</span>;
@@ -1134,7 +1142,6 @@
 <span class="comment">// we don&#39;t need this value and can pass OutputResourceId to Chrome directly.</span>
 <span class="kw">type</span> <span class="ident">FrameBufferId</span> <span class="op">=</span> <span class="ident">i32</span>;
 
-<span class="kw">type</span> <span class="ident">ResourceHandle</span> <span class="op">=</span> <span class="ident">u32</span>;
 <span class="kw">type</span> <span class="ident">Timestamp</span> <span class="op">=</span> <span class="ident">u64</span>;
 
 <span class="comment">// The result of OutputResources.queue_resource().</span>
@@ -1150,7 +1157,7 @@
     <span class="ident">timestamp_to_res_id</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Timestamp</span>, <span class="ident">InputResourceId</span><span class="op">&gt;</span>,
 
     <span class="comment">// InputResourceId -&gt; ResourceHandle</span>
-    <span class="ident">res_id_to_res_handle</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">InputResourceId</span>, <span class="ident">ResourceHandle</span><span class="op">&gt;</span>,
+    <span class="ident">res_id_to_res_handle</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">InputResourceId</span>, <span class="ident">GuestResource</span><span class="op">&gt;</span>,
 
     <span class="comment">// InputResourceId -&gt; data offset</span>
     <span class="ident">res_id_to_offset</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">InputResourceId</span>, <span class="ident">u32</span><span class="op">&gt;</span>,
@@ -1180,7 +1187,7 @@
     <span class="ident">output_params_set</span>: <span class="ident">bool</span>,
 
     <span class="comment">// OutputResourceId -&gt; ResourceHandle</span>
-    <span class="ident">res_id_to_res_handle</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">OutputResourceId</span>, <span class="ident">ResourceHandle</span><span class="op">&gt;</span>,
+    <span class="ident">res_id_to_res_handle</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">OutputResourceId</span>, <span class="ident">GuestResource</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">OutputResources</span> {
@@ -1264,6 +1271,9 @@
 <span class="kw">struct</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">DecoderSession</span><span class="op">&gt;</span> {
     <span class="ident">stream_id</span>: <span class="ident">StreamId</span>,
 
+    <span class="ident">in_resource_type</span>: <span class="ident">ResourceType</span>,
+    <span class="ident">out_resource_type</span>: <span class="ident">ResourceType</span>,
+
     <span class="ident">in_params</span>: <span class="ident">Params</span>,
     <span class="ident">out_params</span>: <span class="ident">Params</span>,
 
@@ -1279,9 +1289,16 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">DecoderSession</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">stream_id</span>: <span class="ident">StreamId</span>, <span class="ident">format</span>: <span class="ident">Format</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">stream_id</span>: <span class="ident">StreamId</span>,
+        <span class="ident">format</span>: <span class="ident">Format</span>,
+        <span class="ident">in_resource_type</span>: <span class="ident">ResourceType</span>,
+        <span class="ident">out_resource_type</span>: <span class="ident">ResourceType</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Context</span> {
             <span class="ident">stream_id</span>,
+            <span class="ident">in_resource_type</span>,
+            <span class="ident">out_resource_type</span>,
             <span class="ident">in_params</span>: <span class="ident">Params</span> {
                 <span class="ident">format</span>: <span class="prelude-val">Some</span>(<span class="ident">format</span>),
                 <span class="ident">min_buffers</span>: <span class="number">1</span>,
@@ -1365,43 +1382,17 @@
         <span class="prelude-val">Some</span>(<span class="ident">responses</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_resource_info</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
+    <span class="kw">fn</span> <span class="ident">register_resource</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">queue_type</span>: <span class="ident">QueueType</span>,
-        <span class="ident">res_bridge</span>: <span class="kw-2">&amp;</span><span class="ident">Tube</span>,
         <span class="ident">resource_id</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="ident">BufferInfo</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">res_id_to_res_handle</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">queue_type</span> {
-            <span class="ident">QueueType::Input</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">in_res</span>.<span class="ident">res_id_to_res_handle</span>,
-            <span class="ident">QueueType::Output</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">out_res</span>.<span class="ident">res_id_to_res_handle</span>,
-        };
-
-        <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">res_id_to_res_handle</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">resource_id</span>).<span class="ident">copied</span>().<span class="ident">ok_or</span>(
-            <span class="ident">VideoError::InvalidResourceId</span> {
-                <span class="ident">stream_id</span>: <span class="self">self</span>.<span class="ident">stream_id</span>,
-                <span class="ident">resource_id</span>,
-            },
-        )<span class="question-mark">?</span>;
-        <span class="kw">match</span> <span class="ident">resource_bridge::get_resource_info</span>(
-            <span class="ident">res_bridge</span>,
-            <span class="ident">ResourceRequest::GetBuffer</span> { <span class="ident">id</span>: <span class="ident">handle</span> },
-        ) {
-            <span class="prelude-val">Ok</span>(<span class="ident">ResourceInfo::Buffer</span>(<span class="ident">buffer_info</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">buffer_info</span>),
-            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidArgument</span>),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::ResourceBridgeFailure</span>(<span class="ident">e</span>)),
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">register_buffer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">queue_type</span>: <span class="ident">QueueType</span>, <span class="ident">resource_id</span>: <span class="ident">u32</span>, <span class="ident">uuid</span>: <span class="kw-2">&amp;</span><span class="ident">u128</span>) {
-        <span class="comment">// TODO(stevensd): `Virtio3DBackend::resource_assign_uuid` is currently implemented to use</span>
-        <span class="comment">// 32-bits resource_handles as UUIDs. Once it starts using real UUIDs, we need to update</span>
-        <span class="comment">// this conversion.</span>
-        <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">TryInto</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="ident">::try_into</span>(<span class="kw-2">*</span><span class="ident">uuid</span>).<span class="ident">expect</span>(<span class="string">&quot;uuid is larger than 32 bits&quot;</span>);
+        <span class="ident">resource</span>: <span class="ident">GuestResource</span>,
+    ) {
         <span class="kw">let</span> <span class="ident">res_id_to_res_handle</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">queue_type</span> {
             <span class="ident">QueueType::Input</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">in_res</span>.<span class="ident">res_id_to_res_handle</span>,
             <span class="ident">QueueType::Output</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">out_res</span>.<span class="ident">res_id_to_res_handle</span>,
         };
-        <span class="ident">res_id_to_res_handle</span>.<span class="ident">insert</span>(<span class="ident">resource_id</span>, <span class="ident">handle</span>);
+        <span class="ident">res_id_to_res_handle</span>.<span class="ident">insert</span>(<span class="ident">resource_id</span>, <span class="ident">resource</span>);
     }
 
     <span class="comment">/*
@@ -1522,7 +1513,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="ident">DecoderBackend</span><span class="op">&gt;</span> <span class="ident">Decoder</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Build a new decoder using the provided `backend`.</span>
-    <span class="kw">fn</span> <span class="ident">from_backend</span>(<span class="ident">backend</span>: <span class="ident">D</span>, <span class="ident">resource_bridge</span>: <span class="ident">Tube</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">backend</span>: <span class="ident">D</span>, <span class="ident">resource_bridge</span>: <span class="ident">Tube</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">capability</span> <span class="op">=</span> <span class="ident">backend</span>.<span class="ident">get_capabilities</span>();
 
         <span class="self">Self</span> {
@@ -1532,6 +1523,7 @@
             <span class="ident">resource_bridge</span>,
         }
     }
+
     <span class="comment">/*
      * Functions processing virtio-video commands.
      */</span>
@@ -1549,13 +1541,19 @@
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">stream_id</span>: <span class="ident">StreamId</span>,
         <span class="ident">coded_format</span>: <span class="ident">Format</span>,
+        <span class="ident">input_resource_type</span>: <span class="ident">ResourceType</span>,
+        <span class="ident">output_resource_type</span>: <span class="ident">ResourceType</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="ident">VideoCmdResponseType</span><span class="op">&gt;</span> {
         <span class="comment">// Create an instance of `Context`.</span>
         <span class="comment">// Note that the `DecoderSession` will be created not here but at the first call of</span>
         <span class="comment">// `ResourceCreate`. This is because we need to fix a coded format for it, which</span>
         <span class="comment">// will be set by `SetParams`.</span>
-        <span class="self">self</span>.<span class="ident">contexts</span>
-            .<span class="ident">insert</span>(<span class="ident">Context::new</span>(<span class="ident">stream_id</span>, <span class="ident">coded_format</span>))<span class="question-mark">?</span>;
+        <span class="self">self</span>.<span class="ident">contexts</span>.<span class="ident">insert</span>(<span class="ident">Context::new</span>(
+            <span class="ident">stream_id</span>,
+            <span class="ident">coded_format</span>,
+            <span class="ident">input_resource_type</span>,
+            <span class="ident">output_resource_type</span>,
+        ))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">VideoCmdResponseType::Sync</span>(<span class="ident">CmdResponse::NoData</span>))
     }
 
@@ -1601,7 +1599,7 @@
         <span class="ident">queue_type</span>: <span class="ident">QueueType</span>,
         <span class="ident">resource_id</span>: <span class="ident">ResourceId</span>,
         <span class="ident">plane_offsets</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-        <span class="ident">uuid</span>: <span class="ident">u128</span>,
+        <span class="ident">resource</span>: <span class="ident">UnresolvedGuestResource</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="ident">VideoCmdResponseType</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">contexts</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">stream_id</span>)<span class="question-mark">?</span>;
 
@@ -1616,7 +1614,22 @@
             )<span class="question-mark">?</span>);
         }
 
-        <span class="ident">ctx</span>.<span class="ident">register_buffer</span>(<span class="ident">queue_type</span>, <span class="ident">resource_id</span>, <span class="kw-2">&amp;</span><span class="ident">uuid</span>);
+        <span class="comment">// Now try to resolve our resource.</span>
+        <span class="kw">let</span> <span class="ident">resource_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">queue_type</span> {
+            <span class="ident">QueueType::Input</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ctx</span>.<span class="ident">in_resource_type</span>,
+            <span class="ident">QueueType::Output</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ctx</span>.<span class="ident">out_resource_type</span>,
+        };
+
+        <span class="kw">let</span> <span class="ident">resource</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">resource_type</span> {
+            <span class="ident">ResourceType::Object</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">GuestResource::from_virtio_object_entry</span>(
+                <span class="comment">// Safe because we confirmed the correct type for the resource.</span>
+                <span class="kw">unsafe</span> { <span class="ident">resource</span>.<span class="ident">object</span> },
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">resource_bridge</span>,
+            )
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">VideoError::InvalidArgument</span>)<span class="question-mark">?</span>,
+        };
+
+        <span class="ident">ctx</span>.<span class="ident">register_resource</span>(<span class="ident">queue_type</span>, <span class="ident">resource_id</span>, <span class="ident">resource</span>);
 
         <span class="kw">if</span> <span class="ident">queue_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">QueueType::Input</span> {
             <span class="ident">ctx</span>.<span class="ident">in_res</span>
@@ -1674,14 +1687,14 @@
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
         }
 
-        <span class="comment">// Take an ownership of this file by `into_raw_descriptor()` as this file will be closed</span>
-        <span class="comment">// by the `DecoderBackend`.</span>
-        <span class="kw">let</span> <span class="ident">fd</span> <span class="op">=</span> <span class="ident">ctx</span>
-            .<span class="ident">get_resource_info</span>(<span class="ident">QueueType::Input</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">resource_bridge</span>, <span class="ident">resource_id</span>)<span class="question-mark">?</span>
-            .<span class="ident">file</span>
-            .<span class="ident">into_raw_descriptor</span>();
-
         <span class="kw">let</span> <span class="ident">session</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">session</span>.<span class="ident">as_mut</span>().<span class="ident">ok_or</span>(<span class="ident">VideoError::InvalidOperation</span>)<span class="question-mark">?</span>;
+
+        <span class="kw">let</span> <span class="ident">resource</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">in_res</span>.<span class="ident">res_id_to_res_handle</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">resource_id</span>).<span class="ident">ok_or</span>(
+            <span class="ident">VideoError::InvalidResourceId</span> {
+                <span class="ident">stream_id</span>,
+                <span class="ident">resource_id</span>,
+            },
+        )<span class="question-mark">?</span>;
 
         <span class="comment">// Register a mapping of timestamp to resource_id</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">old_resource_id</span>) <span class="op">=</span> <span class="ident">ctx</span>
@@ -1712,7 +1725,10 @@
         <span class="kw">let</span> <span class="ident">ts_sec</span>: <span class="ident">i32</span> <span class="op">=</span> (<span class="ident">timestamp</span> <span class="op">/</span> <span class="number">1_000_000_000</span>) <span class="kw">as</span> <span class="ident">i32</span>;
         <span class="ident">session</span>.<span class="ident">decode</span>(
             <span class="ident">ts_sec</span>,
-            <span class="ident">fd</span>,
+            <span class="ident">resource</span>
+                .<span class="ident">handle</span>
+                .<span class="ident">try_clone</span>()
+                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">VideoError::InvalidParameter</span>)<span class="question-mark">?</span>,
             <span class="ident">offset</span>,
             <span class="ident">data_sizes</span>[<span class="number">0</span>], <span class="comment">// bytes_used</span>
         )<span class="question-mark">?</span>;
@@ -1758,18 +1774,16 @@
                 .<span class="ident">ok_or</span>(<span class="ident">VideoError::InvalidOperation</span>)<span class="question-mark">?</span>
                 .<span class="ident">reuse_output_buffer</span>(<span class="ident">buffer_id</span>),
             <span class="ident">QueueOutputResourceResult::Registered</span>(<span class="ident">buffer_id</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">resource_info</span> <span class="op">=</span>
-                    <span class="ident">ctx</span>.<span class="ident">get_resource_info</span>(<span class="ident">QueueType::Output</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">resource_bridge</span>, <span class="ident">resource_id</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">planes</span> <span class="op">=</span> <span class="macro">vec!</span>[
-                    <span class="ident">FramePlane</span> {
-                        <span class="ident">offset</span>: <span class="ident">resource_info</span>.<span class="ident">planes</span>[<span class="number">0</span>].<span class="ident">offset</span> <span class="kw">as</span> <span class="ident">usize</span>,
-                        <span class="ident">stride</span>: <span class="ident">resource_info</span>.<span class="ident">planes</span>[<span class="number">0</span>].<span class="ident">stride</span> <span class="kw">as</span> <span class="ident">usize</span>,
-                    },
-                    <span class="ident">FramePlane</span> {
-                        <span class="ident">offset</span>: <span class="ident">resource_info</span>.<span class="ident">planes</span>[<span class="number">1</span>].<span class="ident">offset</span> <span class="kw">as</span> <span class="ident">usize</span>,
-                        <span class="ident">stride</span>: <span class="ident">resource_info</span>.<span class="ident">planes</span>[<span class="number">1</span>].<span class="ident">stride</span> <span class="kw">as</span> <span class="ident">usize</span>,
-                    },
-                ];
+                <span class="comment">// Take full ownership of the output resource, since we will only import it once</span>
+                <span class="comment">// into the backend.</span>
+                <span class="kw">let</span> <span class="ident">resource</span> <span class="op">=</span> <span class="ident">ctx</span>
+                    .<span class="ident">out_res</span>
+                    .<span class="ident">res_id_to_res_handle</span>
+                    .<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">resource_id</span>)
+                    .<span class="ident">ok_or</span>(<span class="ident">VideoError::InvalidResourceId</span> {
+                        <span class="ident">stream_id</span>,
+                        <span class="ident">resource_id</span>,
+                    })<span class="question-mark">?</span>;
 
                 <span class="kw">let</span> <span class="ident">session</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">session</span>.<span class="ident">as_mut</span>().<span class="ident">ok_or</span>(<span class="ident">VideoError::InvalidOperation</span>)<span class="question-mark">?</span>;
 
@@ -1784,10 +1798,7 @@
                     <span class="ident">session</span>.<span class="ident">set_output_parameters</span>(<span class="ident">OUTPUT_BUFFER_COUNT</span>, <span class="ident">Format::NV12</span>)<span class="question-mark">?</span>;
                 }
 
-                <span class="comment">// Take ownership of this file by `into_raw_descriptor()` as this</span>
-                <span class="comment">// file will be closed by libvda.</span>
-                <span class="kw">let</span> <span class="ident">fd</span> <span class="op">=</span> <span class="ident">resource_info</span>.<span class="ident">file</span>.<span class="ident">into_raw_descriptor</span>();
-                <span class="ident">session</span>.<span class="ident">use_output_buffer</span>(<span class="ident">buffer_id</span> <span class="kw">as</span> <span class="ident">i32</span>, <span class="ident">fd</span>, <span class="kw-2">&amp;</span><span class="ident">planes</span>, <span class="ident">resource_info</span>.<span class="ident">modifier</span>)
+                <span class="ident">session</span>.<span class="ident">use_output_buffer</span>(<span class="ident">buffer_id</span> <span class="kw">as</span> <span class="ident">i32</span>, <span class="ident">resource</span>)
             }
         }<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">VideoCmdResponseType::Async</span>(<span class="ident">AsyncCmdTag::Queue</span> {
@@ -1958,7 +1969,14 @@
             <span class="ident">StreamCreate</span> {
                 <span class="ident">stream_id</span>,
                 <span class="ident">coded_format</span>,
-            } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">create_stream</span>(<span class="ident">stream_id</span>, <span class="ident">coded_format</span>),
+                <span class="ident">input_resource_type</span>,
+                <span class="ident">output_resource_type</span>,
+            } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">create_stream</span>(
+                <span class="ident">stream_id</span>,
+                <span class="ident">coded_format</span>,
+                <span class="ident">input_resource_type</span>,
+                <span class="ident">output_resource_type</span>,
+            ),
             <span class="ident">StreamDestroy</span> { <span class="ident">stream_id</span> } <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">destroy_stream</span>(<span class="ident">stream_id</span>);
                 <span class="prelude-val">Ok</span>(<span class="ident">Sync</span>(<span class="ident">CmdResponse::NoData</span>))
@@ -1968,14 +1986,14 @@
                 <span class="ident">queue_type</span>,
                 <span class="ident">resource_id</span>,
                 <span class="ident">plane_offsets</span>,
-                <span class="ident">uuid</span>,
+                <span class="ident">resource</span>,
             } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">create_resource</span>(
                 <span class="ident">wait_ctx</span>,
                 <span class="ident">stream_id</span>,
                 <span class="ident">queue_type</span>,
                 <span class="ident">resource_id</span>,
                 <span class="ident">plane_offsets</span>,
-                <span class="ident">uuid</span>,
+                <span class="ident">resource</span>,
             ),
             <span class="ident">ResourceDestroyAll</span> {
                 <span class="ident">stream_id</span>,

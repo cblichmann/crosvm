@@ -345,6 +345,31 @@
 <span id="345">345</span>
 <span id="346">346</span>
 <span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -357,7 +382,9 @@
 
 <span class="kw">use</span> <span class="ident">std::thread</span>;
 
-<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">SysError</span>, <span class="ident">Event</span>, <span class="ident">RawDescriptor</span>, <span class="ident">Tube</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident">base::info</span>;
+<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">SysError</span>, <span class="ident">Event</span>, <span class="ident">RawDescriptor</span>, <span class="ident">Tube</span>};
 <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">DataInit</span>, <span class="ident">Le32</span>};
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">thiserror::Error</span>;
@@ -371,14 +398,17 @@
 <span class="kw">mod</span> <span class="ident">async_cmd_desc_map</span>;
 <span class="kw">mod</span> <span class="ident">command</span>;
 <span class="kw">mod</span> <span class="ident">control</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-decoder&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">decoder</span>;
 <span class="kw">mod</span> <span class="ident">device</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">encoder</span>;
 <span class="kw">mod</span> <span class="ident">error</span>;
 <span class="kw">mod</span> <span class="ident">event</span>;
 <span class="kw">mod</span> <span class="ident">format</span>;
 <span class="kw">mod</span> <span class="ident">params</span>;
 <span class="kw">mod</span> <span class="ident">protocol</span>;
+<span class="kw">mod</span> <span class="ident">resource</span>;
 <span class="kw">mod</span> <span class="ident">response</span>;
 <span class="kw">mod</span> <span class="ident">worker</span>;
 
@@ -421,7 +451,9 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">VideoDeviceType</span> {
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-decoder&quot;</span>)]</span>
     <span class="ident">Decoder</span>,
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
     <span class="ident">Encoder</span>,
 }
 
@@ -467,7 +499,9 @@
 
     <span class="kw">fn</span> <span class="ident">device_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">device_type</span> {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-decoder&quot;</span>)]</span>
             <span class="ident">VideoDeviceType::Decoder</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">virtio::TYPE_VIDEO_DEC</span>,
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
             <span class="ident">VideoDeviceType::Encoder</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">virtio::TYPE_VIDEO_ENC</span>,
         }
     }
@@ -544,31 +578,45 @@
             <span class="ident">kill_evt</span>,
         );
         <span class="kw">let</span> <span class="ident">worker_result</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">device_type</span> {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-decoder&quot;</span>)]</span>
             <span class="ident">VideoDeviceType::Decoder</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">thread::Builder::new</span>()
                 .<span class="ident">name</span>(<span class="string">&quot;virtio video decoder&quot;</span>.<span class="ident">to_owned</span>())
                 .<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-                    <span class="kw">let</span> <span class="ident">device</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">decoder::Decoder::new</span>(<span class="ident">resource_bridge</span>) {
-                        <span class="prelude-val">Ok</span>(<span class="ident">device</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">device</span>),
+                    <span class="kw">let</span> <span class="ident">vda</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">decoder::backend::vda::LibvdaDecoder::new</span>() {
+                        <span class="prelude-val">Ok</span>(<span class="ident">vda</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vda</span>,
                         <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                            <span class="macro">error!</span>(<span class="string">&quot;Failed to initialize vda: {}&quot;</span>, <span class="ident">e</span>);
+                            <span class="macro">error!</span>(<span class="string">&quot;Failed to initialize VDA for decoder: {}&quot;</span>, <span class="ident">e</span>);
                             <span class="kw">return</span>;
                         }
                     };
+
+                    <span class="kw">let</span> <span class="ident">device</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="ident">decoder::Decoder::new</span>(<span class="ident">vda</span>, <span class="ident">resource_bridge</span>));
+
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">worker</span>.<span class="ident">run</span>(<span class="ident">device</span>) {
                         <span class="macro">error!</span>(<span class="string">&quot;Failed to start decoder worker: {}&quot;</span>, <span class="ident">e</span>);
                     };
                     <span class="comment">// Don&#39;t return any information since the return value is never checked.</span>
                 }),
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
             <span class="ident">VideoDeviceType::Encoder</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">thread::Builder::new</span>()
                 .<span class="ident">name</span>(<span class="string">&quot;virtio video encoder&quot;</span>.<span class="ident">to_owned</span>())
                 .<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-                    <span class="kw">let</span> <span class="ident">device</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">encoder::EncoderDevice::new</span>(<span class="ident">resource_bridge</span>) {
-                        <span class="prelude-val">Ok</span>(<span class="ident">d</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">d</span>),
+                    <span class="kw">let</span> <span class="ident">vda</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">encoder::backend::vda::LibvdaEncoder::new</span>() {
+                        <span class="prelude-val">Ok</span>(<span class="ident">vda</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vda</span>,
+                        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="macro">error!</span>(<span class="string">&quot;Failed to initialize VDA for encoder: {}&quot;</span>, <span class="ident">e</span>);
+                            <span class="kw">return</span>;
+                        }
+                    };
+
+                    <span class="kw">let</span> <span class="ident">device</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">encoder::EncoderDevice::new</span>(<span class="ident">vda</span>, <span class="ident">resource_bridge</span>) {
+                        <span class="prelude-val">Ok</span>(<span class="ident">device</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Box::new</span>(<span class="ident">device</span>),
                         <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="macro">error!</span>(<span class="string">&quot;Failed to create encoder device: {}&quot;</span>, <span class="ident">e</span>);
                             <span class="kw">return</span>;
                         }
                     };
+
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">worker</span>.<span class="ident">run</span>(<span class="ident">device</span>) {
                         <span class="macro">error!</span>(<span class="string">&quot;Failed to start encoder worker: {}&quot;</span>, <span class="ident">e</span>);
                     }
@@ -591,6 +639,7 @@
 <span class="doccomment">/// for that purpose.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// TODO(b/149725148): Remove this when libvda supports buffer flags.</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
 <span class="kw">struct</span> <span class="ident">EosBufferManager</span> {
     <span class="ident">stream_id</span>: <span class="ident">u32</span>,
     <span class="ident">eos_buffer</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
@@ -598,6 +647,7 @@
     <span class="ident">responses</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">device::VideoEvtResponseType</span><span class="op">&gt;</span>,
 }
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">EosBufferManager</span> {
     <span class="doccomment">/// Create a new EOS manager for stream `stream_id`.</span>
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">stream_id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {

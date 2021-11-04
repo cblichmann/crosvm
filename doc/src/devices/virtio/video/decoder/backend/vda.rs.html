@@ -323,12 +323,22 @@
 <span id="323">323</span>
 <span id="324">324</span>
 <span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
-<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">warn</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">RawDescriptor</span>};
+<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">warn</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">IntoRawDescriptor</span>};
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">std::collections::btree_map::Entry</span>;
 <span class="kw">use</span> <span class="ident">std::collections::BTreeMap</span>;
@@ -338,10 +348,10 @@
 <span class="kw">use</span> <span class="ident">libvda::decode::Event</span> <span class="kw">as</span> <span class="ident">LibvdaEvent</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video</span>::{
-    <span class="ident">decoder</span>::{<span class="ident">backend</span>::<span class="kw-2">*</span>, <span class="ident">Capability</span>, <span class="ident">Decoder</span>},
+    <span class="ident">decoder</span>::{<span class="ident">backend</span>::<span class="kw-2">*</span>, <span class="ident">Capability</span>},
     <span class="ident">error</span>::{<span class="ident">VideoError</span>, <span class="ident">VideoResult</span>},
     <span class="ident">format</span>::<span class="kw-2">*</span>,
-    <span class="ident">Tube</span>,
+    <span class="ident">resource</span>::{<span class="ident">GuestResource</span>, <span class="ident">GuestResourceHandle</span>},
 };
 
 <span class="attribute">#[<span class="ident">sorted</span>]</span>
@@ -501,13 +511,19 @@
     <span class="kw">fn</span> <span class="ident">decode</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">bitstream_id</span>: <span class="ident">i32</span>,
-        <span class="ident">descriptor</span>: <span class="ident">RawDescriptor</span>,
+        <span class="ident">resource</span>: <span class="ident">GuestResourceHandle</span>,
         <span class="ident">offset</span>: <span class="ident">u32</span>,
         <span class="ident">bytes_used</span>: <span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>
-            .<span class="ident">vda_session</span>
-            .<span class="ident">decode</span>(<span class="ident">bitstream_id</span>, <span class="ident">descriptor</span>, <span class="ident">offset</span>, <span class="ident">bytes_used</span>)<span class="question-mark">?</span>)
+        <span class="kw">let</span> <span class="ident">GuestResourceHandle::Object</span>(<span class="ident">handle</span>) <span class="op">=</span> <span class="ident">resource</span>;
+
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">vda_session</span>.<span class="ident">decode</span>(
+            <span class="ident">bitstream_id</span>,
+            <span class="comment">// Steal the descriptor of the resource, as libvda will close it.</span>
+            <span class="ident">handle</span>.<span class="ident">desc</span>.<span class="ident">into_raw_descriptor</span>(),
+            <span class="ident">offset</span>,
+            <span class="ident">bytes_used</span>,
+        )<span class="question-mark">?</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -525,17 +541,18 @@
     <span class="kw">fn</span> <span class="ident">use_output_buffer</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">picture_buffer_id</span>: <span class="ident">i32</span>,
-        <span class="ident">output_buffer</span>: <span class="ident">RawDescriptor</span>,
-        <span class="ident">planes</span>: <span class="kw-2">&amp;</span>[<span class="ident">FramePlane</span>],
-        <span class="ident">modifier</span>: <span class="ident">u64</span>,
+        <span class="ident">resource</span>: <span class="ident">GuestResource</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">vda_planes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">libvda::FramePlane</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">planes</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">Into::into</span>).<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="ident">GuestResourceHandle::Object</span>(<span class="ident">handle</span>) <span class="op">=</span> <span class="ident">resource</span>.<span class="ident">handle</span>;
+        <span class="kw">let</span> <span class="ident">vda_planes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">libvda::FramePlane</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">resource</span>.<span class="ident">planes</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">Into::into</span>).<span class="ident">collect</span>();
+
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">vda_session</span>.<span class="ident">use_output_buffer</span>(
             <span class="ident">picture_buffer_id</span>,
             <span class="self">self</span>.<span class="ident">format</span>.<span class="ident">ok_or</span>(<span class="ident">VdaBackendError::OutputParamsNotSet</span>)<span class="question-mark">?</span>,
-            <span class="ident">output_buffer</span>,
+            <span class="comment">// Steal the descriptor of the resource, as libvda will close it.</span>
+            <span class="ident">handle</span>.<span class="ident">desc</span>.<span class="ident">into_raw_descriptor</span>(),
             <span class="kw-2">&amp;</span><span class="ident">vda_planes</span>,
-            <span class="ident">modifier</span>,
+            <span class="ident">handle</span>.<span class="ident">modifier</span>,
         )<span class="question-mark">?</span>)
     }
 
@@ -551,14 +568,26 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">DecoderBackend</span> <span class="kw">for</span> <span class="ident">libvda::decode::VdaInstance</span> {
+<span class="doccomment">/// A VDA decoder backend that can be passed to `Decoder::new` in order to create a working decoder.</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LibvdaDecoder</span>(<span class="ident">libvda::decode::VdaInstance</span>);
+
+<span class="kw">impl</span> <span class="ident">LibvdaDecoder</span> {
+    <span class="doccomment">/// Create a decoder backend instance that can be used to instantiate an decoder.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">libvda::decode::VdaInstance::new</span>(
+            <span class="ident">libvda::decode::VdaImplType::Gavda</span>,
+        )<span class="question-mark">?</span>))
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">DecoderBackend</span> <span class="kw">for</span> <span class="ident">LibvdaDecoder</span> {
     <span class="kw">type</span> <span class="ident">Session</span> <span class="op">=</span> <span class="ident">VdaDecoderSession</span>;
 
     <span class="kw">fn</span> <span class="ident">new_session</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">format</span>: <span class="ident">Format</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Session</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">profile</span> <span class="op">=</span> <span class="ident">libvda::Profile::try_from</span>(<span class="ident">format</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="ident">VdaDecoderSession</span> {
-            <span class="ident">vda_session</span>: <span class="self">self</span>.<span class="ident">open_session</span>(<span class="ident">profile</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+            <span class="ident">vda_session</span>: <span class="self">self</span>.<span class="number">0</span>.<span class="ident">open_session</span>(<span class="ident">profile</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
                 <span class="macro">error!</span>(<span class="string">&quot;failed to open a session for {:?}: {}&quot;</span>, <span class="ident">format</span>, <span class="ident">e</span>);
                 <span class="ident">VideoError::InvalidOperation</span>
             })<span class="question-mark">?</span>,
@@ -567,7 +596,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">get_capabilities</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Capability</span> {
-        <span class="kw">let</span> <span class="ident">caps</span> <span class="op">=</span> <span class="ident">libvda::decode::VdaInstance::get_capabilities</span>(<span class="self">self</span>);
+        <span class="kw">let</span> <span class="ident">caps</span> <span class="op">=</span> <span class="ident">libvda::decode::VdaInstance::get_capabilities</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>);
 
         <span class="comment">// Raise the first |# of supported raw formats|-th bits because we can assume that any</span>
         <span class="comment">// combination of (a coded format, a raw format) is valid in Chrome.</span>
@@ -638,15 +667,6 @@
             .<span class="ident">collect</span>();
 
         <span class="ident">Capability::new</span>(<span class="ident">in_fmts</span>, <span class="ident">out_fmts</span>, <span class="ident">profiles</span>, <span class="ident">levels</span>)
-    }
-}
-
-<span class="doccomment">/// Create a new decoder instance using a Libvda decoder instance to perform</span>
-<span class="doccomment">/// the decoding.</span>
-<span class="kw">impl</span> <span class="ident">Decoder</span><span class="op">&lt;</span><span class="ident">libvda::decode::VdaInstance</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">resource_bridge</span>: <span class="ident">Tube</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">vda</span> <span class="op">=</span> <span class="ident">libvda::decode::VdaInstance::new</span>(<span class="ident">libvda::decode::VdaImplType::Gavda</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">Decoder::from_backend</span>(<span class="ident">vda</span>, <span class="ident">resource_bridge</span>))
     }
 }
 </pre></div>

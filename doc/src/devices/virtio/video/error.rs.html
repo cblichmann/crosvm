@@ -43,8 +43,6 @@
 <span id="43">43</span>
 <span id="44">44</span>
 <span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -55,7 +53,6 @@
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">thiserror::Error</span> <span class="kw">as</span> <span class="ident">ThisError</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::resource_bridge::ResourceBridgeError</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::control::CtrlType</span>;
 
 <span class="doccomment">/// An error indicating something went wrong while encoding or decoding.</span>
@@ -84,10 +81,9 @@
     <span class="doccomment">/// Invalid stream ID is specified.</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;invalid stream ID {0}&quot;</span>)]</span>
     <span class="ident">InvalidStreamId</span>(<span class="ident">u32</span>),
-    <span class="doccomment">/// Failed to get a resource FD via resource_bridge.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to get resource FD for id {0}&quot;</span>)]</span>
-    <span class="ident">ResourceBridgeFailure</span>(<span class="ident">ResourceBridgeError</span>),
     <span class="doccomment">/// Unsupported control type is specified.</span>
+    <span class="doccomment">/// This is only used by the encoder for now, ignore warning if it is compiled out.</span>
+    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;unsupported control: {0:?}&quot;</span>)]</span>
     <span class="ident">UnsupportedControl</span>(<span class="ident">CtrlType</span>),
 }

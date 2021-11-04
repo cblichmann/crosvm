@@ -336,6 +336,28 @@
 <span id="336">336</span>
 <span id="337">337</span>
 <span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -356,6 +378,7 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::format</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::params::Params</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::protocol</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::video::resource</span>::{<span class="ident">ResourceType</span>, <span class="ident">UnresolvedGuestResource</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::Reader</span>;
 
 <span class="doccomment">/// An error indicating a failure while reading a request from the guest.</span>
@@ -392,6 +415,8 @@
     <span class="ident">StreamCreate</span> {
         <span class="ident">stream_id</span>: <span class="ident">u32</span>,
         <span class="ident">coded_format</span>: <span class="ident">Format</span>,
+        <span class="ident">input_resource_type</span>: <span class="ident">ResourceType</span>,
+        <span class="ident">output_resource_type</span>: <span class="ident">ResourceType</span>,
     },
     <span class="ident">StreamDestroy</span> {
         <span class="ident">stream_id</span>: <span class="ident">u32</span>,
@@ -404,7 +429,7 @@
         <span class="ident">queue_type</span>: <span class="ident">QueueType</span>,
         <span class="ident">resource_id</span>: <span class="ident">u32</span>,
         <span class="ident">plane_offsets</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-        <span class="ident">uuid</span>: <span class="ident">u128</span>,
+        <span class="ident">resource</span>: <span class="ident">UnresolvedGuestResource</span>,
     },
     <span class="ident">ResourceQueue</span> {
         <span class="ident">stream_id</span>: <span class="ident">u32</span>,
@@ -469,15 +494,27 @@
                     ..
                 } <span class="op">=</span> <span class="ident">r</span>.<span class="ident">read_obj</span>()<span class="question-mark">?</span>;
 
-                <span class="kw">if</span> <span class="ident">in_mem_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">VIRTIO_VIDEO_MEM_TYPE_VIRTIO_OBJECT</span>
-                    <span class="op">|</span><span class="op">|</span> <span class="ident">out_mem_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">VIRTIO_VIDEO_MEM_TYPE_VIRTIO_OBJECT</span>
-                {
-                    <span class="macro">error!</span>(<span class="string">&quot;mem_type must be VIRTIO_OBJECT&quot;</span>);
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InvalidArgument</span>);
-                }
+                <span class="kw">let</span> <span class="ident">input_resource_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">in_mem_type</span>.<span class="ident">into</span>() {
+                    <span class="ident">VIRTIO_VIDEO_MEM_TYPE_VIRTIO_OBJECT</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ResourceType::Object</span>,
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="macro">error!</span>(<span class="string">&quot;mem_type must be VIRTIO_OBJECT&quot;</span>);
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InvalidArgument</span>);
+                    }
+                };
+
+                <span class="kw">let</span> <span class="ident">output_resource_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">out_mem_type</span>.<span class="ident">into</span>() {
+                    <span class="ident">VIRTIO_VIDEO_MEM_TYPE_VIRTIO_OBJECT</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ResourceType::Object</span>,
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="macro">error!</span>(<span class="string">&quot;mem_type must be VIRTIO_OBJECT&quot;</span>);
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InvalidArgument</span>);
+                    }
+                };
+
                 <span class="ident">StreamCreate</span> {
                     <span class="ident">stream_id</span>: <span class="ident">hdr</span>.<span class="ident">stream_id</span>.<span class="ident">into</span>(),
                     <span class="ident">coded_format</span>: <span class="ident">coded_format</span>.<span class="ident">try_into</span>()<span class="question-mark">?</span>,
+                    <span class="ident">input_resource_type</span>,
+                    <span class="ident">output_resource_type</span>,
                 }
             }
             <span class="ident">VIRTIO_VIDEO_CMD_STREAM_DESTROY</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -499,6 +536,7 @@
                     <span class="ident">planes_layout</span>,
                     <span class="ident">num_planes</span>,
                     <span class="ident">plane_offsets</span>,
+                    <span class="ident">num_entries</span>,
                     ..
                 } <span class="op">=</span> <span class="ident">r</span>.<span class="ident">read_obj</span>()<span class="question-mark">?</span>;
 
@@ -520,19 +558,25 @@
                     );
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InvalidArgument</span>);
                 }
+                <span class="comment">// We only support single-entry objects for now.</span>
+                <span class="kw">if</span> <span class="ident">num_planes</span> <span class="op">!</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">num_entries</span>[<span class="number">0</span>] <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+                    <span class="macro">error!</span>(<span class="string">&quot;the number of entries must be equal to 1&quot;</span>);
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">InvalidArgument</span>);
+                }
+
                 <span class="kw">let</span> <span class="ident">plane_offsets</span> <span class="op">=</span> <span class="ident">plane_offsets</span>[<span class="number">0</span>..<span class="ident">num_planes</span> <span class="kw">as</span> <span class="ident">usize</span>]
                     .<span class="ident">iter</span>()
                     .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">Into</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="ident">::into</span>(<span class="kw-2">*</span><span class="ident">x</span>))
                     .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
-                <span class="kw">let</span> <span class="ident">virtio_video_object_entry</span> { <span class="ident">uuid</span> } <span class="op">=</span> <span class="ident">r</span>.<span class="ident">read_obj</span>()<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">resource</span> <span class="op">=</span> <span class="ident">r</span>.<span class="ident">read_obj</span>()<span class="question-mark">?</span>;
 
                 <span class="ident">ResourceCreate</span> {
                     <span class="ident">stream_id</span>: <span class="ident">hdr</span>.<span class="ident">stream_id</span>.<span class="ident">into</span>(),
                     <span class="ident">queue_type</span>: <span class="ident">queue_type</span>.<span class="ident">try_into</span>()<span class="question-mark">?</span>,
                     <span class="ident">resource_id</span>: <span class="ident">resource_id</span>.<span class="ident">into</span>(),
                     <span class="ident">plane_offsets</span>,
-                    <span class="ident">uuid</span>: <span class="ident">u128::from_be_bytes</span>(<span class="ident">uuid</span>),
+                    <span class="ident">resource</span>,
                 }
             }
             <span class="ident">VIRTIO_VIDEO_CMD_RESOURCE_QUEUE</span> <span class="op">=</span><span class="op">&gt;</span> {

@@ -33,6 +33,7 @@
 <span id="33">33</span>
 <span id="34">34</span>
 <span id="35">35</span>
+<span id="36">36</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -52,6 +53,7 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">N</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EvtType</span> {
     <span class="ident">Error</span> <span class="op">=</span> <span class="ident">VIRTIO_VIDEO_EVENT_ERROR</span> <span class="kw">as</span> <span class="ident">isize</span>,
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-decoder&quot;</span>)]</span>
     <span class="ident">DecResChanged</span> <span class="op">=</span> <span class="ident">VIRTIO_VIDEO_EVENT_DECODER_RESOLUTION_CHANGED</span> <span class="kw">as</span> <span class="ident">isize</span>,
 }
 

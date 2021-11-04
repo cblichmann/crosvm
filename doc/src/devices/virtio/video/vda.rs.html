@@ -56,6 +56,7 @@
 <span id="56">56</span>
 <span id="57">57</span>
 <span id="58">58</span>
+<span id="59">59</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -80,6 +81,7 @@
             }
         }
 
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>)]</span>
         <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_libvda_profile</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">libvda::Profile</span><span class="op">&gt;</span> {
             <span class="kw">match</span> <span class="self">self</span> {
                 $(<span class="self">Self</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">libvda::Profile</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>),)<span class="op">*</span>
