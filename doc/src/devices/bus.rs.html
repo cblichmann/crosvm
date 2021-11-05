@@ -526,6 +526,11 @@
 <span id="526">526</span>
 <span id="527">527</span>
 <span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -762,6 +767,11 @@
             <span class="ident">devices</span>: <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">BTreeMap::new</span>())),
             <span class="ident">access_id</span>: <span class="number">0</span>,
         }
+    }
+
+    <span class="doccomment">/// Sets the id that will be used for BusAccessInfo.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_access_id</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident">usize</span>) {
+        <span class="self">self</span>.<span class="ident">access_id</span> <span class="op">=</span> <span class="ident">id</span>;
     }
 
     <span class="kw">fn</span> <span class="ident">first_before</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">addr</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">BusRange</span>, <span class="ident">BusDeviceEntry</span>)<span class="op">&gt;</span> {

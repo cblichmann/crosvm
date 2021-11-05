@@ -3249,6 +3249,9 @@
 <span id="3249">3249</span>
 <span id="3250">3250</span>
 <span id="3251">3251</span>
+<span id="3252">3252</span>
+<span id="3253">3253</span>
+<span id="3254">3254</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -5284,8 +5287,8 @@
     <span class="ident">no_smt</span>: <span class="ident">bool</span>,
     <span class="ident">start_barrier</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Barrier</span><span class="op">&gt;</span>,
     <span class="ident">has_bios</span>: <span class="ident">bool</span>,
-    <span class="ident">io_bus</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">devices::Bus</span><span class="op">&gt;</span>,
-    <span class="ident">mmio_bus</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">devices::Bus</span><span class="op">&gt;</span>,
+    <span class="kw-2">mut</span> <span class="ident">io_bus</span>: <span class="ident">devices::Bus</span>,
+    <span class="kw-2">mut</span> <span class="ident">mmio_bus</span>: <span class="ident">devices::Bus</span>,
     <span class="ident">exit_evt</span>: <span class="ident">Event</span>,
     <span class="ident">requires_pvclock_ctrl</span>: <span class="ident">bool</span>,
     <span class="ident">from_main_tube</span>: <span class="ident">mpsc::Receiver</span><span class="op">&lt;</span><span class="ident">VcpuControl</span><span class="op">&gt;</span>,
@@ -5342,6 +5345,9 @@
             }
 
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">interrupted_by_signal</span> <span class="op">=</span> <span class="bool-val">false</span>;
+
+            <span class="ident">mmio_bus</span>.<span class="ident">set_access_id</span>(<span class="ident">cpu_id</span>);
+            <span class="ident">io_bus</span>.<span class="ident">set_access_id</span>(<span class="ident">cpu_id</span>);
 
             <span class="lifetime">&#39;vcpu_loop</span>: <span class="kw">loop</span> {
                 <span class="comment">// Start by checking for messages to process and the run state of the CPU.</span>
@@ -6175,8 +6181,8 @@
             <span class="ident">linux</span>.<span class="ident">no_smt</span>,
             <span class="ident">vcpu_thread_barrier</span>.<span class="ident">clone</span>(),
             <span class="ident">linux</span>.<span class="ident">has_bios</span>,
-            <span class="ident">linux</span>.<span class="ident">io_bus</span>.<span class="ident">clone</span>(),
-            <span class="ident">linux</span>.<span class="ident">mmio_bus</span>.<span class="ident">clone</span>(),
+            (<span class="kw-2">*</span><span class="ident">linux</span>.<span class="ident">io_bus</span>).<span class="ident">clone</span>(),
+            (<span class="kw-2">*</span><span class="ident">linux</span>.<span class="ident">mmio_bus</span>).<span class="ident">clone</span>(),
             <span class="ident">exit_evt</span>.<span class="ident">try_clone</span>().<span class="ident">map_err</span>(<span class="ident">Error::CloneEvent</span>)<span class="question-mark">?</span>,
             <span class="ident">linux</span>.<span class="ident">vm</span>.<span class="ident">check_capability</span>(<span class="ident">VmCap::PvClockSuspend</span>),
             <span class="ident">from_main_channel</span>,
