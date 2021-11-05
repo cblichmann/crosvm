@@ -1308,11 +1308,6 @@
 <span id="1308">1308</span>
 <span id="1309">1309</span>
 <span id="1310">1310</span>
-<span id="1311">1311</span>
-<span id="1312">1312</span>
-<span id="1313">1313</span>
-<span id="1314">1314</span>
-<span id="1315">1315</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1361,7 +1356,6 @@
 <span class="kw">mod</span> <span class="ident">smbios</span>;
 
 <span class="kw">use</span> <span class="ident">std::collections::BTreeMap</span>;
-<span class="kw">use</span> <span class="ident">std::error::Error</span> <span class="kw">as</span> <span class="ident">StdError</span>;
 <span class="kw">use</span> <span class="ident">std::ffi</span>::{<span class="ident">CStr</span>, <span class="ident">CString</span>};
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Seek</span>};
@@ -1415,8 +1409,6 @@
     <span class="ident">CreateAcpi</span>,
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;unable to create battery devices: {0}&quot;</span>)]</span>
     <span class="ident">CreateBatDevices</span>(<span class="ident">arch::DeviceRegistrationError</span>),
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;error creating devices: {0}&quot;</span>)]</span>
-    <span class="ident">CreateDevices</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">StdError</span><span class="op">&gt;</span>),
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;unable to make an Event: {0}&quot;</span>)]</span>
     <span class="ident">CreateEvent</span>(<span class="ident">base::Error</span>),
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to create fdt: {0}&quot;</span>)]</span>
@@ -1435,8 +1427,6 @@
     <span class="ident">CreateSocket</span>(<span class="ident">io::Error</span>),
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to create VCPU: {0}&quot;</span>)]</span>
     <span class="ident">CreateVcpu</span>(<span class="ident">base::Error</span>),
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to create VM: {0}&quot;</span>)]</span>
-    <span class="ident">CreateVm</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">StdError</span><span class="op">&gt;</span>),
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;invalid e820 setup params&quot;</span>)]</span>
     <span class="ident">E820Configuration</span>,
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to enable singlestep execution: {0}&quot;</span>)]</span>
