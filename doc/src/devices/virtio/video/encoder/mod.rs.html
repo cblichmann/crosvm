@@ -1469,6 +1469,23 @@
 <span id="1469">1469</span>
 <span id="1470">1470</span>
 <span id="1471">1471</span>
+<span id="1472">1472</span>
+<span id="1473">1473</span>
+<span id="1474">1474</span>
+<span id="1475">1475</span>
+<span id="1476">1476</span>
+<span id="1477">1477</span>
+<span id="1478">1478</span>
+<span id="1479">1479</span>
+<span id="1480">1480</span>
+<span id="1481">1481</span>
+<span id="1482">1482</span>
+<span id="1483">1483</span>
+<span id="1484">1484</span>
+<span id="1485">1485</span>
+<span id="1486">1486</span>
+<span id="1487">1487</span>
+<span id="1488">1488</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -2620,6 +2637,7 @@
 
     <span class="kw">fn</span> <span class="ident">set_control</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">wait_ctx</span>: <span class="kw-2">&amp;</span><span class="ident">WaitContext</span><span class="op">&lt;</span><span class="ident">Token</span><span class="op">&gt;</span>,
         <span class="ident">stream_id</span>: <span class="ident">u32</span>,
         <span class="ident">ctrl_val</span>: <span class="ident">CtrlVal</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="ident">VideoCmdResponseType</span><span class="op">&gt;</span> {
@@ -2627,17 +2645,16 @@
             .<span class="ident">streams</span>
             .<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">stream_id</span>)
             .<span class="ident">ok_or</span>(<span class="ident">VideoError::InvalidStreamId</span>(<span class="ident">stream_id</span>))<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">recreate_session</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">let</span> <span class="ident">resources_queued</span> <span class="op">=</span> <span class="ident">stream</span>.<span class="ident">src_resources</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">stream</span>.<span class="ident">dst_resources</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span>;
+
         <span class="kw">match</span> <span class="ident">ctrl_val</span> {
             <span class="ident">CtrlVal::BitrateMode</span>(<span class="ident">bitrate_mode</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">if</span> <span class="ident">stream</span>.<span class="ident">encoder_session</span>.<span class="ident">is_some</span>() {
-                    <span class="macro">error!</span>(
-                        <span class="string">&quot;set control called for bitrate mode but encoder session already exists.&quot;</span>
-                    );
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
-                }
-
-                <span class="comment">// We only need to care if there is a change.</span>
                 <span class="kw">if</span> <span class="ident">stream</span>.<span class="ident">dst_bitrate</span>.<span class="ident">mode</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">bitrate_mode</span> {
+                    <span class="kw">if</span> <span class="ident">resources_queued</span> {
+                        <span class="macro">error!</span>(<span class="string">&quot;set control called for bitrate mode but already encoding.&quot;</span>);
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                    }
                     <span class="ident">stream</span>.<span class="ident">dst_bitrate</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">bitrate_mode</span> {
                         <span class="ident">BitrateMode::CBR</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Bitrate::CBR</span> {
                             <span class="ident">target</span>: <span class="ident">stream</span>.<span class="ident">dst_bitrate</span>.<span class="ident">target</span>(),
@@ -2647,84 +2664,94 @@
                             <span class="ident">peak</span>: <span class="ident">stream</span>.<span class="ident">dst_bitrate</span>.<span class="ident">target</span>(),
                         },
                     };
+                    <span class="ident">recreate_session</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
             }
             <span class="ident">CtrlVal::Bitrate</span>(<span class="ident">bitrate</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_bitrate</span> <span class="op">=</span> <span class="ident">stream</span>.<span class="ident">dst_bitrate</span>;
-                <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">new_bitrate</span> {
-                    <span class="ident">Bitrate::CBR</span> { <span class="ident">target</span> } <span class="op">|</span> <span class="ident">Bitrate::VBR</span> { <span class="ident">target</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">target</span> <span class="op">=</span> <span class="ident">bitrate</span>,
-                }
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">encoder_session</span>) <span class="op">=</span> <span class="ident">stream</span>.<span class="ident">encoder_session</span> {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">encoder_session</span>
-                        .<span class="ident">request_encoding_params_change</span>(<span class="ident">new_bitrate</span>, <span class="ident">stream</span>.<span class="ident">frame_rate</span>)
-                    {
-                        <span class="macro">error!</span>(<span class="string">&quot;failed to dynamically request target bitrate change: {}&quot;</span>, <span class="ident">e</span>);
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                <span class="kw">if</span> <span class="ident">stream</span>.<span class="ident">dst_bitrate</span>.<span class="ident">target</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">bitrate</span> {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_bitrate</span> <span class="op">=</span> <span class="ident">stream</span>.<span class="ident">dst_bitrate</span>;
+                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">new_bitrate</span> {
+                        <span class="ident">Bitrate::CBR</span> { <span class="ident">target</span> } <span class="op">|</span> <span class="ident">Bitrate::VBR</span> { <span class="ident">target</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">target</span> <span class="op">=</span> <span class="ident">bitrate</span>,
                     }
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">encoder_session</span>) <span class="op">=</span> <span class="ident">stream</span>.<span class="ident">encoder_session</span> {
+                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">encoder_session</span>
+                            .<span class="ident">request_encoding_params_change</span>(<span class="ident">new_bitrate</span>, <span class="ident">stream</span>.<span class="ident">frame_rate</span>)
+                        {
+                            <span class="macro">error!</span>(<span class="string">&quot;failed to dynamically request target bitrate change: {}&quot;</span>, <span class="ident">e</span>);
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                        }
+                    }
+                    <span class="ident">stream</span>.<span class="ident">dst_bitrate</span> <span class="op">=</span> <span class="ident">new_bitrate</span>;
                 }
-                <span class="ident">stream</span>.<span class="ident">dst_bitrate</span> <span class="op">=</span> <span class="ident">new_bitrate</span>;
             }
             <span class="ident">CtrlVal::BitratePeak</span>(<span class="ident">bitrate</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_bitrate</span> <span class="op">=</span> <span class="ident">stream</span>.<span class="ident">dst_bitrate</span>;
-                <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">new_bitrate</span> {
-                    <span class="ident">Bitrate::CBR</span> { .. } <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="comment">// Trying to set the peak bitrate while in constant mode. This is not an</span>
-                        <span class="comment">// error, just ignored.</span>
-                        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">VideoCmdResponseType::Sync</span>(<span class="ident">CmdResponse::SetControl</span>));
+                <span class="kw">match</span> <span class="ident">stream</span>.<span class="ident">dst_bitrate</span> {
+                    <span class="ident">Bitrate::VBR</span> { <span class="ident">peak</span>, .. } <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="kw">if</span> <span class="ident">peak</span> <span class="op">!</span><span class="op">=</span> <span class="ident">bitrate</span> {
+                            <span class="kw">let</span> <span class="ident">new_bitrate</span> <span class="op">=</span> <span class="ident">Bitrate::VBR</span> {
+                                <span class="ident">target</span>: <span class="ident">stream</span>.<span class="ident">dst_bitrate</span>.<span class="ident">target</span>(),
+                                <span class="ident">peak</span>: <span class="ident">bitrate</span>,
+                            };
+                            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">encoder_session</span>) <span class="op">=</span> <span class="ident">stream</span>.<span class="ident">encoder_session</span> {
+                                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">encoder_session</span>
+                                    .<span class="ident">request_encoding_params_change</span>(<span class="ident">new_bitrate</span>, <span class="ident">stream</span>.<span class="ident">frame_rate</span>)
+                                {
+                                    <span class="macro">error!</span>(
+                                        <span class="string">&quot;failed to dynamically request peak bitrate change: {}&quot;</span>,
+                                        <span class="ident">e</span>
+                                    );
+                                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                                }
+                            }
+                            <span class="ident">stream</span>.<span class="ident">dst_bitrate</span> <span class="op">=</span> <span class="ident">new_bitrate</span>;
+                        }
                     }
-                    <span class="ident">Bitrate::VBR</span> { <span class="ident">peak</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">peak</span> <span class="op">=</span> <span class="ident">bitrate</span>,
+                    <span class="comment">// Trying to set the peak bitrate while in constant mode. This is not</span>
+                    <span class="comment">// an error, just ignored.</span>
+                    <span class="ident">Bitrate::CBR</span> { .. } <span class="op">=</span><span class="op">&gt;</span> {}
                 }
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">encoder_session</span>) <span class="op">=</span> <span class="ident">stream</span>.<span class="ident">encoder_session</span> {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">encoder_session</span>
-                        .<span class="ident">request_encoding_params_change</span>(<span class="ident">new_bitrate</span>, <span class="ident">stream</span>.<span class="ident">frame_rate</span>)
-                    {
-                        <span class="macro">error!</span>(<span class="string">&quot;failed to dynamically request peak bitrate change: {}&quot;</span>, <span class="ident">e</span>);
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
-                    }
-                }
-                <span class="ident">stream</span>.<span class="ident">dst_bitrate</span> <span class="op">=</span> <span class="ident">new_bitrate</span>;
             }
             <span class="ident">CtrlVal::Profile</span>(<span class="ident">profile</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">if</span> <span class="ident">stream</span>.<span class="ident">encoder_session</span>.<span class="ident">is_some</span>() {
-                    <span class="comment">// TODO(alexlau): If no resources have yet been queued,</span>
-                    <span class="comment">// should the encoder session be recreated with the new</span>
-                    <span class="comment">// desired level?</span>
-                    <span class="macro">error!</span>(<span class="string">&quot;set control called for profile but encoder session already exists.&quot;</span>);
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                <span class="kw">if</span> <span class="ident">stream</span>.<span class="ident">dst_profile</span> <span class="op">!</span><span class="op">=</span> <span class="ident">profile</span> {
+                    <span class="kw">if</span> <span class="ident">resources_queued</span> {
+                        <span class="macro">error!</span>(<span class="string">&quot;set control called for profile but already encoding.&quot;</span>);
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                    }
+                    <span class="kw">let</span> <span class="ident">format</span> <span class="op">=</span> <span class="ident">stream</span>
+                        .<span class="ident">dst_params</span>
+                        .<span class="ident">format</span>
+                        .<span class="ident">ok_or</span>(<span class="ident">VideoError::InvalidArgument</span>)<span class="question-mark">?</span>;
+                    <span class="kw">if</span> <span class="ident">format</span> <span class="op">!</span><span class="op">=</span> <span class="ident">profile</span>.<span class="ident">to_format</span>() {
+                        <span class="macro">error!</span>(
+                            <span class="string">&quot;specified profile does not correspond to the selected format ({})&quot;</span>,
+                            <span class="ident">format</span>
+                        );
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                    }
+                    <span class="ident">stream</span>.<span class="ident">dst_profile</span> <span class="op">=</span> <span class="ident">profile</span>;
+                    <span class="ident">recreate_session</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
-                <span class="kw">let</span> <span class="ident">format</span> <span class="op">=</span> <span class="ident">stream</span>
-                    .<span class="ident">dst_params</span>
-                    .<span class="ident">format</span>
-                    .<span class="ident">ok_or</span>(<span class="ident">VideoError::InvalidArgument</span>)<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="ident">format</span> <span class="op">!</span><span class="op">=</span> <span class="ident">profile</span>.<span class="ident">to_format</span>() {
-                    <span class="macro">error!</span>(
-                        <span class="string">&quot;specified profile does not correspond to the selected format ({})&quot;</span>,
-                        <span class="ident">format</span>
-                    );
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
-                }
-                <span class="ident">stream</span>.<span class="ident">dst_profile</span> <span class="op">=</span> <span class="ident">profile</span>;
             }
             <span class="ident">CtrlVal::Level</span>(<span class="ident">level</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">if</span> <span class="ident">stream</span>.<span class="ident">encoder_session</span>.<span class="ident">is_some</span>() {
-                    <span class="comment">// TODO(alexlau): If no resources have yet been queued,</span>
-                    <span class="comment">// should the encoder session be recreated with the new</span>
-                    <span class="comment">// desired level?</span>
-                    <span class="macro">error!</span>(<span class="string">&quot;set control called for level but encoder session already exists.&quot;</span>);
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                <span class="kw">if</span> <span class="ident">stream</span>.<span class="ident">dst_h264_level</span> <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">level</span>) {
+                    <span class="kw">if</span> <span class="ident">resources_queued</span> {
+                        <span class="macro">error!</span>(<span class="string">&quot;set control called for level but already encoding.&quot;</span>);
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                    }
+                    <span class="kw">let</span> <span class="ident">format</span> <span class="op">=</span> <span class="ident">stream</span>
+                        .<span class="ident">dst_params</span>
+                        .<span class="ident">format</span>
+                        .<span class="ident">ok_or</span>(<span class="ident">VideoError::InvalidArgument</span>)<span class="question-mark">?</span>;
+                    <span class="kw">if</span> <span class="ident">format</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Format::H264</span> {
+                        <span class="macro">error!</span>(
+                            <span class="string">&quot;set control called for level but format is not H264 ({})&quot;</span>,
+                            <span class="ident">format</span>
+                        );
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
+                    }
+                    <span class="ident">stream</span>.<span class="ident">dst_h264_level</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">level</span>);
+                    <span class="ident">recreate_session</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
-                <span class="kw">let</span> <span class="ident">format</span> <span class="op">=</span> <span class="ident">stream</span>
-                    .<span class="ident">dst_params</span>
-                    .<span class="ident">format</span>
-                    .<span class="ident">ok_or</span>(<span class="ident">VideoError::InvalidArgument</span>)<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="ident">format</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Format::H264</span> {
-                    <span class="macro">error!</span>(
-                        <span class="string">&quot;set control called for level but format is not H264 ({})&quot;</span>,
-                        <span class="ident">format</span>
-                    );
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VideoError::InvalidOperation</span>);
-                }
-                <span class="ident">stream</span>.<span class="ident">dst_h264_level</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">level</span>);
             }
             <span class="ident">CtrlVal::ForceKeyframe</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">stream</span>.<span class="ident">force_keyframe</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -2738,6 +2765,13 @@
                 }
             }
         }
+
+        <span class="comment">// We can safely recreate the encoder session if no resources were queued yet.</span>
+        <span class="kw">if</span> <span class="ident">recreate_session</span> <span class="op">&amp;&amp;</span> <span class="ident">stream</span>.<span class="ident">encoder_session</span>.<span class="ident">is_some</span>() {
+            <span class="ident">stream</span>.<span class="ident">clear_encode_session</span>(<span class="ident">wait_ctx</span>)<span class="question-mark">?</span>;
+            <span class="ident">stream</span>.<span class="ident">set_encode_session</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">encoder</span>, <span class="ident">wait_ctx</span>)<span class="question-mark">?</span>;
+        }
+
         <span class="prelude-val">Ok</span>(<span class="ident">VideoCmdResponseType::Sync</span>(<span class="ident">CmdResponse::SetControl</span>))
     }
 }
@@ -2870,7 +2904,7 @@
             <span class="ident">VideoCmd::SetControl</span> {
                 <span class="ident">stream_id</span>,
                 <span class="ident">ctrl_val</span>,
-            } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">set_control</span>(<span class="ident">stream_id</span>, <span class="ident">ctrl_val</span>),
+            } <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">set_control</span>(<span class="ident">wait_ctx</span>, <span class="ident">stream_id</span>, <span class="ident">ctrl_val</span>),
         };
         <span class="kw">let</span> <span class="ident">cmd_ret</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">cmd_response</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">r</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">r</span>,
