@@ -1142,6 +1142,25 @@
 <span id="1142">1142</span>
 <span id="1143">1143</span>
 <span id="1144">1144</span>
+<span id="1145">1145</span>
+<span id="1146">1146</span>
+<span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
+<span id="1150">1150</span>
+<span id="1151">1151</span>
+<span id="1152">1152</span>
+<span id="1153">1153</span>
+<span id="1154">1154</span>
+<span id="1155">1155</span>
+<span id="1156">1156</span>
+<span id="1157">1157</span>
+<span id="1158">1158</span>
+<span id="1159">1159</span>
+<span id="1160">1160</span>
+<span id="1161">1161</span>
+<span id="1162">1162</span>
+<span id="1163">1163</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1163,6 +1182,8 @@
 <span class="kw">use</span> <span class="ident">data_model::DataInit</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">errno</span>, <span class="ident">pagesize</span>};
+
+<span class="kw">const</span> <span class="ident">MLOCK_ONFAULT</span>: <span class="ident">libc::c_int</span> <span class="op">=</span> <span class="number">1</span>;
 
 <span class="attribute">#[<span class="ident">sorted</span>]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">thiserror::Error</span>)]</span>
@@ -1558,6 +1579,23 @@
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(())
         }
+    }
+
+    <span class="doccomment">/// Mlock the guest pages as they are faulted in</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mlock_on_fault</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+            <span class="comment">// TODO: Switch to libc::mlock2 once https://github.com/rust-lang/libc/pull/2525 lands</span>
+            <span class="ident">libc::syscall</span>(
+                <span class="ident">libc::SYS_mlock2</span>,
+                <span class="self">self</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">libc::c_void</span>,
+                <span class="self">self</span>.<span class="ident">size</span>(),
+                <span class="ident">MLOCK_ONFAULT</span>,
+            )
+        };
+        <span class="kw">if</span> <span class="ident">ret</span> <span class="op">=</span><span class="op">=</span> <span class="op">-</span><span class="number">1</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::SystemCallFailed</span>(<span class="ident">errno::Error::last</span>()));
+        }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Calls msync with MS_SYNC on the mapping.</span>
