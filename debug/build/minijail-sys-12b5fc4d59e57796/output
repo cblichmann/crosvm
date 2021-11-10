@@ -70,19 +70,19 @@ cargo:rerun-if-env-changed=HOST_PKG_CONFIG_SYSROOT_DIR
 cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR
 make: Entering directory '/home/runner/work/crosvm/crosvm/third_party/minijail'
 Using BASE_VER=0
-cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.11.0/googletest/include  -c -o libminijail.o libminijail.c
-cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.11.0/googletest/include  -c -o syscall_filter.o syscall_filter.c
-cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.11.0/googletest/include  -c -o signal_handler.o signal_handler.c
-cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.11.0/googletest/include  -c -o bpf.o bpf.c
-cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.11.0/googletest/include  -c -o util.o util.c
-cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.11.0/googletest/include  -c -o system.o system.c
-cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.11.0/googletest/include  -c -o syscall_wrapper.o syscall_wrapper.c
+cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.10.0/googletest/include  -c -o libminijail.o libminijail.c
+cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.10.0/googletest/include  -c -o syscall_filter.o syscall_filter.c
+cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.10.0/googletest/include  -c -o signal_handler.o signal_handler.c
+cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.10.0/googletest/include  -c -o bpf.o bpf.c
+cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.10.0/googletest/include  -c -o util.o util.c
+cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.10.0/googletest/include  -c -o system.o system.c
+cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.10.0/googletest/include  -c -o syscall_wrapper.o syscall_wrapper.c
 Generating target-arch specific libconstants.gen.c...
 libconstants.gen.c done.
-cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.11.0/googletest/include -I/home/runner/work/crosvm/crosvm/third_party/minijail  -c -o libconstants.gen.o libconstants.gen.c
+cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.10.0/googletest/include -I/home/runner/work/crosvm/crosvm/third_party/minijail  -c -o libconstants.gen.o libconstants.gen.c
 Generating target-arch specific libsyscalls.gen.c...
 libsyscalls.gen.c done.
-cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.11.0/googletest/include -I/home/runner/work/crosvm/crosvm/third_party/minijail  -c -o libsyscalls.gen.o libsyscalls.gen.c
+cc -Wunused-parameter -Wextra -Wno-missing-field-initializers -DPRELOADPATH='"/lib/libminijailpreload.so"' -DDEFAULT_PIVOT_ROOT='"/var/empty"' -DALLOW_DEBUG_LOGGING -isystem googletest-release-1.10.0/googletest/include -I/home/runner/work/crosvm/crosvm/third_party/minijail  -c -o libsyscalls.gen.o libsyscalls.gen.c
 cd "/home/runner/work/crosvm/crosvm/docs/target/debug/build/minijail-sys-12b5fc4d59e57796/out/" && make -r -I "/home/runner/work/crosvm/crosvm/third_party/minijail" -f "/home/runner/work/crosvm/crosvm/third_party/minijail/Makefile" SRC="/home/runner/work/crosvm/crosvm/third_party/minijail" OUT="/home/runner/work/crosvm/crosvm/docs/target/debug/build/minijail-sys-12b5fc4d59e57796/out/" "CC_STATIC_LIBRARY(libminijail.pic.a)"
 make[1]: Entering directory '/home/runner/work/crosvm/crosvm/docs/target/debug/build/minijail-sys-12b5fc4d59e57796/out'
 Using BASE_VER=0
