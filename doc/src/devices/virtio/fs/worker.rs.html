@@ -254,6 +254,8 @@
 <span id="254">254</span>
 <span id="255">255</span>
 <span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -268,6 +270,7 @@
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Event</span>, <span class="ident">PollToken</span>, <span class="ident">SafeDescriptor</span>, <span class="ident">Tube</span>, <span class="ident">WaitContext</span>};
 <span class="kw">use</span> <span class="ident">fuse::filesystem</span>::{<span class="ident">FileSystem</span>, <span class="ident">ZeroCopyReader</span>, <span class="ident">ZeroCopyWriter</span>};
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
+<span class="kw">use</span> <span class="ident">sys_util::syscall</span>;
 <span class="kw">use</span> <span class="ident">vm_control</span>::{<span class="ident">FsMappingRequest</span>, <span class="ident">VmResponse</span>};
 <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
 
@@ -448,19 +451,20 @@
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
         {
             <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">securebits</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::prctl</span>(<span class="ident">libc::PR_GET_SECUREBITS</span>) };
-            <span class="kw">if</span> <span class="ident">securebits</span> <span class="op">&lt;</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::GetSecurebits</span>(<span class="ident">io::Error::last_os_error</span>()));
-            }
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">securebits</span> <span class="op">=</span> <span class="macro">syscall!</span>(<span class="kw">unsafe</span> { <span class="ident">libc::prctl</span>(<span class="ident">libc::PR_GET_SECUREBITS</span>) })
+                .<span class="ident">map_err</span>(<span class="ident">Error::GetSecurebits</span>)<span class="question-mark">?</span>;
 
             <span class="ident">securebits</span> <span class="op">|</span><span class="op">=</span> <span class="ident">SECBIT_NO_SETUID_FIXUP</span>;
 
             <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
-            <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::prctl</span>(<span class="ident">libc::PR_SET_SECUREBITS</span>, <span class="ident">securebits</span>) };
-            <span class="kw">if</span> <span class="ident">ret</span> <span class="op">&lt;</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::SetSecurebits</span>(<span class="ident">io::Error::last_os_error</span>()));
-            }
+            <span class="macro">syscall!</span>(<span class="kw">unsafe</span> { <span class="ident">libc::prctl</span>(<span class="ident">libc::PR_SET_SECUREBITS</span>, <span class="ident">securebits</span>) })
+                .<span class="ident">map_err</span>(<span class="ident">Error::SetSecurebits</span>)<span class="question-mark">?</span>;
         }
+
+        <span class="comment">// To avoid extra locking, unshare filesystem attributes from parent. This includes the</span>
+        <span class="comment">// current working directory and umask.</span>
+        <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
+        <span class="macro">syscall!</span>(<span class="kw">unsafe</span> { <span class="ident">libc::unshare</span>(<span class="ident">libc::CLONE_FS</span>) }).<span class="ident">map_err</span>(<span class="ident">Error::UnshareFromParent</span>)<span class="question-mark">?</span>;
 
         <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PollToken</span>)]</span>
         <span class="kw">enum</span> <span class="ident">Token</span> {
