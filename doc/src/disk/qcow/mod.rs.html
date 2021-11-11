@@ -2692,6 +2692,48 @@
 <span id="2692">2692</span>
 <span id="2693">2693</span>
 <span id="2694">2694</span>
+<span id="2695">2695</span>
+<span id="2696">2696</span>
+<span id="2697">2697</span>
+<span id="2698">2698</span>
+<span id="2699">2699</span>
+<span id="2700">2700</span>
+<span id="2701">2701</span>
+<span id="2702">2702</span>
+<span id="2703">2703</span>
+<span id="2704">2704</span>
+<span id="2705">2705</span>
+<span id="2706">2706</span>
+<span id="2707">2707</span>
+<span id="2708">2708</span>
+<span id="2709">2709</span>
+<span id="2710">2710</span>
+<span id="2711">2711</span>
+<span id="2712">2712</span>
+<span id="2713">2713</span>
+<span id="2714">2714</span>
+<span id="2715">2715</span>
+<span id="2716">2716</span>
+<span id="2717">2717</span>
+<span id="2718">2718</span>
+<span id="2719">2719</span>
+<span id="2720">2720</span>
+<span id="2721">2721</span>
+<span id="2722">2722</span>
+<span id="2723">2723</span>
+<span id="2724">2724</span>
+<span id="2725">2725</span>
+<span id="2726">2726</span>
+<span id="2727">2727</span>
+<span id="2728">2728</span>
+<span id="2729">2729</span>
+<span id="2730">2730</span>
+<span id="2731">2731</span>
+<span id="2732">2732</span>
+<span id="2733">2733</span>
+<span id="2734">2734</span>
+<span id="2735">2735</span>
+<span id="2736">2736</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -3259,7 +3301,7 @@
     <span class="doccomment">/// Creates a new QcowFile at the given path.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">file</span>: <span class="ident">File</span>, <span class="ident">virtual_size</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">QcowFile</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">QcowHeader::create_for_size_and_path</span>(<span class="ident">virtual_size</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-        <span class="ident">QcowFile::new_from_header</span>(<span class="ident">file</span>, <span class="ident">header</span>)
+        <span class="ident">QcowFile::new_from_header</span>(<span class="ident">file</span>, <span class="ident">header</span>, <span class="number">1</span>)
     }
 
     <span class="doccomment">/// Creates a new QcowFile at the given path.</span>
@@ -3279,16 +3321,20 @@
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">Error::BackingFileOpen</span>(<span class="ident">Box::new</span>(<span class="ident">e</span>)))<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">backing_file</span>.<span class="ident">get_len</span>().<span class="ident">map_err</span>(<span class="ident">Error::BackingFileIo</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">QcowHeader::create_for_size_and_path</span>(<span class="ident">size</span>, <span class="prelude-val">Some</span>(<span class="ident">backing_file_name</span>))<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">QcowFile::new_from_header</span>(<span class="ident">file</span>, <span class="ident">header</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">QcowFile::new_from_header</span>(<span class="ident">file</span>, <span class="ident">header</span>, <span class="ident">backing_file_max_nesting_depth</span>)<span class="question-mark">?</span>;
         <span class="ident">result</span>.<span class="ident">backing_file</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">backing_file</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">new_from_header</span>(<span class="kw-2">mut</span> <span class="ident">file</span>: <span class="ident">File</span>, <span class="ident">header</span>: <span class="ident">QcowHeader</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">QcowFile</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">new_from_header</span>(
+        <span class="kw-2">mut</span> <span class="ident">file</span>: <span class="ident">File</span>,
+        <span class="ident">header</span>: <span class="ident">QcowHeader</span>,
+        <span class="ident">max_nesting_depth</span>: <span class="ident">u32</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">QcowFile</span><span class="op">&gt;</span> {
         <span class="ident">file</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::Start</span>(<span class="number">0</span>)).<span class="ident">map_err</span>(<span class="ident">Error::SeekingFile</span>)<span class="question-mark">?</span>;
         <span class="ident">header</span>.<span class="ident">write_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">file</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">qcow</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::from</span>(<span class="ident">file</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">qcow</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::from</span>(<span class="ident">file</span>, <span class="ident">max_nesting_depth</span>)<span class="question-mark">?</span>;
 
         <span class="comment">// Set the refcount for each refcount table cluster.</span>
         <span class="kw">let</span> <span class="ident">cluster_size</span> <span class="op">=</span> <span class="number">0x01u64</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">qcow</span>.<span class="ident">header</span>.<span class="ident">cluster_bits</span>;
@@ -4460,8 +4506,9 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::MAX_NESTING_DEPTH</span>;
     <span class="kw">use</span> <span class="ident">base::WriteZeroes</span>;
+    <span class="kw">use</span> <span class="ident">std::fs::OpenOptions</span>;
     <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">Read</span>, <span class="ident">Seek</span>, <span class="ident">SeekFrom</span>, <span class="ident">Write</span>};
-    <span class="kw">use</span> <span class="ident">tempfile::tempfile</span>;
+    <span class="kw">use</span> <span class="ident">tempfile</span>::{<span class="ident">tempfile</span>, <span class="ident">TempDir</span>};
 
     <span class="kw">fn</span> <span class="ident">valid_header</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="macro">vec!</span>[
@@ -5385,6 +5432,43 @@
             <span class="ident">QcowFile::rebuild_refcounts</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_file</span>, <span class="ident">header</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;Failed to rebuild recounts.&quot;</span>);
         });
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">nested_qcow</span>() {
+        <span class="kw">let</span> <span class="ident">tmp_dir</span> <span class="op">=</span> <span class="ident">TempDir::new</span>().<span class="ident">unwrap</span>();
+
+        <span class="comment">// A file `backing` is backing a qcow file `qcow.l1`, which in turn is backing another</span>
+        <span class="comment">// qcow file.</span>
+        <span class="kw">let</span> <span class="ident">backing_file_path</span> <span class="op">=</span> <span class="ident">tmp_dir</span>.<span class="ident">path</span>().<span class="ident">join</span>(<span class="string">&quot;backing&quot;</span>);
+        <span class="kw">let</span> <span class="ident">_backing_file</span> <span class="op">=</span> <span class="ident">OpenOptions::new</span>()
+            .<span class="ident">read</span>(<span class="bool-val">true</span>)
+            .<span class="ident">write</span>(<span class="bool-val">true</span>)
+            .<span class="ident">create</span>(<span class="bool-val">true</span>)
+            .<span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="ident">backing_file_path</span>)
+            .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">level1_qcow_file_path</span> <span class="op">=</span> <span class="ident">tmp_dir</span>.<span class="ident">path</span>().<span class="ident">join</span>(<span class="string">&quot;qcow.l1&quot;</span>);
+        <span class="kw">let</span> <span class="ident">level1_qcow_file</span> <span class="op">=</span> <span class="ident">OpenOptions::new</span>()
+            .<span class="ident">read</span>(<span class="bool-val">true</span>)
+            .<span class="ident">write</span>(<span class="bool-val">true</span>)
+            .<span class="ident">create</span>(<span class="bool-val">true</span>)
+            .<span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="ident">level1_qcow_file_path</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">_level1_qcow_file</span> <span class="op">=</span> <span class="ident">QcowFile::new_from_backing</span>(
+            <span class="ident">level1_qcow_file</span>,
+            <span class="kw-2">&amp;</span><span class="ident">backing_file_path</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>(),
+            <span class="number">1000</span>, <span class="comment">/* allow deep nesting */</span>
+        )
+        .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">level2_qcow_file</span> <span class="op">=</span> <span class="ident">tempfile</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">_level2_qcow_file</span> <span class="op">=</span> <span class="ident">QcowFile::new_from_backing</span>(
+            <span class="ident">level2_qcow_file</span>,
+            <span class="kw-2">&amp;</span><span class="ident">level1_qcow_file_path</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>(),
+            <span class="number">1000</span>, <span class="comment">/* allow deep nesting */</span>
+        )
+        .<span class="ident">expect</span>(<span class="string">&quot;failed to create level2 qcow file&quot;</span>);
     }
 }
 </pre></div>
