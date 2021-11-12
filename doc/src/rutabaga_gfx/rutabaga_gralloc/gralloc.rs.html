@@ -451,6 +451,7 @@
 <span id="451">451</span>
 <span id="452">452</span>
 <span id="453">453</span>
+<span id="454">454</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -729,6 +730,7 @@
         <span class="comment">// towards the Vulkan api.  This function allows for a variety of quirks, but for now just</span>
         <span class="comment">// choose the most shiny backend that the user has built.  The rationale is &quot;why would you</span>
         <span class="comment">// build it if you don&#39;t want to use it&quot;.</span>
+        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::let_and_return</span>)]</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">_backend</span> <span class="op">=</span> <span class="ident">GrallocBackend::System</span>;
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;minigbm&quot;</span>)]</span>

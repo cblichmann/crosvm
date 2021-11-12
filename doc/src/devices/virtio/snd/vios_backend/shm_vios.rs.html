@@ -1630,21 +1630,21 @@
     <span class="kw">pub</span> <span class="ident">rate</span>: <span class="ident">u8</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">virtio_snd_pcm_set_params</span><span class="op">&gt;</span> <span class="kw">for</span> (<span class="ident">u32</span>, <span class="ident">VioSStreamParams</span>) {
-    <span class="kw">fn</span> <span class="ident">into</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">virtio_snd_pcm_set_params</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span>(<span class="ident">u32</span>, <span class="ident">VioSStreamParams</span>)<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">virtio_snd_pcm_set_params</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: (<span class="ident">u32</span>, <span class="ident">VioSStreamParams</span>)) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">virtio_snd_pcm_set_params</span> {
             <span class="ident">hdr</span>: <span class="ident">virtio_snd_pcm_hdr</span> {
                 <span class="ident">hdr</span>: <span class="ident">virtio_snd_hdr</span> {
                     <span class="ident">code</span>: <span class="ident">VIRTIO_SND_R_PCM_SET_PARAMS</span>.<span class="ident">into</span>(),
                 },
-                <span class="ident">stream_id</span>: <span class="self">self</span>.<span class="number">0</span>.<span class="ident">into</span>(),
+                <span class="ident">stream_id</span>: <span class="ident">val</span>.<span class="number">0</span>.<span class="ident">into</span>(),
             },
-            <span class="ident">buffer_bytes</span>: <span class="self">self</span>.<span class="number">1</span>.<span class="ident">buffer_bytes</span>.<span class="ident">into</span>(),
-            <span class="ident">period_bytes</span>: <span class="self">self</span>.<span class="number">1</span>.<span class="ident">period_bytes</span>.<span class="ident">into</span>(),
-            <span class="ident">features</span>: <span class="self">self</span>.<span class="number">1</span>.<span class="ident">features</span>.<span class="ident">into</span>(),
-            <span class="ident">channels</span>: <span class="self">self</span>.<span class="number">1</span>.<span class="ident">channels</span>,
-            <span class="ident">format</span>: <span class="self">self</span>.<span class="number">1</span>.<span class="ident">format</span>,
-            <span class="ident">rate</span>: <span class="self">self</span>.<span class="number">1</span>.<span class="ident">rate</span>,
+            <span class="ident">buffer_bytes</span>: <span class="ident">val</span>.<span class="number">1</span>.<span class="ident">buffer_bytes</span>.<span class="ident">into</span>(),
+            <span class="ident">period_bytes</span>: <span class="ident">val</span>.<span class="number">1</span>.<span class="ident">period_bytes</span>.<span class="ident">into</span>(),
+            <span class="ident">features</span>: <span class="ident">val</span>.<span class="number">1</span>.<span class="ident">features</span>.<span class="ident">into</span>(),
+            <span class="ident">channels</span>: <span class="ident">val</span>.<span class="number">1</span>.<span class="ident">channels</span>,
+            <span class="ident">format</span>: <span class="ident">val</span>.<span class="number">1</span>.<span class="ident">format</span>,
+            <span class="ident">rate</span>: <span class="ident">val</span>.<span class="number">1</span>.<span class="ident">rate</span>,
             <span class="ident">padding</span>: <span class="number">0u8</span>,
         }
     }

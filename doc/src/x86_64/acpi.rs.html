@@ -440,7 +440,7 @@
 <span class="kw">use</span> <span class="ident">data_model::DataInit</span>;
 <span class="kw">use</span> <span class="ident">vm_memory</span>::{<span class="ident">GuestAddress</span>, <span class="ident">GuestMemory</span>};
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ACPIDevResource</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AcpiDevResource</span> {
     <span class="kw">pub</span> <span class="ident">amls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">pm_iobase</span>: <span class="ident">u64</span>,
     <span class="doccomment">/// Additional system descriptor tables.</span>
@@ -449,7 +449,7 @@
 
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">struct</span> <span class="ident">LocalAPIC</span> {
+<span class="kw">struct</span> <span class="ident">LocalApic</span> {
     <span class="ident">_type</span>: <span class="ident">u8</span>,
     <span class="ident">_length</span>: <span class="ident">u8</span>,
     <span class="ident">_processor_id</span>: <span class="ident">u8</span>,
@@ -458,11 +458,11 @@
 }
 
 <span class="comment">// Safe as LocalAPIC structure only contains raw data</span>
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">LocalAPIC</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">LocalApic</span> {}
 
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">struct</span> <span class="ident">IOAPIC</span> {
+<span class="kw">struct</span> <span class="ident">Ioapic</span> {
     <span class="ident">_type</span>: <span class="ident">u8</span>,
     <span class="ident">_length</span>: <span class="ident">u8</span>,
     <span class="ident">_ioapic_id</span>: <span class="ident">u8</span>,
@@ -472,11 +472,11 @@
 }
 
 <span class="comment">// Safe as IOAPIC structure only contains raw data</span>
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">IOAPIC</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">Ioapic</span> {}
 
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">struct</span> <span class="ident">Localx2APIC</span> {
+<span class="kw">struct</span> <span class="ident">Localx2Apic</span> {
     <span class="ident">_type</span>: <span class="ident">u8</span>,
     <span class="ident">_length</span>: <span class="ident">u8</span>,
     <span class="ident">_reserved</span>: <span class="ident">u16</span>,
@@ -486,7 +486,7 @@
 }
 
 <span class="comment">// Safe as LocalAPIC structure only contains raw data</span>
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">Localx2APIC</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">Localx2Apic</span> {}
 
 <span class="kw">const</span> <span class="ident">OEM_REVISION</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="comment">//DSDT</span>
@@ -651,9 +651,9 @@
                     <span class="comment">// the host.</span>
                     <span class="ident">has_leafb</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
-                    <span class="kw">let</span> <span class="ident">x2apic</span> <span class="op">=</span> <span class="ident">Localx2APIC</span> {
+                    <span class="kw">let</span> <span class="ident">x2apic</span> <span class="op">=</span> <span class="ident">Localx2Apic</span> {
                         <span class="ident">_type</span>: <span class="ident">MADT_TYPE_LOCAL_X2APIC</span>,
-                        <span class="ident">_length</span>: <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">Localx2APIC</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u8</span>,
+                        <span class="ident">_length</span>: <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">Localx2Apic</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u8</span>,
                         <span class="ident">_x2apic_id</span>: <span class="ident">cpuid_entry</span>.<span class="ident">edx</span>,
                         <span class="ident">_flags</span>: <span class="ident">MADT_ENABLED</span>,
                         <span class="ident">_processor_id</span>: (<span class="ident">vcpu</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">u32</span>,
@@ -673,9 +673,9 @@
                 <span class="ident">apic_id</span> <span class="op">=</span> (<span class="ident">cpuid_entry</span>.<span class="ident">ebx</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">CPUID_LEAF0_EBX_CPUID_SHIFT</span> <span class="op">&amp;</span> <span class="number">0xff</span>) <span class="kw">as</span> <span class="ident">u8</span>;
             }
 
-            <span class="kw">let</span> <span class="ident">apic</span> <span class="op">=</span> <span class="ident">LocalAPIC</span> {
+            <span class="kw">let</span> <span class="ident">apic</span> <span class="op">=</span> <span class="ident">LocalApic</span> {
                 <span class="ident">_type</span>: <span class="ident">MADT_TYPE_LOCAL_APIC</span>,
-                <span class="ident">_length</span>: <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">LocalAPIC</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u8</span>,
+                <span class="ident">_length</span>: <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">LocalApic</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u8</span>,
                 <span class="ident">_processor_id</span>: <span class="ident">vcpu</span> <span class="kw">as</span> <span class="ident">u8</span>,
                 <span class="ident">_apic_id</span>: <span class="ident">apic_id</span>,
                 <span class="ident">_flags</span>: <span class="ident">MADT_ENABLED</span>,
@@ -711,7 +711,7 @@
     <span class="ident">guest_mem</span>: <span class="kw-2">&amp;</span><span class="ident">GuestMemory</span>,
     <span class="ident">num_cpus</span>: <span class="ident">u8</span>,
     <span class="ident">sci_irq</span>: <span class="ident">u32</span>,
-    <span class="ident">acpi_dev_resource</span>: <span class="ident">ACPIDevResource</span>,
+    <span class="ident">acpi_dev_resource</span>: <span class="ident">AcpiDevResource</span>,
     <span class="ident">host_cpus</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VcpuAffinity</span><span class="op">&gt;</span>,
     <span class="ident">apic_ids</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">GuestAddress</span><span class="op">&gt;</span> {
@@ -794,9 +794,9 @@
         }
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">for</span> <span class="ident">cpu</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num_cpus</span> {
-                <span class="kw">let</span> <span class="ident">apic</span> <span class="op">=</span> <span class="ident">LocalAPIC</span> {
+                <span class="kw">let</span> <span class="ident">apic</span> <span class="op">=</span> <span class="ident">LocalApic</span> {
                     <span class="ident">_type</span>: <span class="ident">MADT_TYPE_LOCAL_APIC</span>,
-                    <span class="ident">_length</span>: <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">LocalAPIC</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u8</span>,
+                    <span class="ident">_length</span>: <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">LocalApic</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u8</span>,
                     <span class="ident">_processor_id</span>: <span class="ident">cpu</span>,
                     <span class="ident">_apic_id</span>: <span class="ident">cpu</span>,
                     <span class="ident">_flags</span>: <span class="ident">MADT_ENABLED</span>,
@@ -807,9 +807,9 @@
         }
     }
 
-    <span class="ident">madt</span>.<span class="ident">append</span>(<span class="ident">IOAPIC</span> {
+    <span class="ident">madt</span>.<span class="ident">append</span>(<span class="ident">Ioapic</span> {
         <span class="ident">_type</span>: <span class="ident">MADT_TYPE_IO_APIC</span>,
-        <span class="ident">_length</span>: <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">IOAPIC</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u8</span>,
+        <span class="ident">_length</span>: <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">Ioapic</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u8</span>,
         <span class="ident">_apic_address</span>: <span class="kw">super</span><span class="ident">::mptable::IO_APIC_DEFAULT_PHYS_BASE</span>,
         ..<span class="ident">Default::default</span>()
     });

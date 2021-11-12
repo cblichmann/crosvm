@@ -1944,20 +1944,20 @@
 }
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">SetattrIn</span> {}
 
-<span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">libc::stat64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SetattrIn</span> {
-    <span class="kw">fn</span> <span class="ident">into</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">libc::stat64</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">SetattrIn</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">libc::stat64</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">s</span>: <span class="ident">SetattrIn</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">libc::stat64</span> {
         <span class="comment">// Safe because we are zero-initializing a struct with only POD fields.</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span>: <span class="ident">libc::stat64</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">mem::zeroed</span>() };
-        <span class="ident">out</span>.<span class="ident">st_mode</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mode</span>;
-        <span class="ident">out</span>.<span class="ident">st_uid</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">uid</span>;
-        <span class="ident">out</span>.<span class="ident">st_gid</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">gid</span>;
-        <span class="ident">out</span>.<span class="ident">st_size</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">size</span> <span class="kw">as</span> <span class="ident">i64</span>;
-        <span class="ident">out</span>.<span class="ident">st_atime</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">atime</span> <span class="kw">as</span> <span class="ident">libc::time_t</span>;
-        <span class="ident">out</span>.<span class="ident">st_mtime</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mtime</span> <span class="kw">as</span> <span class="ident">libc::time_t</span>;
-        <span class="ident">out</span>.<span class="ident">st_ctime</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ctime</span> <span class="kw">as</span> <span class="ident">libc::time_t</span>;
-        <span class="ident">out</span>.<span class="ident">st_atime_nsec</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">atimensec</span> <span class="kw">as</span> <span class="ident">libc::c_long</span>;
-        <span class="ident">out</span>.<span class="ident">st_mtime_nsec</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mtimensec</span> <span class="kw">as</span> <span class="ident">libc::c_long</span>;
-        <span class="ident">out</span>.<span class="ident">st_ctime_nsec</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ctimensec</span> <span class="kw">as</span> <span class="ident">libc::c_long</span>;
+        <span class="ident">out</span>.<span class="ident">st_mode</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">mode</span>;
+        <span class="ident">out</span>.<span class="ident">st_uid</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">uid</span>;
+        <span class="ident">out</span>.<span class="ident">st_gid</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">gid</span>;
+        <span class="ident">out</span>.<span class="ident">st_size</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">size</span> <span class="kw">as</span> <span class="ident">i64</span>;
+        <span class="ident">out</span>.<span class="ident">st_atime</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">atime</span> <span class="kw">as</span> <span class="ident">libc::time_t</span>;
+        <span class="ident">out</span>.<span class="ident">st_mtime</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">mtime</span> <span class="kw">as</span> <span class="ident">libc::time_t</span>;
+        <span class="ident">out</span>.<span class="ident">st_ctime</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">ctime</span> <span class="kw">as</span> <span class="ident">libc::time_t</span>;
+        <span class="ident">out</span>.<span class="ident">st_atime_nsec</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">atimensec</span> <span class="kw">as</span> <span class="ident">libc::c_long</span>;
+        <span class="ident">out</span>.<span class="ident">st_mtime_nsec</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">mtimensec</span> <span class="kw">as</span> <span class="ident">libc::c_long</span>;
+        <span class="ident">out</span>.<span class="ident">st_ctime_nsec</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">ctimensec</span> <span class="kw">as</span> <span class="ident">libc::c_long</span>;
 
         <span class="ident">out</span>
     }
