@@ -3118,7 +3118,7 @@
 
         <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
         <span class="kw">let</span> <span class="ident">raw_descriptor</span> <span class="op">=</span> <span class="macro">syscall!</span>(<span class="kw">unsafe</span> {
-            <span class="ident">libc::openat</span>(
+            <span class="ident">libc::openat64</span>(
                 <span class="ident">libc::AT_FDCWD</span>,
                 <span class="ident">proc_cstr</span>.<span class="ident">as_ptr</span>(),
                 <span class="ident">libc::O_PATH</span> <span class="op">|</span> <span class="ident">libc::O_NOFOLLOW</span> <span class="op">|</span> <span class="ident">libc::O_CLOEXEC</span>,
@@ -3225,7 +3225,7 @@
         <span class="comment">// have much bigger problems. Also, clear the `O_NOFOLLOW` flag if it is set since we need</span>
         <span class="comment">// to follow the `/proc/self/fd` symlink to get the file.</span>
         <span class="kw">let</span> <span class="ident">raw_descriptor</span> <span class="op">=</span> <span class="macro">syscall!</span>(<span class="kw">unsafe</span> {
-            <span class="ident">libc::openat</span>(
+            <span class="ident">libc::openat64</span>(
                 <span class="self">self</span>.<span class="ident">proc</span>.<span class="ident">as_raw_descriptor</span>(),
                 <span class="ident">pathname</span>.<span class="ident">as_ptr</span>(),
                 (<span class="ident">flags</span> <span class="op">|</span> <span class="ident">libc::O_CLOEXEC</span>) <span class="op">&amp;</span> <span class="op">!</span>(<span class="ident">libc::O_NOFOLLOW</span> <span class="op">|</span> <span class="ident">libc::O_DIRECT</span>),
@@ -3334,7 +3334,7 @@
 
         <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
         <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-            <span class="ident">File::from_raw_descriptor</span>(<span class="macro">syscall!</span>(<span class="ident">libc::openat</span>(
+            <span class="ident">File::from_raw_descriptor</span>(<span class="macro">syscall!</span>(<span class="ident">libc::openat64</span>(
                 <span class="ident">parent</span>.<span class="ident">as_raw_descriptor</span>(),
                 <span class="ident">name</span>.<span class="ident">as_ptr</span>(),
                 <span class="ident">flags</span>
@@ -3888,7 +3888,7 @@
 
         <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">libc::O_DIRECTORY</span> <span class="op">|</span> <span class="ident">libc::O_NOFOLLOW</span> <span class="op">|</span> <span class="ident">libc::O_CLOEXEC</span>;
         <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
-        <span class="kw">let</span> <span class="ident">raw_descriptor</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::openat</span>(<span class="ident">libc::AT_FDCWD</span>, <span class="ident">root</span>.<span class="ident">as_ptr</span>(), <span class="ident">flags</span>) };
+        <span class="kw">let</span> <span class="ident">raw_descriptor</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::openat64</span>(<span class="ident">libc::AT_FDCWD</span>, <span class="ident">root</span>.<span class="ident">as_ptr</span>(), <span class="ident">flags</span>) };
         <span class="kw">if</span> <span class="ident">raw_descriptor</span> <span class="op">&lt;</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io::Error::last_os_error</span>());
         }
@@ -4112,7 +4112,7 @@
 
             <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
             <span class="macro">syscall!</span>(<span class="kw">unsafe</span> {
-                <span class="ident">libc::openat</span>(
+                <span class="ident">libc::openat64</span>(
                     <span class="ident">data</span>.<span class="ident">as_raw_descriptor</span>(),
                     <span class="ident">current_dir</span>.<span class="ident">as_ptr</span>(),
                     <span class="ident">tmpflags</span>,
@@ -4151,7 +4151,7 @@
             <span class="comment">// really check `flags` because if the kernel can&#39;t handle poorly specified flags then</span>
             <span class="comment">// we have much bigger problems.</span>
             <span class="macro">syscall!</span>(<span class="kw">unsafe</span> {
-                <span class="ident">libc::openat</span>(<span class="ident">data</span>.<span class="ident">as_raw_descriptor</span>(), <span class="ident">name</span>.<span class="ident">as_ptr</span>(), <span class="ident">create_flags</span>, <span class="ident">mode</span>)
+                <span class="ident">libc::openat64</span>(<span class="ident">data</span>.<span class="ident">as_raw_descriptor</span>(), <span class="ident">name</span>.<span class="ident">as_ptr</span>(), <span class="ident">create_flags</span>, <span class="ident">mode</span>)
             })<span class="question-mark">?</span>
         };
 
