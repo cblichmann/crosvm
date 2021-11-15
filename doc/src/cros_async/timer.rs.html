@@ -184,7 +184,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">one_shot</span>() {
-        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">this_test</span>(<span class="ident">ex</span>: <span class="kw-2">&amp;</span><span class="ident">URingExecutor</span>) <span class="op">-</span><span class="op">&gt;</span> () {
+        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">this_test</span>(<span class="ident">ex</span>: <span class="kw-2">&amp;</span><span class="ident">URingExecutor</span>) {
             <span class="kw">let</span> <span class="ident">tfd</span> <span class="op">=</span> <span class="ident">TimerFd::new</span>().<span class="ident">expect</span>(<span class="string">&quot;failed to create timerfd&quot;</span>);
             <span class="macro">assert_eq!</span>(<span class="ident">tfd</span>.<span class="ident">is_armed</span>().<span class="ident">unwrap</span>(), <span class="bool-val">false</span>);
 
@@ -207,7 +207,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">one_shot_fd</span>() {
-        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">this_test</span>(<span class="ident">ex</span>: <span class="kw-2">&amp;</span><span class="ident">FdExecutor</span>) <span class="op">-</span><span class="op">&gt;</span> () {
+        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">this_test</span>(<span class="ident">ex</span>: <span class="kw-2">&amp;</span><span class="ident">FdExecutor</span>) {
             <span class="kw">let</span> <span class="ident">tfd</span> <span class="op">=</span> <span class="ident">TimerFd::new</span>().<span class="ident">expect</span>(<span class="string">&quot;failed to create timerfd&quot;</span>);
             <span class="macro">assert_eq!</span>(<span class="ident">tfd</span>.<span class="ident">is_armed</span>().<span class="ident">unwrap</span>(), <span class="bool-val">false</span>);
 
@@ -230,7 +230,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">timer</span>() {
-        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">this_test</span>(<span class="ident">ex</span>: <span class="kw-2">&amp;</span><span class="ident">Executor</span>) <span class="op">-</span><span class="op">&gt;</span> () {
+        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">this_test</span>(<span class="ident">ex</span>: <span class="kw-2">&amp;</span><span class="ident">Executor</span>) {
             <span class="kw">let</span> <span class="ident">dur</span> <span class="op">=</span> <span class="ident">Duration::from_millis</span>(<span class="number">200</span>);
             <span class="kw">let</span> <span class="ident">now</span> <span class="op">=</span> <span class="ident">Instant::now</span>();
             <span class="ident">TimerAsync::sleep</span>(<span class="ident">ex</span>, <span class="ident">dur</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;unable to sleep&quot;</span>);

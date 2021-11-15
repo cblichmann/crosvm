@@ -803,7 +803,7 @@
 
         <span class="ident">state</span>.<span class="ident">shutting_down</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="kw">let</span> <span class="ident">exited_threads</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">exited_threads</span>.<span class="ident">take</span>().<span class="ident">expect</span>(<span class="string">&quot;exited_threads missing&quot;</span>);
-        <span class="kw">let</span> <span class="ident">unfinished_tasks</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>.<span class="ident">tasks</span>, <span class="ident">VecDeque::new</span>());
+        <span class="kw">let</span> <span class="ident">unfinished_tasks</span> <span class="op">=</span> <span class="ident">std::mem::take</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>.<span class="ident">tasks</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">worker_threads</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>.<span class="ident">worker_threads</span>, <span class="ident">Slab::new</span>());
         <span class="ident">drop</span>(<span class="ident">state</span>);
 

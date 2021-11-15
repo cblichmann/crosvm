@@ -1004,7 +1004,7 @@
         }
         <span class="comment">// Specifically chosen to not overlap a real descriptor to avoid having to allocate any</span>
         <span class="comment">// descriptors for this test.</span>
-        <span class="kw">let</span> <span class="ident">fake_rd</span> <span class="op">=</span> <span class="number">5_123_457</span> <span class="kw">as</span> <span class="kw">_</span>;
+        <span class="kw">let</span> <span class="ident">fake_rd</span> <span class="op">=</span> <span class="number">5_123_457_i32</span>;
         <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">RawContainer</span> { <span class="ident">rd</span>: <span class="ident">fake_rd</span> };
         <span class="kw">let</span> <span class="ident">v_serialize</span> <span class="op">=</span> <span class="ident">SerializeDescriptors::new</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>);
         <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">v_serialize</span>).<span class="ident">unwrap</span>();
