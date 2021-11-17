@@ -1059,21 +1059,6 @@
 <span id="1059">1059</span>
 <span id="1060">1060</span>
 <span id="1061">1061</span>
-<span id="1062">1062</span>
-<span id="1063">1063</span>
-<span id="1064">1064</span>
-<span id="1065">1065</span>
-<span id="1066">1066</span>
-<span id="1067">1067</span>
-<span id="1068">1068</span>
-<span id="1069">1069</span>
-<span id="1070">1070</span>
-<span id="1071">1071</span>
-<span id="1072">1072</span>
-<span id="1073">1073</span>
-<span id="1074">1074</span>
-<span id="1075">1075</span>
-<span id="1076">1076</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1999,30 +1984,27 @@
     <span class="doccomment">/// buf: data destination and buf length is read size</span>
     <span class="doccomment">/// addr: offset in the region</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">region_read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>], <span class="ident">addr</span>: <span class="ident">u64</span>) {
-        <span class="kw">let</span> <span class="ident">stub</span>: <span class="kw-2">&amp;</span><span class="ident">VfioRegion</span>;
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">regions</span>.<span class="ident">get</span>(<span class="ident">index</span> <span class="kw">as</span> <span class="ident">usize</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">stub</span> <span class="op">=</span> <span class="ident">v</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">warn!</span>(<span class="string">&quot;region read with invalid index: {}&quot;</span>, <span class="ident">index</span>);
-                <span class="kw">return</span>;
-            }
-        }
+        <span class="kw">let</span> <span class="ident">stub</span>: <span class="kw-2">&amp;</span><span class="ident">VfioRegion</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">regions</span>
+            .<span class="ident">get</span>(<span class="ident">index</span> <span class="kw">as</span> <span class="ident">usize</span>)
+            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">panic!</span>(<span class="string">&quot;tried to read VFIO with an invalid index: {}&quot;</span>, <span class="ident">index</span>));
 
         <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>;
         <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="ident">stub</span>.<span class="ident">size</span> <span class="op">|</span><span class="op">|</span> <span class="ident">addr</span> <span class="op">+</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="ident">stub</span>.<span class="ident">size</span> {
-            <span class="macro">warn!</span>(
-                <span class="string">&quot;region read with invalid parameter, index: {}, add: {:x}, size: {:x}&quot;</span>,
+            <span class="macro">panic!</span>(
+                <span class="string">&quot;tried to read VFIO region with invalid arguments: index={}, addr=0x{:x}, size=0x{:x}&quot;</span>,
                 <span class="ident">index</span>, <span class="ident">addr</span>, <span class="ident">size</span>
             );
-            <span class="kw">return</span>;
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">dev</span>.<span class="ident">read_exact_at</span>(<span class="ident">buf</span>, <span class="ident">stub</span>.<span class="ident">offset</span> <span class="op">+</span> <span class="ident">addr</span>) {
-            <span class="macro">warn!</span>(
-                <span class="string">&quot;Failed to read region in index: {}, addr: {:x}, error: {}&quot;</span>,
-                <span class="ident">index</span>, <span class="ident">addr</span>, <span class="ident">e</span>
-            );
-        }
+        <span class="self">self</span>.<span class="ident">dev</span>
+            .<span class="ident">read_exact_at</span>(<span class="ident">buf</span>, <span class="ident">stub</span>.<span class="ident">offset</span> <span class="op">+</span> <span class="ident">addr</span>)
+            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+                <span class="macro">panic!</span>(
+                    <span class="string">&quot;failed to read region: index={}, addr=0x{:x}, error={}&quot;</span>,
+                    <span class="ident">index</span>, <span class="ident">addr</span>, <span class="ident">e</span>
+                )
+            });
     }
 
     <span class="doccomment">/// write the data from buf into a vfio device region</span>
@@ -2030,33 +2012,30 @@
     <span class="doccomment">/// buf: data src and buf length is write size</span>
     <span class="doccomment">/// addr: offset in the region</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">region_write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">addr</span>: <span class="ident">u64</span>) {
-        <span class="kw">let</span> <span class="ident">stub</span>: <span class="kw-2">&amp;</span><span class="ident">VfioRegion</span>;
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">regions</span>.<span class="ident">get</span>(<span class="ident">index</span> <span class="kw">as</span> <span class="ident">usize</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">stub</span> <span class="op">=</span> <span class="ident">v</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">warn!</span>(<span class="string">&quot;region write with invalid index: {}&quot;</span>, <span class="ident">index</span>);
-                <span class="kw">return</span>;
-            }
-        }
+        <span class="kw">let</span> <span class="ident">stub</span>: <span class="kw-2">&amp;</span><span class="ident">VfioRegion</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">regions</span>
+            .<span class="ident">get</span>(<span class="ident">index</span> <span class="kw">as</span> <span class="ident">usize</span>)
+            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">panic!</span>(<span class="string">&quot;tried to write VFIO with an invalid index: {}&quot;</span>, <span class="ident">index</span>));
 
         <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>;
         <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="ident">stub</span>.<span class="ident">size</span>
             <span class="op">|</span><span class="op">|</span> <span class="ident">addr</span> <span class="op">+</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="ident">stub</span>.<span class="ident">size</span>
             <span class="op">|</span><span class="op">|</span> (<span class="ident">stub</span>.<span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">VFIO_REGION_INFO_FLAG_WRITE</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span>
         {
-            <span class="macro">warn!</span>(
-                <span class="string">&quot;region write with invalid parameter,indxe: {}, add: {:x}, size: {:x}&quot;</span>,
+            <span class="macro">panic!</span>(
+                <span class="string">&quot;tried to write VFIO region with invalid arguments: index={}, addr=0x{:x}, size=0x{:x}&quot;</span>,
                 <span class="ident">index</span>, <span class="ident">addr</span>, <span class="ident">size</span>
             );
-            <span class="kw">return</span>;
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">dev</span>.<span class="ident">write_all_at</span>(<span class="ident">buf</span>, <span class="ident">stub</span>.<span class="ident">offset</span> <span class="op">+</span> <span class="ident">addr</span>) {
-            <span class="macro">warn!</span>(
-                <span class="string">&quot;Failed to write region in index: {}, addr: {:x}, error: {}&quot;</span>,
-                <span class="ident">index</span>, <span class="ident">addr</span>, <span class="ident">e</span>
-            );
-        }
+        <span class="self">self</span>.<span class="ident">dev</span>
+            .<span class="ident">write_all_at</span>(<span class="ident">buf</span>, <span class="ident">stub</span>.<span class="ident">offset</span> <span class="op">+</span> <span class="ident">addr</span>)
+            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+                <span class="macro">panic!</span>(
+                    <span class="string">&quot;failed to write region: index={}, addr=0x{:x}, error={}&quot;</span>,
+                    <span class="ident">index</span>, <span class="ident">addr</span>, <span class="ident">e</span>
+                )
+            });
     }
 
     <span class="doccomment">/// get vfio device&#39;s descriptors which are passed into minijail process</span>
@@ -2101,54 +2080,45 @@
         <span class="ident">VfioPciConfig</span> { <span class="ident">device</span> }
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_config_byte</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">offset</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span>: [<span class="ident">u8</span>; <span class="number">1</span>] <span class="op">=</span> [<span class="number">0</span>];
         <span class="self">self</span>.<span class="ident">device</span>
             .<span class="ident">region_read</span>(<span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>, <span class="ident">data</span>.<span class="ident">as_mut</span>(), <span class="ident">offset</span>.<span class="ident">into</span>());
-
         <span class="ident">data</span>[<span class="number">0</span>]
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_config_word</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">offset</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u16</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span>: [<span class="ident">u8</span>; <span class="number">2</span>] <span class="op">=</span> [<span class="number">0</span>, <span class="number">0</span>];
         <span class="self">self</span>.<span class="ident">device</span>
             .<span class="ident">region_read</span>(<span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>, <span class="ident">data</span>.<span class="ident">as_mut</span>(), <span class="ident">offset</span>.<span class="ident">into</span>());
-
         <span class="ident">u16::from_le_bytes</span>(<span class="ident">data</span>)
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_config_dword</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">offset</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span>: [<span class="ident">u8</span>; <span class="number">4</span>] <span class="op">=</span> [<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>];
         <span class="self">self</span>.<span class="ident">device</span>
             .<span class="ident">region_read</span>(<span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>, <span class="ident">data</span>.<span class="ident">as_mut</span>(), <span class="ident">offset</span>.<span class="ident">into</span>());
-
         <span class="ident">u32::from_le_bytes</span>(<span class="ident">data</span>)
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_config_byte</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">buf</span>: <span class="ident">u8</span>, <span class="ident">offset</span>: <span class="ident">u32</span>) {
         <span class="self">self</span>.<span class="ident">device</span>.<span class="ident">region_write</span>(
             <span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>,
             <span class="ident">::std::slice::from_ref</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>),
             <span class="ident">offset</span>.<span class="ident">into</span>(),
-        )
+        );
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_config_word</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">buf</span>: <span class="ident">u16</span>, <span class="ident">offset</span>: <span class="ident">u32</span>) {
         <span class="kw">let</span> <span class="ident">data</span>: [<span class="ident">u8</span>; <span class="number">2</span>] <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">to_le_bytes</span>();
         <span class="self">self</span>.<span class="ident">device</span>
-            .<span class="ident">region_write</span>(<span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="ident">offset</span>.<span class="ident">into</span>())
+            .<span class="ident">region_write</span>(<span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="ident">offset</span>.<span class="ident">into</span>());
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_config_dword</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">buf</span>: <span class="ident">u32</span>, <span class="ident">offset</span>: <span class="ident">u32</span>) {
         <span class="kw">let</span> <span class="ident">data</span>: [<span class="ident">u8</span>; <span class="number">4</span>] <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">to_le_bytes</span>();
         <span class="self">self</span>.<span class="ident">device</span>
-            .<span class="ident">region_write</span>(<span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="ident">offset</span>.<span class="ident">into</span>())
+            .<span class="ident">region_write</span>(<span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="ident">offset</span>.<span class="ident">into</span>());
     }
 }
 </pre></div>
