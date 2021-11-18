@@ -492,14 +492,23 @@
 <span id="492">492</span>
 <span id="493">493</span>
 <span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
+<span class="kw">use</span> <span class="ident">std::os::unix::fs::OpenOptionsExt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">convert</span>::{<span class="self">self</span>, <span class="ident">TryFrom</span>, <span class="ident">TryInto</span>},
-    <span class="ident">fs::File</span>,
+    <span class="ident">fs</span>::{<span class="ident">File</span>, <span class="ident">OpenOptions</span>},
     <span class="ident">mem::size_of</span>,
     <span class="ident">num::Wrapping</span>,
     <span class="ident">os::unix</span>::{<span class="ident">io::AsRawFd</span>, <span class="ident">net::UnixListener</span>},
@@ -558,7 +567,14 @@
 
 <span class="kw">impl</span> <span class="ident">VsockBackend</span> {
     <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">cid</span>: <span class="ident">u64</span>, <span class="ident">vhost_socket</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span><span class="ident">VsockBackend</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">Vsock::new</span>(<span class="ident">vhost_socket</span>).<span class="ident">context</span>(<span class="string">&quot;failed to create `Vsock`&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">Vsock::new</span>(
+            <span class="ident">OpenOptions::new</span>()
+                .<span class="ident">read</span>(<span class="bool-val">true</span>)
+                .<span class="ident">write</span>(<span class="bool-val">true</span>)
+                .<span class="ident">custom_flags</span>(<span class="ident">libc::O_CLOEXEC</span> <span class="op">|</span> <span class="ident">libc::O_NONBLOCK</span>)
+                .<span class="ident">open</span>(<span class="ident">vhost_socket</span>)
+                .<span class="ident">context</span>(<span class="string">&quot;failed to open `Vsock` socket&quot;</span>)<span class="question-mark">?</span>,
+        );
 
         <span class="kw">let</span> <span class="ident">features</span> <span class="op">=</span> <span class="ident">handle</span>.<span class="ident">get_features</span>().<span class="ident">context</span>(<span class="string">&quot;failed to get features&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">protocol_features</span> <span class="op">=</span> <span class="ident">VhostUserProtocolFeatures::MQ</span> <span class="op">|</span> <span class="ident">VhostUserProtocolFeatures::CONFIG</span>;

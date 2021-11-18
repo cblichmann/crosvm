@@ -64,30 +64,17 @@
 <span id="64">64</span>
 <span id="65">65</span>
 <span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
-<span class="kw">use</span> <span class="ident">std::os::unix::fs::OpenOptionsExt</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">fs</span>::{<span class="ident">File</span>, <span class="ident">OpenOptions</span>},
-    <span class="ident">path::Path</span>,
-};
+<span class="kw">use</span> <span class="ident">std::fs::File</span>;
 
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">ioctl_with_ref</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">RawDescriptor</span>};
 <span class="kw">use</span> <span class="ident">virtio_sys</span>::{<span class="ident">VHOST_VSOCK_SET_GUEST_CID</span>, <span class="ident">VHOST_VSOCK_SET_RUNNING</span>};
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">ioctl_result</span>, <span class="ident">Error</span>, <span class="prelude-ty">Result</span>, <span class="ident">Vhost</span>};
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">ioctl_result</span>, <span class="prelude-ty">Result</span>, <span class="ident">Vhost</span>};
 
 <span class="doccomment">/// Handle for running VHOST_VSOCK ioctls.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Vsock</span> {
@@ -96,15 +83,10 @@
 
 <span class="kw">impl</span> <span class="ident">Vsock</span> {
     <span class="doccomment">/// Open a handle to a new VHOST_VSOCK instance.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">vhost_vsock_device_path</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vsock</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">Vsock</span> {
-            <span class="ident">descriptor</span>: <span class="ident">OpenOptions::new</span>()
-                .<span class="ident">read</span>(<span class="bool-val">true</span>)
-                .<span class="ident">write</span>(<span class="bool-val">true</span>)
-                .<span class="ident">custom_flags</span>(<span class="ident">libc::O_CLOEXEC</span> <span class="op">|</span> <span class="ident">libc::O_NONBLOCK</span>)
-                .<span class="ident">open</span>(<span class="ident">vhost_vsock_device_path</span>)
-                .<span class="ident">map_err</span>(<span class="ident">Error::VhostOpen</span>)<span class="question-mark">?</span>,
-        })
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">vhost_vsock_file</span>: <span class="ident">File</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vsock</span> {
+        <span class="ident">Vsock</span> {
+            <span class="ident">descriptor</span>: <span class="ident">vhost_vsock_file</span>,
+        }
     }
 
     <span class="doccomment">/// Set the CID for the guest.  This number is used for routing all data destined for</span>

@@ -488,6 +488,18 @@
 <span id="488">488</span>
 <span id="489">489</span>
 <span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -511,6 +523,7 @@
 <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 
 <span class="kw">use</span> <span class="ident">arch</span>::{<span class="ident">Pstore</span>, <span class="ident">VcpuAffinity</span>};
+<span class="kw">use</span> <span class="ident">base::RawDescriptor</span>;
 <span class="kw">use</span> <span class="ident">devices::serial_device</span>::{<span class="ident">SerialHardware</span>, <span class="ident">SerialParameters</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;audio_cras&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">devices::virtio::cras_backend::Parameters</span> <span class="kw">as</span> <span class="ident">CrasSndParameters</span>;
@@ -783,10 +796,21 @@
     }
 }
 
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">VhostVsockDeviceParameter</span> {
+    <span class="ident">Path</span>(<span class="ident">PathBuf</span>),
+    <span class="ident">Fd</span>(<span class="ident">RawDescriptor</span>),
+}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">VhostVsockDeviceParameter</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">VhostVsockDeviceParameter::Path</span>(<span class="ident">PathBuf::from</span>(<span class="ident">VHOST_VSOCK_PATH</span>))
+    }
+}
+
 <span class="doccomment">/// Aggregate of all configurable options for a running VM.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Config</span> {
     <span class="kw">pub</span> <span class="ident">kvm_device_path</span>: <span class="ident">PathBuf</span>,
-    <span class="kw">pub</span> <span class="ident">vhost_vsock_device_path</span>: <span class="ident">PathBuf</span>,
+    <span class="kw">pub</span> <span class="ident">vhost_vsock_device</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VhostVsockDeviceParameter</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">vhost_net_device_path</span>: <span class="ident">PathBuf</span>,
     <span class="kw">pub</span> <span class="ident">vcpu_count</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">rt_cpus</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
@@ -884,7 +908,7 @@
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Config</span> {
         <span class="ident">Config</span> {
             <span class="ident">kvm_device_path</span>: <span class="ident">PathBuf::from</span>(<span class="ident">KVM_PATH</span>),
-            <span class="ident">vhost_vsock_device_path</span>: <span class="ident">PathBuf::from</span>(<span class="ident">VHOST_VSOCK_PATH</span>),
+            <span class="ident">vhost_vsock_device</span>: <span class="prelude-val">None</span>,
             <span class="ident">vhost_net_device_path</span>: <span class="ident">PathBuf::from</span>(<span class="ident">VHOST_NET_PATH</span>),
             <span class="ident">vcpu_count</span>: <span class="prelude-val">None</span>,
             <span class="ident">rt_cpus</span>: <span class="ident">Vec::new</span>(),
