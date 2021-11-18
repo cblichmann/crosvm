@@ -989,7 +989,7 @@
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VhostResult</span><span class="op">&lt;</span>(<span class="ident">GuestMemory</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MappingInfo</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">regions</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">files</span>.<span class="ident">len</span>());
     <span class="kw">for</span> (<span class="ident">region</span>, <span class="ident">file</span>) <span class="kw">in</span> <span class="ident">contexts</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">files</span>.<span class="ident">into_iter</span>()) {
-        <span class="kw">let</span> <span class="ident">region</span> <span class="op">=</span> <span class="ident">MemoryRegion::new</span>(
+        <span class="kw">let</span> <span class="ident">region</span> <span class="op">=</span> <span class="ident">MemoryRegion::new_from_shm</span>(
             <span class="ident">region</span>.<span class="ident">memory_size</span>,
             <span class="ident">GuestAddress</span>(<span class="ident">region</span>.<span class="ident">guest_phys_addr</span>),
             <span class="ident">region</span>.<span class="ident">mmap_offset</span>,

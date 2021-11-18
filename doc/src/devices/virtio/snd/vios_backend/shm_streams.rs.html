@@ -367,6 +367,8 @@
 <span id="367">367</span>
 <span id="368">368</span>
 <span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -382,7 +384,9 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::snd::common</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::snd::constants</span>::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">audio_streams::shm_streams</span>::{<span class="ident">BufferSet</span>, <span class="ident">ServerRequest</span>, <span class="ident">ShmStream</span>, <span class="ident">ShmStreamSource</span>};
+<span class="kw">use</span> <span class="ident">audio_streams::shm_streams</span>::{
+    <span class="ident">BufferSet</span>, <span class="ident">ServerRequest</span>, <span class="ident">SharedMemory</span> <span class="kw">as</span> <span class="ident">AudioSharedMemory</span>, <span class="ident">ShmStream</span>, <span class="ident">ShmStreamSource</span>,
+};
 <span class="kw">use</span> <span class="ident">audio_streams</span>::{<span class="ident">BoxError</span>, <span class="ident">SampleFormat</span>, <span class="ident">StreamDirection</span>, <span class="ident">StreamEffect</span>};
 
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">MemoryMapping</span>, <span class="ident">MemoryMappingBuilder</span>, <span class="ident">SharedMemory</span>, <span class="ident">SharedMemoryUnix</span>};
@@ -390,12 +394,12 @@
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
 
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
-<span class="kw">use</span> <span class="ident">std::os::unix::io</span>::{<span class="ident">AsRawFd</span>, <span class="ident">FromRawFd</span>, <span class="ident">RawFd</span>};
+<span class="kw">use</span> <span class="ident">std::os::unix::io</span>::{<span class="ident">FromRawFd</span>, <span class="ident">RawFd</span>};
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 <span class="kw">use</span> <span class="ident">std::time</span>::{<span class="ident">Duration</span>, <span class="ident">Instant</span>};
 
-<span class="kw">use</span> <span class="ident">sys_util</span>::{<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">SysError</span>, <span class="ident">SharedMemory</span> <span class="kw">as</span> <span class="ident">SysSharedMemory</span>};
+<span class="kw">use</span> <span class="ident">sys_util::Error</span> <span class="kw">as</span> <span class="ident">SysError</span>;
 
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::shm_vios</span>::{<span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
 
@@ -454,7 +458,7 @@
         <span class="ident">frame_rate</span>: <span class="ident">u32</span>,
         <span class="ident">buffer_size</span>: <span class="ident">usize</span>,
         <span class="ident">_effects</span>: <span class="kw-2">&amp;</span>[<span class="ident">StreamEffect</span>],
-        <span class="ident">client_shm</span>: <span class="kw-2">&amp;</span><span class="ident">SysSharedMemory</span>,
+        <span class="ident">client_shm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">AudioSharedMemory</span><span class="op">&lt;</span><span class="ident">Error</span> <span class="op">=</span> <span class="ident">base::Error</span><span class="op">&gt;</span>,
         <span class="ident">_buffer_offsets</span>: [<span class="ident">u64</span>; <span class="number">2</span>],
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">GenericResult</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ShmStream</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">frame_size</span> <span class="op">=</span> <span class="ident">num_channels</span> <span class="op">*</span> <span class="ident">format</span>.<span class="ident">sample_bytes</span>();
@@ -494,7 +498,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ShmStreamSource</span> <span class="kw">for</span> <span class="ident">VioSShmStreamSource</span> {
+<span class="kw">impl</span> <span class="ident">ShmStreamSource</span><span class="op">&lt;</span><span class="ident">base::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">VioSShmStreamSource</span> {
     <span class="doccomment">/// Creates a new stream</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::too_many_arguments</span>)]</span>
     <span class="kw">fn</span> <span class="ident">new_stream</span>(
@@ -505,7 +509,7 @@
         <span class="ident">frame_rate</span>: <span class="ident">u32</span>,
         <span class="ident">buffer_size</span>: <span class="ident">usize</span>,
         <span class="ident">effects</span>: <span class="kw-2">&amp;</span>[<span class="ident">StreamEffect</span>],
-        <span class="ident">client_shm</span>: <span class="kw-2">&amp;</span><span class="ident">SysSharedMemory</span>,
+        <span class="ident">client_shm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">AudioSharedMemory</span><span class="op">&lt;</span><span class="ident">Error</span> <span class="op">=</span> <span class="ident">base::Error</span><span class="op">&gt;</span>,
         <span class="ident">buffer_offsets</span>: [<span class="ident">u64</span>; <span class="number">2</span>],
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">GenericResult</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ShmStream</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">vios_client</span>.<span class="ident">start_bg_thread</span>()<span class="question-mark">?</span>;
@@ -570,7 +574,7 @@
         <span class="ident">stream_id</span>: <span class="ident">u32</span>,
         <span class="ident">direction</span>: <span class="ident">StreamDirection</span>,
         <span class="ident">vios_client</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">VioSClient</span><span class="op">&gt;</span>,
-        <span class="ident">client_shm</span>: <span class="kw-2">&amp;</span><span class="ident">SysSharedMemory</span>,
+        <span class="ident">client_shm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">AudioSharedMemory</span><span class="op">&lt;</span><span class="ident">Error</span> <span class="op">=</span> <span class="ident">base::Error</span><span class="op">&gt;</span>,
         <span class="ident">state</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">StreamState</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">GenericResult</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ShmStream</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">interval</span> <span class="op">=</span> <span class="ident">Duration::from_millis</span>(<span class="ident">buffer_size</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">*</span> <span class="number">1000</span> <span class="op">/</span> <span class="ident">frame_rate</span> <span class="kw">as</span> <span class="ident">u64</span>);

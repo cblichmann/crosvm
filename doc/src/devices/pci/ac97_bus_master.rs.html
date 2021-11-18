@@ -1290,6 +1290,22 @@
 <span id="1290">1290</span>
 <span id="1291">1291</span>
 <span id="1292">1292</span>
+<span id="1293">1293</span>
+<span id="1294">1294</span>
+<span id="1295">1295</span>
+<span id="1296">1296</span>
+<span id="1297">1297</span>
+<span id="1298">1298</span>
+<span id="1299">1299</span>
+<span id="1300">1300</span>
+<span id="1301">1301</span>
+<span id="1302">1302</span>
+<span id="1303">1303</span>
+<span id="1304">1304</span>
+<span id="1305">1305</span>
+<span id="1306">1306</span>
+<span id="1307">1307</span>
+<span id="1308">1308</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1307,8 +1323,8 @@
     <span class="ident">BoxError</span>, <span class="ident">NoopStreamControl</span>, <span class="ident">SampleFormat</span>, <span class="ident">StreamControl</span>, <span class="ident">StreamDirection</span>, <span class="ident">StreamEffect</span>,
 };
 <span class="kw">use</span> <span class="ident">base</span>::{
-    <span class="self">self</span>, <span class="ident">error</span>, <span class="ident">set_rt_prio_limit</span>, <span class="ident">set_rt_round_robin</span>, <span class="ident">warn</span>, <span class="ident">AsRawDescriptors</span>, <span class="ident">Event</span>,
-    <span class="ident">RawDescriptor</span>,
+    <span class="self">self</span>, <span class="ident">error</span>, <span class="ident">set_rt_prio_limit</span>, <span class="ident">set_rt_round_robin</span>, <span class="ident">warn</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">AsRawDescriptors</span>,
+    <span class="ident">Event</span>, <span class="ident">FromRawDescriptor</span>, <span class="ident">RawDescriptor</span>, <span class="ident">SharedMemoryUnix</span>,
 };
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">sync</span>::{<span class="ident">Condvar</span>, <span class="ident">Mutex</span>};
@@ -1411,6 +1427,12 @@
 <span class="attribute">#[<span class="ident">sorted</span>]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Error</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">enum</span> <span class="ident">AudioError</span> {
+    <span class="comment">// Failed to clone a descriptor.</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Failed to clone a descriptor: {0}&quot;</span>)]</span>
+    <span class="ident">CloneDescriptor</span>(<span class="ident">base::Error</span>),
+    <span class="comment">// Failed to create a shared memory.</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Failed to create a shared memory: {0}.&quot;</span>)]</span>
+    <span class="ident">CreateSharedMemory</span>(<span class="ident">base::Error</span>),
     <span class="comment">// Failed to create a new stream.</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Failed to create audio stream: {0}.&quot;</span>)]</span>
     <span class="ident">CreateStream</span>(<span class="ident">BoxError</span>),
@@ -1503,7 +1525,7 @@
     <span class="ident">pmic_info</span>: <span class="ident">AudioThreadInfo</span>,
 
     <span class="comment">// Audio server used to create playback or capture streams.</span>
-    <span class="ident">audio_server</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ShmStreamSource</span><span class="op">&gt;</span>,
+    <span class="ident">audio_server</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ShmStreamSource</span><span class="op">&lt;</span><span class="ident">base::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 
     <span class="comment">// Thread for hadlind IRQ resample events from the guest.</span>
     <span class="ident">irq_resample_thread</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">thread::JoinHandle</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span>,
@@ -1512,7 +1534,7 @@
 <span class="kw">impl</span> <span class="ident">Ac97BusMaster</span> {
     <span class="doccomment">/// Creates an Ac97BusMaster` object that plays audio from `mem` to streams provided by</span>
     <span class="doccomment">/// `audio_server`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">mem</span>: <span class="ident">GuestMemory</span>, <span class="ident">audio_server</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ShmStreamSource</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">mem</span>: <span class="ident">GuestMemory</span>, <span class="ident">audio_server</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ShmStreamSource</span><span class="op">&lt;</span><span class="ident">base::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Ac97BusMaster</span> {
             <span class="ident">mem</span>,
             <span class="ident">regs</span>: <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Ac97BusMasterRegs::new</span>())),
@@ -1854,6 +1876,21 @@
             }
             <span class="ident">StreamDirection::Playback</span> <span class="op">=</span><span class="op">&gt;</span> [<span class="number">0</span>, <span class="number">0</span>],
         };
+
+        <span class="comment">// Create a `sys_util::SharedMemory` object from a descriptor backing `self.mem`.</span>
+        <span class="comment">// This creation is expected to succeed because we can assume that `self.mem` was created</span>
+        <span class="comment">// from a `SharedMemory` object and its type was generalized to `dyn AsRawDescriptor`.</span>
+        <span class="kw">let</span> <span class="ident">desc</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">AsRawDescriptor</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">mem</span>
+            .<span class="ident">offset_region</span>(<span class="ident">starting_offsets</span>[<span class="number">0</span>])
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">AudioError::GuestRegion</span>(<span class="ident">GuestMemoryError::ReadingGuestBufferAddress</span>(<span class="ident">e</span>)))<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">shm</span> <span class="op">=</span> {
+            <span class="kw">let</span> <span class="ident">rd</span> <span class="op">=</span> <span class="ident">base::clone_descriptor</span>(<span class="ident">desc</span>).<span class="ident">map_err</span>(<span class="ident">AudioError::CloneDescriptor</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Safe because the fd is owned.</span>
+            <span class="kw">let</span> <span class="ident">sd</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">base::SafeDescriptor::from_raw_descriptor</span>(<span class="ident">rd</span>) };
+            <span class="ident">base::SharedMemory::from_safe_descriptor</span>(<span class="ident">sd</span>).<span class="ident">map_err</span>(<span class="ident">AudioError::CreateSharedMemory</span>)<span class="question-mark">?</span>
+        };
+
         <span class="kw">let</span> <span class="ident">stream</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">audio_server</span>
             .<span class="ident">new_stream</span>(
@@ -1863,12 +1900,7 @@
                 <span class="ident">sample_rate</span>,
                 <span class="ident">buffer_frames</span>,
                 <span class="kw-2">&amp;</span><span class="self">Self</span><span class="ident">::stream_effects</span>(<span class="ident">func</span>),
-                <span class="self">self</span>.<span class="ident">mem</span>
-                    .<span class="ident">offset_region</span>(<span class="ident">starting_offsets</span>[<span class="number">0</span>])
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-                        <span class="ident">AudioError::GuestRegion</span>(<span class="ident">GuestMemoryError::ReadingGuestBufferAddress</span>(<span class="ident">e</span>))
-                    })<span class="question-mark">?</span>
-                    .<span class="ident">inner</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">shm</span>,
                 <span class="ident">starting_offsets</span>,
             )
             .<span class="ident">map_err</span>(<span class="ident">AudioError::CreateStream</span>)<span class="question-mark">?</span>;
