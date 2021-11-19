@@ -1218,6 +1218,117 @@
 <span id="1218">1218</span>
 <span id="1219">1219</span>
 <span id="1220">1220</span>
+<span id="1221">1221</span>
+<span id="1222">1222</span>
+<span id="1223">1223</span>
+<span id="1224">1224</span>
+<span id="1225">1225</span>
+<span id="1226">1226</span>
+<span id="1227">1227</span>
+<span id="1228">1228</span>
+<span id="1229">1229</span>
+<span id="1230">1230</span>
+<span id="1231">1231</span>
+<span id="1232">1232</span>
+<span id="1233">1233</span>
+<span id="1234">1234</span>
+<span id="1235">1235</span>
+<span id="1236">1236</span>
+<span id="1237">1237</span>
+<span id="1238">1238</span>
+<span id="1239">1239</span>
+<span id="1240">1240</span>
+<span id="1241">1241</span>
+<span id="1242">1242</span>
+<span id="1243">1243</span>
+<span id="1244">1244</span>
+<span id="1245">1245</span>
+<span id="1246">1246</span>
+<span id="1247">1247</span>
+<span id="1248">1248</span>
+<span id="1249">1249</span>
+<span id="1250">1250</span>
+<span id="1251">1251</span>
+<span id="1252">1252</span>
+<span id="1253">1253</span>
+<span id="1254">1254</span>
+<span id="1255">1255</span>
+<span id="1256">1256</span>
+<span id="1257">1257</span>
+<span id="1258">1258</span>
+<span id="1259">1259</span>
+<span id="1260">1260</span>
+<span id="1261">1261</span>
+<span id="1262">1262</span>
+<span id="1263">1263</span>
+<span id="1264">1264</span>
+<span id="1265">1265</span>
+<span id="1266">1266</span>
+<span id="1267">1267</span>
+<span id="1268">1268</span>
+<span id="1269">1269</span>
+<span id="1270">1270</span>
+<span id="1271">1271</span>
+<span id="1272">1272</span>
+<span id="1273">1273</span>
+<span id="1274">1274</span>
+<span id="1275">1275</span>
+<span id="1276">1276</span>
+<span id="1277">1277</span>
+<span id="1278">1278</span>
+<span id="1279">1279</span>
+<span id="1280">1280</span>
+<span id="1281">1281</span>
+<span id="1282">1282</span>
+<span id="1283">1283</span>
+<span id="1284">1284</span>
+<span id="1285">1285</span>
+<span id="1286">1286</span>
+<span id="1287">1287</span>
+<span id="1288">1288</span>
+<span id="1289">1289</span>
+<span id="1290">1290</span>
+<span id="1291">1291</span>
+<span id="1292">1292</span>
+<span id="1293">1293</span>
+<span id="1294">1294</span>
+<span id="1295">1295</span>
+<span id="1296">1296</span>
+<span id="1297">1297</span>
+<span id="1298">1298</span>
+<span id="1299">1299</span>
+<span id="1300">1300</span>
+<span id="1301">1301</span>
+<span id="1302">1302</span>
+<span id="1303">1303</span>
+<span id="1304">1304</span>
+<span id="1305">1305</span>
+<span id="1306">1306</span>
+<span id="1307">1307</span>
+<span id="1308">1308</span>
+<span id="1309">1309</span>
+<span id="1310">1310</span>
+<span id="1311">1311</span>
+<span id="1312">1312</span>
+<span id="1313">1313</span>
+<span id="1314">1314</span>
+<span id="1315">1315</span>
+<span id="1316">1316</span>
+<span id="1317">1317</span>
+<span id="1318">1318</span>
+<span id="1319">1319</span>
+<span id="1320">1320</span>
+<span id="1321">1321</span>
+<span id="1322">1322</span>
+<span id="1323">1323</span>
+<span id="1324">1324</span>
+<span id="1325">1325</span>
+<span id="1326">1326</span>
+<span id="1327">1327</span>
+<span id="1328">1328</span>
+<span id="1329">1329</span>
+<span id="1330">1330</span>
+<span id="1331">1331</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1234,7 +1345,7 @@
     <span class="ident">error</span>, <span class="ident">pagesize</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Event</span>, <span class="ident">MappedRegion</span>, <span class="ident">MemoryMapping</span>, <span class="ident">MemoryMappingBuilder</span>,
     <span class="ident">RawDescriptor</span>, <span class="ident">Tube</span>,
 };
-<span class="kw">use</span> <span class="ident">hypervisor::Datamatch</span>;
+<span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">Datamatch</span>, <span class="ident">MemSlot</span>};
 
 <span class="kw">use</span> <span class="ident">resources</span>::{<span class="ident">Alloc</span>, <span class="ident">MmioType</span>, <span class="ident">SystemAllocator</span>};
 
@@ -1665,6 +1776,13 @@
     <span class="ident">IntelGfxData</span> { <span class="ident">opregion_index</span>: <span class="ident">u32</span> },
 }
 
+<span class="kw">struct</span> <span class="ident">MmapInfo</span> {
+    <span class="ident">_mmap</span>: <span class="ident">MemoryMapping</span>,
+    <span class="ident">slot</span>: <span class="ident">MemSlot</span>,
+    <span class="ident">gpa</span>: <span class="ident">u64</span>,
+    <span class="ident">size</span>: <span class="ident">u64</span>,
+}
+
 <span class="doccomment">/// Implements the Vfio Pci device, then a pci device is added into vm</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VfioPciDevice</span> {
     <span class="ident">device</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">VfioDevice</span><span class="op">&gt;</span>,
@@ -1681,8 +1799,8 @@
     <span class="ident">vm_socket_mem</span>: <span class="ident">Tube</span>,
     <span class="ident">device_data</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DeviceData</span><span class="op">&gt;</span>,
 
-    <span class="comment">// scratch MemoryMapping to avoid unmap beform vm exit</span>
-    <span class="ident">mem</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MemoryMapping</span><span class="op">&gt;</span>,
+    <span class="ident">mmap_info</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MmapInfo</span><span class="op">&gt;</span>,
+    <span class="ident">remap</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">VfioPciDevice</span> {
@@ -1744,7 +1862,8 @@
             <span class="ident">irq_type</span>: <span class="prelude-val">None</span>,
             <span class="ident">vm_socket_mem</span>: <span class="ident">vfio_device_socket_mem</span>,
             <span class="ident">device_data</span>,
-            <span class="ident">mem</span>: <span class="ident">Vec::new</span>(),
+            <span class="ident">mmap_info</span>: <span class="ident">Vec::new</span>(),
+            <span class="ident">remap</span>: <span class="bool-val">true</span>,
         }
     }
 
@@ -1960,8 +2079,8 @@
         <span class="ident">mmaps</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">add_bar_mmap</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">bar_addr</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MemoryMapping</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mem_map</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MemoryMapping</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+    <span class="kw">fn</span> <span class="ident">add_bar_mmap</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">bar_addr</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MmapInfo</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mmaps_info</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MmapInfo</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">device</span>.<span class="ident">get_region_flags</span>(<span class="ident">index</span>) <span class="op">&amp;</span> <span class="ident">VFIO_REGION_INFO_FLAG_MMAP</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
             <span class="comment">// the bar storing msix table and pba couldn&#39;t mmap.</span>
             <span class="comment">// these bars should be trapped, so that msix could be emulated.</span>
@@ -1971,7 +2090,7 @@
                 <span class="ident">mmaps</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">add_bar_mmap_msix</span>(<span class="ident">index</span>, <span class="ident">mmaps</span>);
             }
             <span class="kw">if</span> <span class="ident">mmaps</span>.<span class="ident">is_empty</span>() {
-                <span class="kw">return</span> <span class="ident">mem_map</span>;
+                <span class="kw">return</span> <span class="ident">mmaps_info</span>;
             }
 
             <span class="kw">for</span> <span class="ident">mmap</span> <span class="kw">in</span> <span class="ident">mmaps</span>.<span class="ident">iter</span>() {
@@ -2002,7 +2121,7 @@
                     <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span>,
                 };
                 <span class="kw">match</span> <span class="ident">response</span> {
-                    <span class="ident">VmMemoryResponse::Ok</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">VmMemoryResponse::RegisterMemory</span> { <span class="ident">pfn</span>: <span class="kw">_</span>, <span class="ident">slot</span> } <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="comment">// Even if vm has mapped this region, but it is in vm main process,</span>
                         <span class="comment">// device process doesn&#39;t has this mapping, but vfio_dma_map() need it</span>
                         <span class="comment">// in device process, so here map it again.</span>
@@ -2023,7 +2142,12 @@
                         <span class="comment">// safe because VFIO actually maps the BAR with page size aligned size.</span>
                         <span class="kw">match</span> <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">device</span>.<span class="ident">vfio_dma_map</span>(<span class="ident">guest_map_start</span>, <span class="ident">size</span>, <span class="ident">host</span>, <span class="bool-val">true</span>) }
                         {
-                            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">mem_map</span>.<span class="ident">push</span>(<span class="ident">mmap</span>),
+                            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">mmaps_info</span>.<span class="ident">push</span>(<span class="ident">MmapInfo</span> {
+                                <span class="ident">_mmap</span>: <span class="ident">mmap</span>,
+                                <span class="ident">slot</span>,
+                                <span class="ident">gpa</span>: <span class="ident">guest_map_start</span>,
+                                <span class="ident">size</span>,
+                            }),
                             <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
                                 <span class="macro">error!</span>(
                                     <span class="string">&quot;{} {}, index: {}, bar_addr:0x{:x}, host:0x{:x}&quot;</span>,
@@ -2033,6 +2157,12 @@
                                     <span class="ident">bar_addr</span>,
                                     <span class="ident">host</span>
                                 );
+                                <span class="ident">mmaps_info</span>.<span class="ident">push</span>(<span class="ident">MmapInfo</span> {
+                                    <span class="ident">_mmap</span>: <span class="ident">mmap</span>,
+                                    <span class="ident">slot</span>,
+                                    <span class="ident">gpa</span>: <span class="number">0</span>,
+                                    <span class="ident">size</span>: <span class="number">0</span>,
+                                });
                                 <span class="kw">break</span>;
                             }
                         }
@@ -2042,14 +2172,56 @@
             }
         }
 
-        <span class="ident">mem_map</span>
+        <span class="ident">mmaps_info</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">remove_bar_mmap</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">mmap_info</span>: <span class="kw-2">&amp;</span><span class="ident">MmapInfo</span>) {
+        <span class="kw">if</span> <span class="ident">mmap_info</span>.<span class="ident">size</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>
+            <span class="op">&amp;&amp;</span> <span class="self">self</span>
+                .<span class="ident">device</span>
+                .<span class="ident">vfio_dma_unmap</span>(<span class="ident">mmap_info</span>.<span class="ident">gpa</span>, <span class="ident">mmap_info</span>.<span class="ident">size</span>)
+                .<span class="ident">is_err</span>()
+        {
+            <span class="macro">error!</span>(
+                <span class="string">&quot;vfio_dma_unmap fail, addr: {:x}, size: {:x}&quot;</span>,
+                <span class="ident">mmap_info</span>.<span class="ident">gpa</span>, <span class="ident">mmap_info</span>.<span class="ident">size</span>
+            );
+        }
+        <span class="kw">if</span> <span class="self">self</span>
+            .<span class="ident">vm_socket_mem</span>
+            .<span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="ident">VmMemoryRequest::UnregisterMemory</span>(<span class="ident">mmap_info</span>.<span class="ident">slot</span> <span class="kw">as</span> <span class="ident">u32</span>))
+            .<span class="ident">is_err</span>()
+        {
+            <span class="macro">error!</span>(<span class="string">&quot;failed to send UnregisterMemory request&quot;</span>);
+            <span class="kw">return</span>;
+        }
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">vm_socket_mem</span>.<span class="ident">recv</span>::<span class="op">&lt;</span><span class="ident">VmMemoryResponse</span><span class="op">&gt;</span>().<span class="ident">is_err</span>() {
+            <span class="macro">error!</span>(<span class="string">&quot;failed to receive UnregisterMemory response&quot;</span>);
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">disable_bars_mmap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="kw">for</span> <span class="ident">mmap_info</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">mmap_info</span>.<span class="ident">iter</span>() {
+            <span class="self">self</span>.<span class="ident">remove_bar_mmap</span>(<span class="ident">mmap_info</span>);
+        }
+        <span class="self">self</span>.<span class="ident">mmap_info</span>.<span class="ident">clear</span>();
     }
 
     <span class="kw">fn</span> <span class="ident">enable_bars_mmap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">disable_bars_mmap</span>();
+
         <span class="kw">for</span> <span class="ident">mmio_info</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">mmio_regions</span>.<span class="ident">iter</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mem_map</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">add_bar_mmap</span>(<span class="ident">mmio_info</span>.<span class="ident">bar_index</span>() <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">mmio_info</span>.<span class="ident">address</span>());
-            <span class="self">self</span>.<span class="ident">mem</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">mem_map</span>);
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mmap_info</span> <span class="op">=</span>
+                <span class="self">self</span>.<span class="ident">add_bar_mmap</span>(<span class="ident">mmio_info</span>.<span class="ident">bar_index</span>() <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">mmio_info</span>.<span class="ident">address</span>());
+            <span class="self">self</span>.<span class="ident">mmap_info</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">mmap_info</span>);
         }
+
+        <span class="self">self</span>.<span class="ident">remap</span> <span class="op">=</span> <span class="bool-val">false</span>;
+    }
+
+    <span class="kw">fn</span> <span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">disable_bars_mmap</span>();
+        <span class="self">self</span>.<span class="ident">device</span>.<span class="ident">close</span>();
     }
 }
 
@@ -2379,17 +2551,63 @@
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> (),
         }
 
+        <span class="self">self</span>.<span class="ident">device</span>
+            .<span class="ident">region_write</span>(<span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>, <span class="ident">data</span>, <span class="ident">start</span>);
+
         <span class="comment">// if guest enable memory access, then enable bar mappable once</span>
         <span class="kw">if</span> <span class="ident">start</span> <span class="op">=</span><span class="op">=</span> <span class="ident">PCI_COMMAND</span> <span class="kw">as</span> <span class="ident">u64</span>
             <span class="op">&amp;&amp;</span> <span class="ident">data</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">2</span>
             <span class="op">&amp;&amp;</span> <span class="ident">data</span>[<span class="number">0</span>] <span class="op">&amp;</span> <span class="ident">PCI_COMMAND_MEMORY</span> <span class="op">=</span><span class="op">=</span> <span class="ident">PCI_COMMAND_MEMORY</span>
-            <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">mem</span>.<span class="ident">is_empty</span>()
+            <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">remap</span>
         {
             <span class="self">self</span>.<span class="ident">enable_bars_mmap</span>();
-        }
+        } <span class="kw">else</span> <span class="kw">if</span> (<span class="number">0x10</span>..<span class="op">=</span><span class="number">0x24</span>).<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">start</span>) <span class="op">&amp;&amp;</span> <span class="ident">data</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">4</span> {
+            <span class="kw">let</span> <span class="ident">bar_idx</span> <span class="op">=</span> (<span class="ident">start</span> <span class="kw">as</span> <span class="ident">u32</span> <span class="op">-</span> <span class="number">0x10</span>) <span class="op">/</span> <span class="number">4</span>;
+            <span class="kw">let</span> <span class="ident">value</span>: [<span class="ident">u8</span>; <span class="number">4</span>] <span class="op">=</span> [<span class="ident">data</span>[<span class="number">0</span>], <span class="ident">data</span>[<span class="number">1</span>], <span class="ident">data</span>[<span class="number">2</span>], <span class="ident">data</span>[<span class="number">3</span>]];
+            <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">u32::from_le_bytes</span>(<span class="ident">value</span>);
+            <span class="kw">if</span> <span class="ident">val</span> <span class="op">!</span><span class="op">=</span> <span class="number">0xFFFFFFFF</span> {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mmio_clone</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mmio_regions</span>.<span class="ident">clone</span>();
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">modify</span> <span class="op">=</span> <span class="bool-val">false</span>;
+                <span class="kw">for</span> <span class="ident">region</span> <span class="kw">in</span> <span class="ident">mmio_clone</span>.<span class="ident">iter_mut</span>() {
+                    <span class="kw">if</span> <span class="ident">region</span>.<span class="ident">bar_index</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">bar_idx</span> <span class="kw">as</span> <span class="ident">usize</span> {
+                        <span class="kw">let</span> <span class="ident">old_addr</span> <span class="op">=</span> <span class="ident">region</span>.<span class="ident">address</span>();
+                        <span class="kw">let</span> <span class="ident">new_addr</span> <span class="op">=</span> <span class="ident">val</span> <span class="op">&amp;</span> <span class="number">0xFFFFFFF0</span>;
+                        <span class="kw">if</span> <span class="op">!</span><span class="ident">region</span>.<span class="ident">is_64bit_memory</span>() <span class="op">&amp;&amp;</span> (<span class="ident">old_addr</span> <span class="kw">as</span> <span class="ident">u32</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">new_addr</span> {
+                            <span class="comment">// Change 32bit bar address</span>
+                            <span class="kw-2">*</span><span class="ident">region</span> <span class="op">=</span> <span class="ident">region</span>.<span class="ident">set_address</span>(<span class="ident">u64::from</span>(<span class="ident">new_addr</span>));
+                            <span class="self">self</span>.<span class="ident">remap</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                            <span class="ident">modify</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">region</span>.<span class="ident">is_64bit_memory</span>() <span class="op">&amp;&amp;</span> (<span class="ident">old_addr</span> <span class="kw">as</span> <span class="ident">u32</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">new_addr</span> {
+                            <span class="comment">// Change 64bit bar low address</span>
+                            <span class="kw-2">*</span><span class="ident">region</span> <span class="op">=</span>
+                                <span class="ident">region</span>.<span class="ident">set_address</span>(<span class="ident">u64::from</span>(<span class="ident">new_addr</span>) <span class="op">|</span> ((<span class="ident">old_addr</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>));
+                            <span class="self">self</span>.<span class="ident">remap</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                            <span class="ident">modify</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                        }
+                        <span class="kw">break</span>;
+                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">region</span>.<span class="ident">is_64bit_memory</span>()
+                        <span class="op">&amp;&amp;</span> ((<span class="ident">bar_idx</span> <span class="op">%</span> <span class="number">2</span>) <span class="op">=</span><span class="op">=</span> <span class="number">1</span>)
+                        <span class="op">&amp;&amp;</span> (<span class="ident">region</span>.<span class="ident">bar_index</span>() <span class="op">+</span> <span class="number">1</span> <span class="op">=</span><span class="op">=</span> <span class="ident">bar_idx</span> <span class="kw">as</span> <span class="ident">usize</span>)
+                    {
+                        <span class="comment">// Change 64bit bar high address</span>
+                        <span class="kw">let</span> <span class="ident">old_addr</span> <span class="op">=</span> <span class="ident">region</span>.<span class="ident">address</span>();
+                        <span class="kw">if</span> <span class="ident">val</span> <span class="op">!</span><span class="op">=</span> (<span class="ident">old_addr</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>) <span class="kw">as</span> <span class="ident">u32</span> {
+                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_addr</span> <span class="op">=</span> (<span class="ident">u64::from</span>(<span class="ident">val</span>)) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>;
+                            <span class="ident">new_addr</span> <span class="op">|</span><span class="op">=</span> <span class="ident">old_addr</span> <span class="op">&amp;</span> <span class="number">0xFFFFFFFF</span>;
+                            <span class="kw-2">*</span><span class="ident">region</span> <span class="op">=</span> <span class="ident">region</span>.<span class="ident">set_address</span>(<span class="ident">new_addr</span>);
+                            <span class="self">self</span>.<span class="ident">remap</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                            <span class="ident">modify</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                        }
+                        <span class="kw">break</span>;
+                    }
+                }
 
-        <span class="self">self</span>.<span class="ident">device</span>
-            .<span class="ident">region_write</span>(<span class="ident">VFIO_PCI_CONFIG_REGION_INDEX</span>, <span class="ident">data</span>, <span class="ident">start</span>);
+                <span class="kw">if</span> <span class="ident">modify</span> {
+                    <span class="self">self</span>.<span class="ident">mmio_regions</span>.<span class="ident">clear</span>();
+                    <span class="self">self</span>.<span class="ident">mmio_regions</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">mmio_clone</span>);
+                }
+            }
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">read_bar</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">addr</span>: <span class="ident">u64</span>, <span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) {
@@ -2437,6 +2655,10 @@
 
             <span class="self">self</span>.<span class="ident">device</span>.<span class="ident">region_write</span>(<span class="ident">bar_index</span>, <span class="ident">data</span>, <span class="ident">offset</span>);
         }
+    }
+
+    <span class="kw">fn</span> <span class="ident">destroy_device</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">close</span>();
     }
 }
 </pre></div>

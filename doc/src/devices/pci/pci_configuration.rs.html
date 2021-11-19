@@ -1276,6 +1276,10 @@
 <span id="1276">1276</span>
 <span id="1277">1277</span>
 <span id="1278">1278</span>
+<span id="1279">1279</span>
+<span id="1280">1280</span>
+<span id="1281">1281</span>
+<span id="1282">1282</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1977,6 +1981,10 @@
             <span class="self">self</span>.<span class="ident">region_type</span>,
             <span class="ident">PciBarRegionType::Memory32BitRegion</span> <span class="op">|</span> <span class="ident">PciBarRegionType::Memory64BitRegion</span>
         )
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_64bit_memory</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">region_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">PciBarRegionType::Memory64BitRegion</span>
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_io</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {

@@ -1308,6 +1308,12 @@
 <span id="1308">1308</span>
 <span id="1309">1309</span>
 <span id="1310">1310</span>
+<span id="1311">1311</span>
+<span id="1312">1312</span>
+<span id="1313">1313</span>
+<span id="1314">1314</span>
+<span id="1315">1315</span>
+<span id="1316">1316</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1870,7 +1876,7 @@
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gdb&quot;</span>))]</span>
             <span class="ident">gdb</span>: <span class="ident">components</span>.<span class="ident">gdb</span>,
             <span class="ident">root_config</span>: <span class="ident">pci_bus</span>,
-            <span class="ident">hotplug_bus</span>: <span class="prelude-val">None</span>,
+            <span class="ident">hotplug_bus</span>: <span class="ident">Vec::new</span>(),
         })
     }
 
@@ -2318,7 +2324,13 @@
     <span class="doccomment">/// This returns a minimal kernel command for this architecture</span>
     <span class="kw">fn</span> <span class="ident">get_base_linux_cmdline</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">kernel_cmdline::Cmdline</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmdline</span> <span class="op">=</span> <span class="ident">kernel_cmdline::Cmdline::new</span>(<span class="ident">CMDLINE_MAX_SIZE</span> <span class="kw">as</span> <span class="ident">usize</span>);
-        <span class="ident">cmdline</span>.<span class="ident">insert_str</span>(<span class="string">&quot;reboot=k panic=-1&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="comment">// _OSC give OS the pcie hotplug capability, but _OSC is missed in dsdt, so</span>
+        <span class="comment">// pcie_ports=native is used to force enable pcie hotplug temporary.</span>
+        <span class="comment">// Once pcie enhanced configuration access feature is enabled, _OSC</span>
+        <span class="comment">// will be added, then this parameter will be removed.</span>
+        <span class="ident">cmdline</span>
+            .<span class="ident">insert_str</span>(<span class="string">&quot;reboot=k panic=-1 pcie_ports=native&quot;</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="ident">cmdline</span>
     }

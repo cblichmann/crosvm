@@ -1643,7 +1643,7 @@
                     <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="ident">VmMemoryResponse::Err</span>(<span class="ident">SysError::new</span>(<span class="ident">EINVAL</span>)),
                 };
                 <span class="kw">match</span> <span class="ident">vm</span>.<span class="ident">add_memory_region</span>(<span class="ident">GuestAddress</span>(<span class="ident">gpa</span>), <span class="ident">Box::new</span>(<span class="ident">mmap</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VmMemoryResponse::Ok</span>,
+                    <span class="prelude-val">Ok</span>(<span class="ident">slot</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VmMemoryResponse::RegisterMemory</span> { <span class="ident">pfn</span>: <span class="number">0</span>, <span class="ident">slot</span> },
                     <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VmMemoryResponse::Err</span>(<span class="ident">e</span>),
                 }
             }
