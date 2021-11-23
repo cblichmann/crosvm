@@ -1156,11 +1156,6 @@
 <span id="1156">1156</span>
 <span id="1157">1157</span>
 <span id="1158">1158</span>
-<span id="1159">1159</span>
-<span id="1160">1160</span>
-<span id="1161">1161</span>
-<span id="1162">1162</span>
-<span id="1163">1163</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1541,14 +1536,9 @@
         <span class="kw">if</span> <span class="ident">addr</span> <span class="op">=</span><span class="op">=</span> <span class="ident">libc::MAP_FAILED</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::SystemCallFailed</span>(<span class="ident">errno::Error::last</span>()));
         }
-        <span class="comment">// This is safe because we call madvise with a valid address and size, and we check the</span>
-        <span class="comment">// return value. We only warn about an error because failure here is not fatal to the mmap.</span>
-        <span class="kw">if</span> <span class="ident">libc::madvise</span>(<span class="ident">addr</span>, <span class="ident">size</span>, <span class="ident">libc::MADV_DONTDUMP</span>) <span class="op">=</span><span class="op">=</span> <span class="op">-</span><span class="number">1</span> {
-            <span class="macro">warn!</span>(
-                <span class="string">&quot;failed madvise(MADV_DONTDUMP) on mmap: {}&quot;</span>,
-                <span class="ident">errno::Error::last</span>()
-            );
-        }
+        <span class="comment">// This is safe because we call madvise with a valid address and size.</span>
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">libc::madvise</span>(<span class="ident">addr</span>, <span class="ident">size</span>, <span class="ident">libc::MADV_DONTDUMP</span>);
+
         <span class="prelude-val">Ok</span>(<span class="ident">MemoryMapping</span> {
             <span class="ident">addr</span>: <span class="ident">addr</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">u8</span>,
             <span class="ident">size</span>,

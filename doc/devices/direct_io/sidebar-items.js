@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["DirectIo",""]]});
+initSidebarItems({"struct":[["DirectIo",""],["DirectMmio",""]]});
