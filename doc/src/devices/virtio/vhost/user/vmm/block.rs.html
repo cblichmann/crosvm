@@ -173,8 +173,6 @@
 <span id="173">173</span>
 <span id="174">174</span>
 <span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -187,7 +185,6 @@
 <span class="kw">use</span> <span class="ident">std::u32</span>;
 
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Event</span>, <span class="ident">RawDescriptor</span>};
-<span class="kw">use</span> <span class="ident">cros_async::Executor</span>;
 <span class="kw">use</span> <span class="ident">virtio_sys::virtio_ring::VIRTIO_RING_F_EVENT_IDX</span>;
 <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
 <span class="kw">use</span> <span class="ident">vmm_vhost::vhost_user::message</span>::{<span class="ident">VhostUserProtocolFeatures</span>, <span class="ident">VhostUserVirtioFeatures</span>};
@@ -321,14 +318,13 @@
         <span class="kw">let</span> <span class="ident">worker_result</span> <span class="op">=</span> <span class="ident">thread::Builder::new</span>()
             .<span class="ident">name</span>(<span class="string">&quot;vhost_user_virtio_blk&quot;</span>.<span class="ident">to_string</span>())
             .<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executor::new</span>().<span class="ident">expect</span>(<span class="string">&quot;failed to create an executor&quot;</span>);
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">worker</span> <span class="op">=</span> <span class="ident">Worker</span> {
                     <span class="ident">queues</span>,
                     <span class="ident">mem</span>,
                     <span class="ident">kill_evt</span>,
                 };
 
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">worker</span>.<span class="ident">run</span>(<span class="kw-2">&amp;</span><span class="ident">ex</span>, <span class="ident">interrupt</span>) {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">worker</span>.<span class="ident">run</span>(<span class="ident">interrupt</span>) {
                     <span class="macro">error!</span>(<span class="string">&quot;failed to start a worker: {}&quot;</span>, <span class="ident">e</span>);
                 }
                 <span class="ident">worker</span>

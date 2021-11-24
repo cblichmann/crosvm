@@ -82,6 +82,7 @@
 <span id="82">82</span>
 <span id="83">83</span>
 <span id="84">84</span>
+<span id="85">85</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -134,14 +135,15 @@
     }
 
     <span class="comment">// Runs asynchronous tasks.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ex</span>: <span class="kw-2">&amp;</span><span class="ident">Executor</span>, <span class="ident">interrupt</span>: <span class="ident">Interrupt</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">interrupt</span>: <span class="ident">Interrupt</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executor::new</span>().<span class="ident">expect</span>(<span class="string">&quot;failed to create an executor&quot;</span>);
         <span class="kw">let</span> <span class="ident">resample_evt</span> <span class="op">=</span> <span class="ident">interrupt</span>
             .<span class="ident">get_resample_evt</span>()
             .<span class="ident">expect</span>(<span class="string">&quot;resample event required&quot;</span>)
             .<span class="ident">try_clone</span>()
             .<span class="ident">expect</span>(<span class="string">&quot;failed to clone resample event&quot;</span>);
         <span class="kw">let</span> <span class="ident">async_resample_evt</span> <span class="op">=</span>
-            <span class="ident">EventAsync::new</span>(<span class="ident">resample_evt</span>.<span class="number">0</span>, <span class="ident">ex</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to create async resample event&quot;</span>);
+            <span class="ident">EventAsync::new</span>(<span class="ident">resample_evt</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">ex</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to create async resample event&quot;</span>);
         <span class="kw">let</span> <span class="ident">resample</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::handle_irq_resample</span>(<span class="ident">async_resample_evt</span>, <span class="ident">interrupt</span>);
         <span class="macro">pin_mut!</span>(<span class="ident">resample</span>);
 
@@ -150,7 +152,7 @@
                 .<span class="ident">try_clone</span>()
                 .<span class="ident">expect</span>(<span class="string">&quot;failed to clone kill_evt&quot;</span>)
                 .<span class="number">0</span>,
-            <span class="ident">ex</span>,
+            <span class="kw-2">&amp;</span><span class="ident">ex</span>,
         )
         .<span class="ident">expect</span>(<span class="string">&quot;failed to create async kill event fd&quot;</span>);
         <span class="kw">let</span> <span class="ident">kill</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::wait_kill</span>(<span class="ident">kill_evt</span>);
