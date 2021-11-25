@@ -1880,11 +1880,20 @@
 <span id="1880">1880</span>
 <span id="1881">1881</span>
 <span id="1882">1882</span>
+<span id="1883">1883</span>
+<span id="1884">1884</span>
+<span id="1885">1885</span>
+<span id="1886">1886</span>
+<span id="1887">1887</span>
+<span id="1888">1888</span>
+<span id="1889">1889</span>
+<span id="1890">1890</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
+<span class="kw">use</span> <span class="ident">std::cmp</span>::{<span class="ident">max</span>, <span class="ident">min</span>};
 <span class="kw">use</span> <span class="ident">std::convert::TryInto</span>;
 <span class="kw">use</span> <span class="ident">std::ffi::CStr</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>;
@@ -2837,6 +2846,7 @@
             <span class="op">|</span> <span class="ident">FsOptions::DO_READDIRPLUS</span>
             <span class="op">|</span> <span class="ident">FsOptions::READDIRPLUS_AUTO</span>
             <span class="op">|</span> <span class="ident">FsOptions::ATOMIC_O_TRUNC</span>
+            <span class="op">|</span> <span class="ident">FsOptions::MAX_PAGES</span>
             <span class="op">|</span> <span class="ident">FsOptions::MAP_ALIGNMENT</span>;
 
         <span class="kw">let</span> <span class="ident">capable</span> <span class="op">=</span> <span class="ident">FsOptions::from_bits_truncate</span>(<span class="ident">flags</span>);
@@ -2856,6 +2866,11 @@
                     <span class="ident">enabled</span>.<span class="ident">remove</span>(<span class="ident">FsOptions::ATOMIC_O_TRUNC</span>);
                 }
 
+                <span class="kw">let</span> <span class="ident">max_write</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">fs</span>.<span class="ident">max_buffer_size</span>();
+                <span class="kw">let</span> <span class="ident">max_pages</span> <span class="op">=</span> <span class="ident">min</span>(
+                    <span class="ident">max</span>(<span class="ident">max_readahead</span>, <span class="ident">max_write</span>) <span class="op">/</span> <span class="ident">pagesize</span>() <span class="kw">as</span> <span class="ident">u32</span>,
+                    <span class="ident">u16::MAX</span> <span class="kw">as</span> <span class="ident">u32</span>,
+                ) <span class="kw">as</span> <span class="ident">u16</span>;
                 <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">InitOut</span> {
                     <span class="ident">major</span>: <span class="ident">KERNEL_VERSION</span>,
                     <span class="ident">minor</span>: <span class="ident">KERNEL_MINOR_VERSION</span>,
@@ -2863,8 +2878,9 @@
                     <span class="ident">flags</span>: <span class="ident">enabled</span>.<span class="ident">bits</span>(),
                     <span class="ident">max_background</span>: <span class="ident">::std::u16::MAX</span>,
                     <span class="ident">congestion_threshold</span>: (<span class="ident">::std::u16::MAX</span> <span class="op">/</span> <span class="number">4</span>) <span class="op">*</span> <span class="number">3</span>,
-                    <span class="ident">max_write</span>: <span class="self">self</span>.<span class="ident">fs</span>.<span class="ident">max_buffer_size</span>(),
+                    <span class="ident">max_write</span>,
                     <span class="ident">time_gran</span>: <span class="number">1</span>, <span class="comment">// nanoseconds</span>
+                    <span class="ident">max_pages</span>,
                     <span class="ident">map_alignment</span>: <span class="ident">pagesize</span>().<span class="ident">trailing_zeros</span>() <span class="kw">as</span> <span class="ident">u16</span>,
                     ..<span class="ident">Default::default</span>()
                 };

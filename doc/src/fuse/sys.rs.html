@@ -1198,6 +1198,13 @@
 <span id="1198">1198</span>
 <span id="1199">1199</span>
 <span id="1200">1200</span>
+<span id="1201">1201</span>
+<span id="1202">1202</span>
+<span id="1203">1203</span>
+<span id="1204">1204</span>
+<span id="1205">1205</span>
+<span id="1206">1206</span>
+<span id="1207">1207</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1564,6 +1571,13 @@
         <span class="doccomment">/// mapping requests are pagesize-aligned. This field automatically set by the server and</span>
         <span class="doccomment">/// this feature is enabled by default.</span>
         <span class="kw">const</span> <span class="ident">MAP_ALIGNMENT</span> <span class="op">=</span> <span class="ident">MAP_ALIGNMENT</span>;
+
+
+        <span class="doccomment">/// Indicates that the `max_pages` field of the `InitOut` struct is valid.</span>
+        <span class="doccomment">///</span>
+        <span class="doccomment">/// This field is used by the kernel driver to determine the maximum number of pages that</span>
+        <span class="doccomment">/// may be used for any read or write requests.</span>
+        <span class="kw">const</span> <span class="ident">MAX_PAGES</span> <span class="op">=</span> <span class="ident">MAX_PAGES</span>;
     }
 }
 
