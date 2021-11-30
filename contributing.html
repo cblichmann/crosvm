@@ -231,10 +231,12 @@ by setting CQ+2.</p>
 is set by the developers to indicate that they successfully tested a change. The
 Verified bit can only be set by Kokoro in the crosvm repository.</p>
 <h3 id="post-submit-uprev-flow"><a class="header" href="#post-submit-uprev-flow">Post submit uprev flow.</a></h3>
-<p>Daily job called Pupr will test the new change through the commit queue will
-test the new crosvm on ChromeOS hardware, including high level end-to-end
-tests. Only if all of those pass, the pinned version of crosvm (as specified in
-the <code>CROS_WORKON_COMMIT</code> in
+<p>Daily job called Pupr will test the new change through the commit queue (see the
+topic
+<a href="https://chromium-review.googlesource.com/q/topic:chromeos-base%252Fcrosvm">chromeos-base/crosvm</a>
+for the attempts). The commit queue will test the new crosvm on ChromeOS
+hardware, including high level end-to-end tests. Only if all of those pass, the
+pinned version of crosvm (as specified in the <code>CROS_WORKON_COMMIT</code> in
 <a href="https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/main/chromeos-base/crosvm">crosvm-0.1.0-rXXXX.ebuild</a>)
 will be used in the Chrome OS build (this is referred to as <code>crosvm uprev process</code>).</p>
 <p>Failures here will delay the landing of the change and may cause Google

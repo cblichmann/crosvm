@@ -1156,6 +1156,7 @@
 <span id="1156">1156</span>
 <span id="1157">1157</span>
 <span id="1158">1158</span>
+<span id="1159">1159</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1331,7 +1332,8 @@
     }
 }
 
-<span class="doccomment">/// Wraps an anonymous shared memory mapping in the current process.</span>
+<span class="doccomment">/// Wraps an anonymous shared memory mapping in the current process. Provides</span>
+<span class="doccomment">/// RAII semantics including munmap when no longer needed.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MemoryMapping</span> {
     <span class="ident">addr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">u8</span>,

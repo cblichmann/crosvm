@@ -57,7 +57,8 @@ the <code>#[serde(with = &quot;with_as_descriptor&quot;)]</code> trait is infeas
 </div><div class="item-left module-item"><a class="struct" href="struct.LayoutAllocation.html" title="sys_util::LayoutAllocation struct">LayoutAllocation</a></div><div class="item-right docblock-short"><p>A contiguous memory allocation with a specified size and alignment, with a
 Drop impl to perform the deallocation.</p>
 </div><div class="item-left module-item"><a class="struct" href="struct.MemfdSeals.html" title="sys_util::MemfdSeals struct">MemfdSeals</a></div><div class="item-right docblock-short"><p>A set of memfd seals.</p>
-</div><div class="item-left module-item"><a class="struct" href="struct.MemoryMapping.html" title="sys_util::MemoryMapping struct">MemoryMapping</a></div><div class="item-right docblock-short"><p>Wraps an anonymous shared memory mapping in the current process.</p>
+</div><div class="item-left module-item"><a class="struct" href="struct.MemoryMapping.html" title="sys_util::MemoryMapping struct">MemoryMapping</a></div><div class="item-right docblock-short"><p>Wraps an anonymous shared memory mapping in the current process. Provides
+RAII semantics including munmap when no longer needed.</p>
 </div><div class="item-left module-item"><a class="struct" href="struct.MemoryMappingArena.html" title="sys_util::MemoryMappingArena struct">MemoryMappingArena</a></div><div class="item-right docblock-short"><p>Tracks Fixed Memory Maps within an anonymous memory-mapped fixed-sized arena
 in the current process.</p>
 </div><div class="item-left module-item"><a class="struct" href="struct.PollContext.html" title="sys_util::PollContext struct">PollContext</a></div><div class="item-right docblock-short"><p>Used to poll multiple objects that have file descriptors.</p>
