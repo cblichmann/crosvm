@@ -1908,7 +1908,7 @@
 <span class="kw">use</span> <span class="ident">std::error::Error</span> <span class="kw">as</span> <span class="ident">StdError</span>;
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Read</span>, <span class="ident">Seek</span>, <span class="ident">SeekFrom</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">IoSliceMut</span>, <span class="ident">Read</span>, <span class="ident">Seek</span>, <span class="ident">SeekFrom</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std::mem::size_of</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;minigbm&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::os::raw</span>::{<span class="ident">c_uint</span>, <span class="ident">c_ulonglong</span>};
@@ -2683,7 +2683,7 @@
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fd_buf</span> <span class="op">=</span> [<span class="number">0</span>; <span class="ident">VIRTWL_SEND_MAX_ALLOCS</span>];
             <span class="comment">// If any errors happen, the socket will get dropped, preventing more reading.</span>
             <span class="kw">let</span> (<span class="ident">len</span>, <span class="ident">file_count</span>) <span class="op">=</span> <span class="ident">socket</span>
-                .<span class="ident">recv_with_fds</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>[..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fd_buf</span>)
+                .<span class="ident">recv_with_fds</span>(<span class="ident">IoSliceMut::new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fd_buf</span>)
                 .<span class="ident">map_err</span>(<span class="ident">WlError::RecvVfd</span>)<span class="question-mark">?</span>;
             <span class="comment">// If any data gets read, the put the socket back for future recv operations.</span>
             <span class="kw">if</span> <span class="ident">len</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">file_count</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {

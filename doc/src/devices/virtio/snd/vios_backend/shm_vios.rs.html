@@ -882,7 +882,7 @@
 
 <span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">HashMap</span>, <span class="ident">VecDeque</span>};
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">IOError</span>, <span class="ident">ErrorKind</span> <span class="kw">as</span> <span class="ident">IOErrorKind</span>, <span class="ident">Seek</span>, <span class="ident">SeekFrom</span>};
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">IOError</span>, <span class="ident">ErrorKind</span> <span class="kw">as</span> <span class="ident">IOErrorKind</span>, <span class="ident">IoSliceMut</span>, <span class="ident">Seek</span>, <span class="ident">SeekFrom</span>};
 <span class="kw">use</span> <span class="ident">std::os::unix::io</span>::{<span class="ident">AsRawFd</span>, <span class="ident">FromRawFd</span>, <span class="ident">RawFd</span>};
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">std::sync::mpsc</span>::{<span class="ident">channel</span>, <span class="ident">Receiver</span>, <span class="ident">RecvError</span>, <span class="ident">Sender</span>};
@@ -1005,7 +1005,7 @@
         <span class="kw">const</span> <span class="ident">NUM_FDS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">5</span>;
         <span class="ident">fds</span>.<span class="ident">resize</span>(<span class="ident">NUM_FDS</span>, <span class="number">0</span>);
         <span class="kw">let</span> (<span class="ident">recv_size</span>, <span class="ident">fd_count</span>) <span class="op">=</span> <span class="ident">client_socket</span>
-            .<span class="ident">recv_with_fds</span>(<span class="ident">config</span>.<span class="ident">as_mut_slice</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fds</span>)
+            .<span class="ident">recv_with_fds</span>(<span class="ident">IoSliceMut::new</span>(<span class="ident">config</span>.<span class="ident">as_mut_slice</span>()), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fds</span>)
             .<span class="ident">map_err</span>(<span class="ident">Error::ServerError</span>)<span class="question-mark">?</span>;
 
         <span class="comment">// Resize the vector to the actual number of file descriptors received and wrap them in</span>

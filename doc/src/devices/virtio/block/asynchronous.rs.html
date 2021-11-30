@@ -1148,42 +1148,6 @@
 <span id="1148">1148</span>
 <span id="1149">1149</span>
 <span id="1150">1150</span>
-<span id="1151">1151</span>
-<span id="1152">1152</span>
-<span id="1153">1153</span>
-<span id="1154">1154</span>
-<span id="1155">1155</span>
-<span id="1156">1156</span>
-<span id="1157">1157</span>
-<span id="1158">1158</span>
-<span id="1159">1159</span>
-<span id="1160">1160</span>
-<span id="1161">1161</span>
-<span id="1162">1162</span>
-<span id="1163">1163</span>
-<span id="1164">1164</span>
-<span id="1165">1165</span>
-<span id="1166">1166</span>
-<span id="1167">1167</span>
-<span id="1168">1168</span>
-<span id="1169">1169</span>
-<span id="1170">1170</span>
-<span id="1171">1171</span>
-<span id="1172">1172</span>
-<span id="1173">1173</span>
-<span id="1174">1174</span>
-<span id="1175">1175</span>
-<span id="1176">1176</span>
-<span id="1177">1177</span>
-<span id="1178">1178</span>
-<span id="1179">1179</span>
-<span id="1180">1180</span>
-<span id="1181">1181</span>
-<span id="1182">1182</span>
-<span id="1183">1183</span>
-<span id="1184">1184</span>
-<span id="1185">1185</span>
-<span id="1186">1186</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1221,8 +1185,8 @@
 
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::common</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio</span>::{
-    <span class="ident">copy_config</span>, <span class="ident">DescriptorChain</span>, <span class="ident">DescriptorError</span>, <span class="ident">Interrupt</span>, <span class="ident">Queue</span>, <span class="ident">Reader</span>, <span class="ident">SignalableInterrupt</span>,
-    <span class="ident">VirtioDevice</span>, <span class="ident">Writer</span>, <span class="ident">TYPE_BLOCK</span>,
+    <span class="ident">async_utils</span>, <span class="ident">copy_config</span>, <span class="ident">DescriptorChain</span>, <span class="ident">DescriptorError</span>, <span class="ident">Interrupt</span>, <span class="ident">Queue</span>, <span class="ident">Reader</span>,
+    <span class="ident">SignalableInterrupt</span>, <span class="ident">VirtioDevice</span>, <span class="ident">Writer</span>, <span class="ident">TYPE_BLOCK</span>,
 };
 
 <span class="kw">const</span> <span class="ident">QUEUE_SIZE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">256</span>;
@@ -1458,41 +1422,6 @@
     }
 }
 
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">handle_irq_resample</span>(
-    <span class="ident">ex</span>: <span class="kw-2">&amp;</span><span class="ident">Executor</span>,
-    <span class="ident">interrupt</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Interrupt</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">result::Result</span><span class="op">&lt;</span>(), <span class="ident">ControlError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">resample_evt</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">resample_evt</span>) <span class="op">=</span> <span class="ident">interrupt</span>.<span class="ident">borrow</span>().<span class="ident">get_resample_evt</span>() {
-        <span class="kw">let</span> <span class="ident">resample_evt</span> <span class="op">=</span> <span class="ident">resample_evt</span>
-            .<span class="ident">try_clone</span>()
-            .<span class="ident">map_err</span>(<span class="ident">ControlError::CloneResampleEvent</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">resample_evt</span> <span class="op">=</span>
-            <span class="ident">EventAsync::new</span>(<span class="ident">resample_evt</span>.<span class="number">0</span>, <span class="ident">ex</span>).<span class="ident">map_err</span>(<span class="ident">ControlError::AsyncResampleCreate</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Some</span>(<span class="ident">resample_evt</span>)
-    } <span class="kw">else</span> {
-        <span class="prelude-val">None</span>
-    };
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">resample_evt</span>) <span class="op">=</span> <span class="ident">resample_evt</span> {
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">resample_evt</span>
-                .<span class="ident">next_val</span>()
-                .<span class="kw">await</span>
-                .<span class="ident">map_err</span>(<span class="ident">ControlError::ReadResampleEvent</span>)<span class="question-mark">?</span>;
-            <span class="ident">interrupt</span>.<span class="ident">borrow</span>().<span class="ident">do_interrupt_resample</span>();
-        }
-    } <span class="kw">else</span> {
-        <span class="comment">// no resample event, park the future.</span>
-        <span class="kw">let</span> () <span class="op">=</span> <span class="ident">futures::future::pending</span>().<span class="kw">await</span>;
-        <span class="prelude-val">Ok</span>(())
-    }
-}
-
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">wait_kill</span>(<span class="ident">kill_evt</span>: <span class="ident">EventAsync</span>) {
-    <span class="comment">// Once this event is readable, exit. Exiting this future will cause the main loop to</span>
-    <span class="comment">// break and the device process to exit.</span>
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">kill_evt</span>.<span class="ident">next_val</span>().<span class="kw">await</span>;
-}
-
 <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">handle_command_tube</span>(
     <span class="ident">command_tube</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">AsyncTube</span><span class="op">&gt;</span>,
     <span class="ident">interrupt</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Interrupt</span><span class="op">&gt;</span><span class="op">&gt;</span>,
@@ -1610,7 +1539,7 @@
     <span class="kw">let</span> <span class="ident">flush_timer_armed</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">RefCell::new</span>(<span class="bool-val">false</span>));
 
     <span class="comment">// Process any requests to resample the irq value.</span>
-    <span class="kw">let</span> <span class="ident">resample</span> <span class="op">=</span> <span class="ident">handle_irq_resample</span>(<span class="kw-2">&amp;</span><span class="ident">ex</span>, <span class="ident">Rc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">interrupt</span>));
+    <span class="kw">let</span> <span class="ident">resample</span> <span class="op">=</span> <span class="ident">async_utils::handle_irq_resample</span>(<span class="kw-2">&amp;</span><span class="ident">ex</span>, <span class="ident">Rc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">interrupt</span>));
     <span class="macro">pin_mut!</span>(<span class="ident">resample</span>);
 
     <span class="comment">// Handles control requests.</span>
@@ -1659,8 +1588,7 @@
     <span class="macro">pin_mut!</span>(<span class="ident">disk_flush</span>);
 
     <span class="comment">// Exit if the kill event is triggered.</span>
-    <span class="kw">let</span> <span class="ident">kill_evt</span> <span class="op">=</span> <span class="ident">EventAsync::new</span>(<span class="ident">kill_evt</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">ex</span>).<span class="ident">expect</span>(<span class="string">&quot;Failed to create async kill event fd&quot;</span>);
-    <span class="kw">let</span> <span class="ident">kill</span> <span class="op">=</span> <span class="ident">wait_kill</span>(<span class="ident">kill_evt</span>);
+    <span class="kw">let</span> <span class="ident">kill</span> <span class="op">=</span> <span class="ident">async_utils::await_and_exit</span>(<span class="kw-2">&amp;</span><span class="ident">ex</span>, <span class="ident">kill_evt</span>);
     <span class="macro">pin_mut!</span>(<span class="ident">kill</span>);
 
     <span class="kw">match</span> <span class="ident">ex</span>.<span class="ident">run_until</span>(<span class="ident">select5</span>(<span class="ident">queue_handlers</span>, <span class="ident">disk_flush</span>, <span class="ident">control</span>, <span class="ident">resample</span>, <span class="ident">kill</span>)) {

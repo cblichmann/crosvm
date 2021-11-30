@@ -2055,6 +2055,9 @@
 <span id="2055">2055</span>
 <span id="2056">2056</span>
 <span id="2057">2057</span>
+<span id="2058">2058</span>
+<span id="2059">2059</span>
+<span id="2060">2060</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -2075,7 +2078,7 @@
 
 <span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">IoSlice</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">IoSlice</span>, <span class="ident">IoSliceMut</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std::mem</span>::{<span class="ident">size_of</span>, <span class="ident">swap</span>};
 <span class="kw">use</span> <span class="ident">std::os::raw</span>::{<span class="ident">c_int</span>, <span class="ident">c_void</span>};
 <span class="kw">use</span> <span class="ident">std::os::unix::io</span>::{<span class="ident">AsRawFd</span>, <span class="ident">FromRawFd</span>, <span class="ident">IntoRawFd</span>, <span class="ident">RawFd</span>};
@@ -2358,7 +2361,10 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">datagram_fds</span> <span class="op">=</span> [<span class="number">0</span>; <span class="ident">MAX_DATAGRAM_FD</span>];
         <span class="kw">let</span> (<span class="ident">msg_size</span>, <span class="ident">fd_count</span>) <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">socket</span>
-            .<span class="ident">recv_with_fds</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">response_buffer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">datagram_fds</span>)
+            .<span class="ident">recv_with_fds</span>(
+                <span class="ident">IoSliceMut::new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">response_buffer</span>),
+                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">datagram_fds</span>,
+            )
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="op">-</span><span class="ident">e</span>.<span class="ident">errno</span>())<span class="question-mark">?</span>;
         <span class="comment">// Safe because the first fd_count fds from recv_with_fds are owned by us and valid.</span>
         <span class="kw">let</span> <span class="ident">datagram_files</span> <span class="op">=</span> <span class="ident">datagram_fds</span>[..<span class="ident">fd_count</span>]
