@@ -1022,8 +1022,6 @@
 <span id="1022">1022</span>
 <span id="1023">1023</span>
 <span id="1024">1024</span>
-<span id="1025">1025</span>
-<span id="1026">1026</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1056,10 +1054,10 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_F_EDID</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_F_RESOURCE_UUID</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">2</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_F_RESOURCE_BLOB</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">3</span>;
-<span class="comment">/* The following capabilities are not upstreamed. */</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_F_CONTEXT_INIT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">4</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_F_CREATE_GUEST_HANDLE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">5</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_F_RESOURCE_SYNC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">6</span>;
+<span class="comment">/* The following capabilities are not upstreamed. */</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_F_RESOURCE_SYNC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_F_CREATE_GUEST_HANDLE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">6</span>;
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_UNDEFINED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0</span>;
 
@@ -1172,7 +1170,6 @@
 }
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_FLAG_FENCE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
-<span class="comment">/* Fence context index info flag not upstreamed. */</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_FLAG_INFO_RING_IDX</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
@@ -1394,7 +1391,7 @@
 
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">virtio_gpu_resource_create_3d</span> {}
 
-<span class="comment">/* VIRTIO_GPU_CMD_CTX_CREATE (context_init not upstreamed) */</span>
+<span class="comment">/* VIRTIO_GPU_CMD_CTX_CREATE */</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_CONTEXT_INIT_CAPSET_ID_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
@@ -1463,7 +1460,6 @@
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_CAPSET_VIRGL</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_CAPSET_VIRGL2</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">2</span>;
-<span class="comment">/* New capset IDs (not upstreamed) */</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_CAPSET_GFXSTREAM</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">3</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_CAPSET_VENUS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">4</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VIRTIO_GPU_CAPSET_CROSS_DOMAIN</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">5</span>;
