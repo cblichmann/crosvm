@@ -853,8 +853,6 @@
 <span id="853">853</span>
 <span id="854">854</span>
 <span id="855">855</span>
-<span id="856">856</span>
-<span id="857">857</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -922,7 +920,7 @@
 <span class="kw">use</span> <span class="ident">sys_util::clear_fd_flags</span>;
 <span class="kw">use</span> <span class="ident">thiserror::Error</span> <span class="kw">as</span> <span class="ident">ThisError</span>;
 <span class="kw">use</span> <span class="ident">vm_memory</span>::{<span class="ident">GuestAddress</span>, <span class="ident">GuestMemory</span>, <span class="ident">MemoryRegion</span>};
-<span class="kw">use</span> <span class="ident">vmm_vhost::vhost_user</span>::{
+<span class="kw">use</span> <span class="ident">vmm_vhost</span>::{
     <span class="ident">message</span>::{
         <span class="ident">VhostUserConfigFlags</span>, <span class="ident">VhostUserInflight</span>, <span class="ident">VhostUserMemoryRegion</span>, <span class="ident">VhostUserProtocolFeatures</span>,
         <span class="ident">VhostUserSingleMemoryRegion</span>, <span class="ident">VhostUserVirtioFeatures</span>, <span class="ident">VhostUserVringAddrFlags</span>,
@@ -930,9 +928,7 @@
     },
     <span class="ident">SlaveReqHandler</span>,
 };
-<span class="kw">use</span> <span class="ident">vmm_vhost::vhost_user</span>::{
-    <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">VhostError</span>, <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">VhostResult</span>, <span class="ident">VhostUserSlaveReqHandlerMut</span>,
-};
+<span class="kw">use</span> <span class="ident">vmm_vhost</span>::{<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">VhostError</span>, <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">VhostResult</span>, <span class="ident">VhostUserSlaveReqHandlerMut</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio</span>::{<span class="ident">Queue</span>, <span class="ident">SignalableInterrupt</span>};
 
@@ -1621,7 +1617,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_vhost_user_activate</span>() {
-        <span class="kw">use</span> <span class="ident">vmm_vhost::vhost_user</span>::{<span class="ident">SlaveListener</span>, <span class="ident">SocketListener</span>};
+        <span class="kw">use</span> <span class="ident">vmm_vhost</span>::{<span class="ident">SlaveListener</span>, <span class="ident">SocketEndpoint</span>, <span class="ident">SocketListener</span>};
 
         <span class="kw">const</span> <span class="ident">QUEUES_NUM</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">2</span>;
 
@@ -1680,7 +1676,7 @@
         <span class="kw">let</span> <span class="ident">handler</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">std::sync::Mutex::new</span>(<span class="ident">DeviceRequestHandler::new</span>(
             <span class="ident">FakeBackend::new</span>(),
         )));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SlaveListener::new</span>(<span class="ident">listener</span>, <span class="ident">handler</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SlaveListener</span>::<span class="op">&lt;</span><span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="ident">::new</span>(<span class="ident">listener</span>, <span class="ident">handler</span>).<span class="ident">unwrap</span>();
 
         <span class="comment">// Notify listener is ready.</span>
         <span class="ident">tx</span>.<span class="ident">send</span>(()).<span class="ident">unwrap</span>();

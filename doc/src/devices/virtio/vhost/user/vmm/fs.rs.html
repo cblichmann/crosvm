@@ -185,7 +185,6 @@
 <span id="185">185</span>
 <span id="186">186</span>
 <span id="187">187</span>
-<span id="188">188</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -199,9 +198,8 @@
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Event</span>, <span class="ident">RawDescriptor</span>};
 <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">DataInit</span>, <span class="ident">Le32</span>};
 <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
-<span class="kw">use</span> <span class="ident">vmm_vhost::vhost_user::message</span>::{<span class="ident">VhostUserProtocolFeatures</span>, <span class="ident">VhostUserVirtioFeatures</span>};
-<span class="kw">use</span> <span class="ident">vmm_vhost::vhost_user::Error</span> <span class="kw">as</span> <span class="ident">VhostUserError</span>;
-<span class="kw">use</span> <span class="ident">vmm_vhost::Error</span> <span class="kw">as</span> <span class="ident">VhostError</span>;
+<span class="kw">use</span> <span class="ident">vmm_vhost::message</span>::{<span class="ident">VhostUserProtocolFeatures</span>, <span class="ident">VhostUserVirtioFeatures</span>};
+<span class="kw">use</span> <span class="ident">vmm_vhost::Error</span> <span class="kw">as</span> <span class="ident">VhostUserError</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::fs</span>::{<span class="ident">virtio_fs_config</span>, <span class="ident">FS_MAX_TAG_LEN</span>, <span class="ident">QUEUE_SIZE</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::vhost::user::vmm</span>::{<span class="ident">handler::VhostUserHandler</span>, <span class="ident">worker::Worker</span>, <span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
@@ -296,9 +294,9 @@
             <span class="prelude-val">Ok</span>(()) <span class="op">=</span><span class="op">&gt;</span> {}
             <span class="comment">// copy local config when VhostUserProtocolFeatures::CONFIG is not supported by the</span>
             <span class="comment">// device</span>
-            <span class="prelude-val">Err</span>(<span class="ident">Error::GetConfig</span>(<span class="ident">VhostError::VhostUserProtocol</span>(
-                <span class="ident">VhostUserError::InvalidOperation</span>,
-            ))) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">copy_config</span>(<span class="ident">data</span>, <span class="number">0</span>, <span class="self">self</span>.<span class="ident">cfg</span>.<span class="ident">as_slice</span>(), <span class="ident">offset</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">Error::GetConfig</span>(<span class="ident">VhostUserError::InvalidOperation</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">copy_config</span>(<span class="ident">data</span>, <span class="number">0</span>, <span class="self">self</span>.<span class="ident">cfg</span>.<span class="ident">as_slice</span>(), <span class="ident">offset</span>)
+            }
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">error!</span>(<span class="string">&quot;Failed to fetch device config: {}&quot;</span>, <span class="ident">e</span>),
         }
     }

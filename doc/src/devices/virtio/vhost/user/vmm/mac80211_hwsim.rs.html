@@ -179,7 +179,7 @@
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">thiserror::Error</span> <span class="kw">as</span> <span class="ident">ThisError</span>;
 <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
-<span class="kw">use</span> <span class="ident">vmm_vhost::vhost_user::message</span>::{<span class="ident">VhostUserProtocolFeatures</span>, <span class="ident">VhostUserVirtioFeatures</span>};
+<span class="kw">use</span> <span class="ident">vmm_vhost::message</span>::{<span class="ident">VhostUserProtocolFeatures</span>, <span class="ident">VhostUserVirtioFeatures</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::vhost::user::vmm</span>::{<span class="ident">handler::VhostUserHandler</span>, <span class="ident">worker::Worker</span>, <span class="ident">Error</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio</span>::{<span class="ident">Interrupt</span>, <span class="ident">Queue</span>, <span class="ident">VirtioDevice</span>, <span class="ident">TYPE_MAC80211_HWSIM</span>, <span class="ident">VIRTIO_F_VERSION_1</span>};
