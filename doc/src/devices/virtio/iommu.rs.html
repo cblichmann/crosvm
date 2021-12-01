@@ -833,6 +833,7 @@
 <span id="833">833</span>
 <span id="834">834</span>
 <span id="835">835</span>
+<span id="836">836</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -846,7 +847,7 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::vfio</span>::{<span class="ident">VfioContainer</span>, <span class="ident">VfioError</span>};
 <span class="kw">use</span> <span class="ident">acpi_tables::sdt::SDT</span>;
 <span class="kw">use</span> <span class="ident">base</span>::{
-    <span class="ident">error</span>, <span class="ident">warn</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">SysError</span>, <span class="ident">Event</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>,
+    <span class="ident">error</span>, <span class="ident">pagesize</span>, <span class="ident">warn</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">SysError</span>, <span class="ident">Event</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>,
     <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">SysResult</span>, <span class="ident">WaitContext</span>,
 };
 <span class="kw">use</span> <span class="ident">data_model::DataInit</span>;
@@ -1485,8 +1486,9 @@
         }
 
         <span class="kw">if</span> <span class="ident">page_size_mask</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="macro">error!</span>(<span class="string">&quot;failed to get IOMMU device valid page size masks&quot;</span>);
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SysError::new</span>(<span class="ident">libc::EIO</span>));
+            <span class="comment">// In case no endpoints bounded to vIOMMU during system booting,</span>
+            <span class="comment">// assume IOVA page size is the same as page_size</span>
+            <span class="ident">page_size_mask</span> <span class="op">=</span> (<span class="ident">pagesize</span>() <span class="kw">as</span> <span class="ident">u64</span>) <span class="op">-</span> <span class="number">1</span>;
         }
 
         <span class="kw">let</span> <span class="ident">input_range</span> <span class="op">=</span> <span class="ident">VirtioIommuRange64</span> {
