@@ -1052,18 +1052,6 @@
 <span id="1052">1052</span>
 <span id="1053">1053</span>
 <span id="1054">1054</span>
-<span id="1055">1055</span>
-<span id="1056">1056</span>
-<span id="1057">1057</span>
-<span id="1058">1058</span>
-<span id="1059">1059</span>
-<span id="1060">1060</span>
-<span id="1061">1061</span>
-<span id="1062">1062</span>
-<span id="1063">1063</span>
-<span id="1064">1064</span>
-<span id="1065">1065</span>
-<span id="1066">1066</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1108,8 +1096,6 @@
     <span class="ident">MemoryAddSealsFailed</span>(<span class="ident">SysError</span>),
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to create shm region&quot;</span>)]</span>
     <span class="ident">MemoryCreationFailed</span>(<span class="ident">SysError</span>),
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to lock {0} bytes of guest memory: {1}&quot;</span>)]</span>
-    <span class="ident">MemoryLockingFailed</span>(<span class="ident">usize</span>, <span class="ident">MmapError</span>),
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to map guest memory: {0}&quot;</span>)]</span>
     <span class="ident">MemoryMappingFailed</span>(<span class="ident">MmapError</span>),
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;shm regions must be page aligned&quot;</span>)]</span>
@@ -1133,7 +1119,6 @@
 <span class="macro">bitflags!</span> {
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MemoryPolicy</span>: <span class="ident">u32</span> {
         <span class="kw">const</span> <span class="ident">USE_HUGEPAGES</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">const</span> <span class="ident">MLOCK_ON_FAULT</span> <span class="op">=</span> <span class="number">2</span>;
     }
 }
 
@@ -1411,25 +1396,16 @@
     }
 
     <span class="doccomment">/// Handles guest memory policy hints/advices.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_memory_policy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">mem_policy</span>: <span class="ident">MemoryPolicy</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">for</span> (<span class="kw">_</span>, <span class="ident">region</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">regions</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">if</span> <span class="ident">mem_policy</span>.<span class="ident">contains</span>(<span class="ident">MemoryPolicy::USE_HUGEPAGES</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_memory_policy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">mem_policy</span>: <span class="ident">MemoryPolicy</span>) {
+        <span class="kw">if</span> <span class="ident">mem_policy</span>.<span class="ident">contains</span>(<span class="ident">MemoryPolicy::USE_HUGEPAGES</span>) {
+            <span class="kw">for</span> (<span class="kw">_</span>, <span class="ident">region</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">regions</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
                 <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">region</span>.<span class="ident">mapping</span>.<span class="ident">use_hugepages</span>();
 
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">ret</span> {
                     <span class="macro">println!</span>(<span class="string">&quot;Failed to enable HUGEPAGE for mapping {}&quot;</span>, <span class="ident">err</span>);
                 }
             }
-
-            <span class="kw">if</span> <span class="ident">mem_policy</span>.<span class="ident">contains</span>(<span class="ident">MemoryPolicy::MLOCK_ON_FAULT</span>) {
-                <span class="ident">region</span>
-                    .<span class="ident">mapping</span>
-                    .<span class="ident">mlock_on_fault</span>()
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">Error::MemoryLockingFailed</span>(<span class="ident">region</span>.<span class="ident">mapping</span>.<span class="ident">size</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-            }
         }
-
-        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Perform the specified action on each region&#39;s addresses.</span>

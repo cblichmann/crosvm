@@ -232,10 +232,6 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -279,10 +275,6 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">use_hugepages</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">mapping</span>.<span class="ident">use_hugepages</span>()
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mlock_on_fault</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">mapping</span>.<span class="ident">mlock_on_fault</span>()
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_to_memory</span>(
