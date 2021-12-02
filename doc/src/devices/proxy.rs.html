@@ -405,9 +405,6 @@
 <span id="405">405</span>
 <span id="406">406</span>
 <span id="407">407</span>
-<span id="408">408</span>
-<span id="409">409</span>
-<span id="410">410</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -581,9 +578,6 @@
                     <span class="kw">let</span> <span class="ident">debug_label_trimmed</span> <span class="op">=</span>
                         <span class="kw-2">&amp;</span><span class="ident">debug_label</span>.<span class="ident">as_bytes</span>()[..<span class="ident">std::cmp::min</span>(<span class="ident">max_len</span>, <span class="ident">debug_label</span>.<span class="ident">len</span>())];
                     <span class="kw">let</span> <span class="ident">thread_name</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="ident">debug_label_trimmed</span>).<span class="ident">unwrap</span>();
-                    <span class="comment">// TODO(crbug.com/1199487): remove this once libc provides the wrapper for all</span>
-                    <span class="comment">// targets</span>
-                    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;gnu&quot;</span>))]</span>
                     <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">libc::pthread_setname_np</span>(<span class="ident">libc::pthread_self</span>(), <span class="ident">thread_name</span>.<span class="ident">as_ptr</span>());
                     <span class="ident">device</span>.<span class="ident">on_sandboxed</span>();
                     <span class="ident">child_proc</span>(<span class="ident">child_tube</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">device</span>);

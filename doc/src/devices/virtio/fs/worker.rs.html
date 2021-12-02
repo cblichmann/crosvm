@@ -252,10 +252,6 @@
 <span id="252">252</span>
 <span id="253">253</span>
 <span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -447,19 +443,15 @@
         <span class="comment">// cases.</span>
         <span class="kw">const</span> <span class="ident">SECBIT_NO_SETUID_FIXUP</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
 
-        <span class="comment">// TODO(crbug.com/1199487): Remove this once libc provides the wrapper for all targets.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-        {
-            <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">securebits</span> <span class="op">=</span> <span class="macro">syscall!</span>(<span class="kw">unsafe</span> { <span class="ident">libc::prctl</span>(<span class="ident">libc::PR_GET_SECUREBITS</span>) })
-                .<span class="ident">map_err</span>(<span class="ident">Error::GetSecurebits</span>)<span class="question-mark">?</span>;
+        <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">securebits</span> <span class="op">=</span> <span class="macro">syscall!</span>(<span class="kw">unsafe</span> { <span class="ident">libc::prctl</span>(<span class="ident">libc::PR_GET_SECUREBITS</span>) })
+            .<span class="ident">map_err</span>(<span class="ident">Error::GetSecurebits</span>)<span class="question-mark">?</span>;
 
-            <span class="ident">securebits</span> <span class="op">|</span><span class="op">=</span> <span class="ident">SECBIT_NO_SETUID_FIXUP</span>;
+        <span class="ident">securebits</span> <span class="op">|</span><span class="op">=</span> <span class="ident">SECBIT_NO_SETUID_FIXUP</span>;
 
-            <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
-            <span class="macro">syscall!</span>(<span class="kw">unsafe</span> { <span class="ident">libc::prctl</span>(<span class="ident">libc::PR_SET_SECUREBITS</span>, <span class="ident">securebits</span>) })
-                .<span class="ident">map_err</span>(<span class="ident">Error::SetSecurebits</span>)<span class="question-mark">?</span>;
-        }
+        <span class="comment">// Safe because this doesn&#39;t modify any memory and we check the return value.</span>
+        <span class="macro">syscall!</span>(<span class="kw">unsafe</span> { <span class="ident">libc::prctl</span>(<span class="ident">libc::PR_SET_SECUREBITS</span>, <span class="ident">securebits</span>) })
+            .<span class="ident">map_err</span>(<span class="ident">Error::SetSecurebits</span>)<span class="question-mark">?</span>;
 
         <span class="comment">// To avoid extra locking, unshare filesystem attributes from parent. This includes the</span>
         <span class="comment">// current working directory and umask.</span>
