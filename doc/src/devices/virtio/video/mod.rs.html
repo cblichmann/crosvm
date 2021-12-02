@@ -387,6 +387,16 @@
 <span id="387">387</span>
 <span id="388">388</span>
 <span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -429,6 +439,13 @@
 <span class="kw">mod</span> <span class="ident">response</span>;
 <span class="kw">mod</span> <span class="ident">worker</span>;
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-decoder&quot;</span>, <span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libvda&quot;</span>)))]</span>
+<span class="macro">compile_error!</span>(<span class="string">&quot;The \&quot;video-decoder\&quot; feature requires \&quot;libvda\&quot; to also be enabled.&quot;</span>);
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;video-encoder&quot;</span>, <span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libvda&quot;</span>)))]</span>
+<span class="macro">compile_error!</span>(<span class="string">&quot;The \&quot;video-encoder\&quot; feature requires \&quot;libvda\&quot; to also be enabled.&quot;</span>);
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libvda&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">vda</span>;
 
 <span class="kw">use</span> <span class="ident">command::ReadCmdError</span>;
@@ -511,6 +528,7 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">VideoBackendType</span> {
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libvda&quot;</span>)]</span>
     <span class="ident">Libvda</span>,
 }
 
@@ -610,6 +628,7 @@
                 .<span class="ident">name</span>(<span class="string">&quot;virtio video decoder&quot;</span>.<span class="ident">to_owned</span>())
                 .<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
                     <span class="kw">let</span> <span class="ident">device</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Device</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">backend</span> {
+                        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libvda&quot;</span>)]</span>
                         <span class="ident">VideoBackendType::Libvda</span> <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="kw">let</span> <span class="ident">vda</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">decoder::backend::vda::LibvdaDecoder::new</span>() {
                                 <span class="prelude-val">Ok</span>(<span class="ident">vda</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vda</span>,
@@ -632,6 +651,7 @@
                 .<span class="ident">name</span>(<span class="string">&quot;virtio video encoder&quot;</span>.<span class="ident">to_owned</span>())
                 .<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
                     <span class="kw">let</span> <span class="ident">device</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Device</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">backend</span> {
+                        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libvda&quot;</span>)]</span>
                         <span class="ident">VideoBackendType::Libvda</span> <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="kw">let</span> <span class="ident">vda</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">encoder::backend::vda::LibvdaEncoder::new</span>() {
                                 <span class="prelude-val">Ok</span>(<span class="ident">vda</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vda</span>,

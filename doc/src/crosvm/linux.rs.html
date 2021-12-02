@@ -3378,6 +3378,7 @@
 <span id="3378">3378</span>
 <span id="3379">3379</span>
 <span id="3380">3380</span>
+<span id="3381">3381</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -4335,6 +4336,7 @@
                 <span class="string">&quot;size=67108864&quot;</span>,
             )<span class="question-mark">?</span>;
 
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libvda&quot;</span>)]</span>
             <span class="comment">// Render node for libvda.</span>
             <span class="kw">if</span> <span class="ident">backend</span> <span class="op">=</span><span class="op">=</span> <span class="ident">VideoBackendType::Libvda</span> {
                 <span class="kw">let</span> <span class="ident">dev_dri_path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="string">&quot;/dev/dri/renderD128&quot;</span>);
