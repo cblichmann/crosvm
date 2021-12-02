@@ -833,6 +833,38 @@
 <span id="833">833</span>
 <span id="834">834</span>
 <span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright (C) 2019 Alibaba Cloud Computing. All rights reserved.</span>
 <span class="comment">// SPDX-License-Identifier: Apache-2.0</span>
@@ -1063,6 +1095,115 @@
     }
 }
 
+<span class="doccomment">/// Abstracts |Endpoint| related operations for vhost-user slave implementations.</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SlaveReqHelper</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Underlying endpoint for communication.</span>
+    <span class="ident">endpoint</span>: <span class="ident">E</span>,
+
+    <span class="comment">// Sending ack for messages without payload.</span>
+    <span class="ident">reply_ack_enabled</span>: <span class="ident">bool</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">SlaveReqHelper</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Creates a new |SlaveReqHelper| instance with an |Endpoint| underneath it.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">endpoint</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">SlaveReqHelper</span> {
+            <span class="ident">endpoint</span>,
+            <span class="ident">reply_ack_enabled</span>: <span class="bool-val">false</span>,
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">new_reply_header</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Sized</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>,
+        <span class="ident">payload_size</span>: <span class="ident">usize</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="op">&gt;</span> <span class="ident">MAX_MSG_SIZE</span>
+            <span class="op">|</span><span class="op">|</span> <span class="ident">payload_size</span> <span class="op">&gt;</span> <span class="ident">MAX_MSG_SIZE</span>
+            <span class="op">|</span><span class="op">|</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="op">+</span> <span class="ident">payload_size</span> <span class="op">&gt;</span> <span class="ident">MAX_MSG_SIZE</span>
+        {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidParam</span>);
+        }
+
+        <span class="prelude-val">Ok</span>(<span class="ident">VhostUserMsgHeader::new</span>(
+            <span class="ident">req</span>.<span class="ident">get_code</span>(),
+            <span class="ident">VhostUserHeaderFlag::REPLY</span>.<span class="ident">bits</span>(),
+            (<span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="op">+</span> <span class="ident">payload_size</span>) <span class="kw">as</span> <span class="ident">u32</span>,
+        ))
+    }
+
+    <span class="doccomment">/// Sends reply back to Vhost Master in response to a message.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">send_ack_message</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>,
+        <span class="ident">res</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">reply_ack_enabled</span> <span class="op">&amp;&amp;</span> <span class="ident">req</span>.<span class="ident">is_need_reply</span>() {
+            <span class="kw">let</span> <span class="ident">hdr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_reply_header</span>::<span class="op">&lt;</span><span class="ident">VhostUserU64</span><span class="op">&gt;</span>(<span class="ident">req</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">res</span> {
+                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1</span>,
+            };
+            <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">VhostUserU64::new</span>(<span class="ident">val</span>);
+            <span class="self">self</span>.<span class="ident">endpoint</span>.<span class="ident">send_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+        }
+        <span class="ident">res</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">send_reply_message</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Sized</span> <span class="op">+</span> <span class="ident">DataInit</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>,
+        <span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">hdr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_reply_header</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">req</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.<span class="ident">endpoint</span>.<span class="ident">send_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">msg</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">fn</span> <span class="ident">send_reply_with_payload</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Sized</span> <span class="op">+</span> <span class="ident">DataInit</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>,
+        <span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>,
+        <span class="ident">payload</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">hdr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_reply_header</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">req</span>, <span class="ident">payload</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
+        <span class="self">self</span>.<span class="ident">endpoint</span>
+            .<span class="ident">send_message_with_payload</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">msg</span>, <span class="ident">payload</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Parses an incoming |SET_VRING_KICK| or |SET_VRING_CALL| message into a</span>
+    <span class="doccomment">/// Vring number and an fd.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">handle_vring_fd_request</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+        <span class="ident">files</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">u8</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="ident">MAX_MSG_SIZE</span> <span class="op">|</span><span class="op">|</span> <span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">VhostUserU64</span><span class="op">&gt;</span>() {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
+        }
+        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">std::ptr::read_unaligned</span>(<span class="ident">buf</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">VhostUserU64</span>) };
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">msg</span>.<span class="ident">is_valid</span>() {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
+        }
+
+        <span class="comment">// Bits (0-7) of the payload contain the vring index. Bit 8 is the</span>
+        <span class="comment">// invalid FD flag. This bit is set when there is no file descriptor</span>
+        <span class="comment">// in the ancillary data. This signals that polling will be used</span>
+        <span class="comment">// instead of waiting for the call.</span>
+        <span class="comment">// If Bit 8 is unset, the data must contain a file descriptor.</span>
+        <span class="kw">let</span> <span class="ident">has_fd</span> <span class="op">=</span> (<span class="ident">msg</span>.<span class="ident">value</span> <span class="op">&amp;</span> <span class="number">0x100u64</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span>;
+
+        <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">take_single_file</span>(<span class="ident">files</span>);
+
+        <span class="kw">if</span> <span class="ident">has_fd</span> <span class="op">&amp;&amp;</span> <span class="ident">file</span>.<span class="ident">is_none</span>() <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">has_fd</span> <span class="op">&amp;&amp;</span> <span class="ident">file</span>.<span class="ident">is_some</span>() {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
+        }
+
+        <span class="prelude-val">Ok</span>((<span class="ident">msg</span>.<span class="ident">value</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="ident">file</span>))
+    }
+}
+
 <span class="doccomment">/// Server to handle service requests from masters from the master communication channel.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The [SlaveReqHandler] acts as a server on the slave side, to handle service requests from</span>
@@ -1075,8 +1216,7 @@
 <span class="doccomment">/// [VhostUserSlaveReqHandler]: trait.VhostUserSlaveReqHandler.html</span>
 <span class="doccomment">/// [SlaveReqHandler]: struct.SlaveReqHandler.html</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SlaveReqHandler</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">VhostUserSlaveReqHandler</span>, <span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="comment">// underlying Unix domain socket for communication</span>
-    <span class="ident">main_sock</span>: <span class="ident">E</span>,
+    <span class="ident">slave_req_helper</span>: <span class="ident">SlaveReqHelper</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>,
     <span class="comment">// the vhost-user backend device object</span>
     <span class="ident">backend</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
 
@@ -1085,8 +1225,6 @@
     <span class="ident">protocol_features</span>: <span class="ident">VhostUserProtocolFeatures</span>,
     <span class="ident">acked_protocol_features</span>: <span class="ident">u64</span>,
 
-    <span class="comment">// sending ack for messages without payload</span>
-    <span class="ident">reply_ack_enabled</span>: <span class="ident">bool</span>,
     <span class="comment">// whether the endpoint has encountered any failure</span>
     <span class="ident">error</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>,
 }
@@ -1100,15 +1238,14 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">VhostUserSlaveReqHandler</span>, <span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">SlaveReqHandler</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Create a vhost-user slave endpoint.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">main_sock</span>: <span class="ident">E</span>, <span class="ident">backend</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">endpoint</span>: <span class="ident">E</span>, <span class="ident">backend</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">SlaveReqHandler</span> {
-            <span class="ident">main_sock</span>,
+            <span class="ident">slave_req_helper</span>: <span class="ident">SlaveReqHelper::new</span>(<span class="ident">endpoint</span>),
             <span class="ident">backend</span>,
             <span class="ident">virtio_features</span>: <span class="number">0</span>,
             <span class="ident">acked_virtio_features</span>: <span class="number">0</span>,
             <span class="ident">protocol_features</span>: <span class="ident">VhostUserProtocolFeatures::empty</span>(),
             <span class="ident">acked_protocol_features</span>: <span class="number">0</span>,
-            <span class="ident">reply_ack_enabled</span>: <span class="bool-val">false</span>,
             <span class="ident">error</span>: <span class="prelude-val">None</span>,
         }
     }
@@ -1146,13 +1283,13 @@
         <span class="comment">// . recv optional message body and payload according size field in</span>
         <span class="comment">//   message header</span>
         <span class="comment">// . validate message body and optional payload</span>
-        <span class="kw">let</span> (<span class="ident">hdr</span>, <span class="ident">files</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">main_sock</span>.<span class="ident">recv_header</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> (<span class="ident">hdr</span>, <span class="ident">files</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">endpoint</span>.<span class="ident">recv_header</span>()<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">check_attached_files</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">files</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">buf</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">hdr</span>.<span class="ident">get_size</span>() {
             <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec!</span>[<span class="number">0u8</span>; <span class="number">0</span>],
             <span class="ident">len</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">rbuf</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">main_sock</span>.<span class="ident">recv_data</span>(<span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">rbuf</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">endpoint</span>.<span class="ident">recv_data</span>(<span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">rbuf</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span> {
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
                 }
@@ -1165,18 +1302,18 @@
             <span class="ident">MasterReq::SET_OWNER</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_owner</span>();
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::RESET_OWNER</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">reset_owner</span>();
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::GET_FEATURES</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">features</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">get_features</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">VhostUserU64::new</span>(<span class="ident">features</span>);
-                <span class="self">self</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>)<span class="question-mark">?</span>;
                 <span class="self">self</span>.<span class="ident">virtio_features</span> <span class="op">=</span> <span class="ident">features</span>;
                 <span class="self">self</span>.<span class="ident">update_reply_ack_flag</span>();
             }
@@ -1185,16 +1322,16 @@
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_features</span>(<span class="ident">msg</span>.<span class="ident">value</span>);
                 <span class="self">self</span>.<span class="ident">acked_virtio_features</span> <span class="op">=</span> <span class="ident">msg</span>.<span class="ident">value</span>;
                 <span class="self">self</span>.<span class="ident">update_reply_ack_flag</span>();
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_MEM_TABLE</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">set_mem_table</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>, <span class="ident">files</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_VRING_NUM</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">extract_request_body</span>::<span class="op">&lt;</span><span class="ident">VhostUserVringState</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_vring_num</span>(<span class="ident">msg</span>.<span class="ident">index</span>, <span class="ident">msg</span>.<span class="ident">num</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_VRING_ADDR</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">extract_request_body</span>::<span class="op">&lt;</span><span class="ident">VhostUserVringAddr</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
@@ -1210,41 +1347,41 @@
                     <span class="ident">msg</span>.<span class="ident">available</span>,
                     <span class="ident">msg</span>.<span class="ident">log</span>,
                 );
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_VRING_BASE</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">extract_request_body</span>::<span class="op">&lt;</span><span class="ident">VhostUserVringState</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_vring_base</span>(<span class="ident">msg</span>.<span class="ident">index</span>, <span class="ident">msg</span>.<span class="ident">num</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::GET_VRING_BASE</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">extract_request_body</span>::<span class="op">&lt;</span><span class="ident">VhostUserVringState</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">reply</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">get_vring_base</span>(<span class="ident">msg</span>.<span class="ident">index</span>)<span class="question-mark">?</span>;
-                <span class="self">self</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">reply</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">reply</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_VRING_CALL</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">VhostUserU64</span><span class="op">&gt;</span>())<span class="question-mark">?</span>;
                 <span class="kw">let</span> (<span class="ident">index</span>, <span class="ident">file</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">handle_vring_fd_request</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>, <span class="ident">files</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_vring_call</span>(<span class="ident">index</span>, <span class="ident">file</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_VRING_KICK</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">VhostUserU64</span><span class="op">&gt;</span>())<span class="question-mark">?</span>;
                 <span class="kw">let</span> (<span class="ident">index</span>, <span class="ident">file</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">handle_vring_fd_request</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>, <span class="ident">files</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_vring_kick</span>(<span class="ident">index</span>, <span class="ident">file</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_VRING_ERR</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">VhostUserU64</span><span class="op">&gt;</span>())<span class="question-mark">?</span>;
                 <span class="kw">let</span> (<span class="ident">index</span>, <span class="ident">file</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">handle_vring_fd_request</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>, <span class="ident">files</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_vring_err</span>(<span class="ident">index</span>, <span class="ident">file</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::GET_PROTOCOL_FEATURES</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">features</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">get_protocol_features</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">VhostUserU64::new</span>(<span class="ident">features</span>.<span class="ident">bits</span>());
-                <span class="self">self</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>)<span class="question-mark">?</span>;
                 <span class="self">self</span>.<span class="ident">protocol_features</span> <span class="op">=</span> <span class="ident">features</span>;
                 <span class="self">self</span>.<span class="ident">update_reply_ack_flag</span>();
             }
@@ -1253,7 +1390,7 @@
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_protocol_features</span>(<span class="ident">msg</span>.<span class="ident">value</span>);
                 <span class="self">self</span>.<span class="ident">acked_protocol_features</span> <span class="op">=</span> <span class="ident">msg</span>.<span class="ident">value</span>;
                 <span class="self">self</span>.<span class="ident">update_reply_ack_flag</span>();
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::GET_QUEUE_NUM</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">acked_protocol_features</span> <span class="op">&amp;</span> <span class="ident">VhostUserProtocolFeatures::MQ</span>.<span class="ident">bits</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
@@ -1262,7 +1399,7 @@
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">get_queue_num</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">VhostUserU64::new</span>(<span class="ident">num</span>);
-                <span class="self">self</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_VRING_ENABLE</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">extract_request_body</span>::<span class="op">&lt;</span><span class="ident">VhostUserVringState</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
@@ -1278,7 +1415,7 @@
                 };
 
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_vring_enable</span>(<span class="ident">msg</span>.<span class="ident">index</span>, <span class="ident">enable</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::GET_CONFIG</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">acked_protocol_features</span> <span class="op">&amp;</span> <span class="ident">VhostUserProtocolFeatures::CONFIG</span>.<span class="ident">bits</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
@@ -1293,7 +1430,7 @@
                 }
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="ident">hdr</span>.<span class="ident">get_size</span>() <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">set_config</span>(<span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_SLAVE_REQ_FD</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">acked_protocol_features</span> <span class="op">&amp;</span> <span class="ident">VhostUserProtocolFeatures::SLAVE_REQ</span>.<span class="ident">bits</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
@@ -1301,7 +1438,7 @@
                 }
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="ident">hdr</span>.<span class="ident">get_size</span>() <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">set_slave_req_fd</span>(<span class="ident">files</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::GET_INFLIGHT_FD</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">acked_protocol_features</span> <span class="op">&amp;</span> <span class="ident">VhostUserProtocolFeatures::INFLIGHT_SHMFD</span>.<span class="ident">bits</span>()
@@ -1312,9 +1449,14 @@
 
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">extract_request_body</span>::<span class="op">&lt;</span><span class="ident">VhostUserInflight</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> (<span class="ident">inflight</span>, <span class="ident">file</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">get_inflight_fd</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">reply_hdr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_reply_header</span>::<span class="op">&lt;</span><span class="ident">VhostUserInflight</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
-                <span class="self">self</span>.<span class="ident">main_sock</span>
-                    .<span class="ident">send_message</span>(<span class="kw-2">&amp;</span><span class="ident">reply_hdr</span>, <span class="kw-2">&amp;</span><span class="ident">inflight</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="ident">file</span>.<span class="ident">as_raw_fd</span>()]))<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">reply_hdr</span> <span class="op">=</span> <span class="self">self</span>
+                    .<span class="ident">slave_req_helper</span>
+                    .<span class="ident">new_reply_header</span>::<span class="op">&lt;</span><span class="ident">VhostUserInflight</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">endpoint</span>.<span class="ident">send_message</span>(
+                    <span class="kw-2">&amp;</span><span class="ident">reply_hdr</span>,
+                    <span class="kw-2">&amp;</span><span class="ident">inflight</span>,
+                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="ident">file</span>.<span class="ident">as_raw_fd</span>()]),
+                )<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::SET_INFLIGHT_FD</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">acked_protocol_features</span> <span class="op">&amp;</span> <span class="ident">VhostUserProtocolFeatures::INFLIGHT_SHMFD</span>.<span class="ident">bits</span>()
@@ -1325,7 +1467,7 @@
                 <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">take_single_file</span>(<span class="ident">files</span>).<span class="ident">ok_or</span>(<span class="ident">Error::IncorrectFds</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">extract_request_body</span>::<span class="op">&lt;</span><span class="ident">VhostUserInflight</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">set_inflight_fd</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>, <span class="ident">file</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::GET_MAX_MEM_SLOTS</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">acked_protocol_features</span>
@@ -1337,7 +1479,7 @@
                 <span class="self">self</span>.<span class="ident">check_request_size</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">get_max_mem_slots</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">VhostUserU64::new</span>(<span class="ident">num</span>);
-                <span class="self">self</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_reply_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::ADD_MEM_REG</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">acked_protocol_features</span>
@@ -1353,7 +1495,7 @@
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span>
                     <span class="self">self</span>.<span class="ident">extract_request_body</span>::<span class="op">&lt;</span><span class="ident">VhostUserSingleMemoryRegion</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">add_mem_region</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>, <span class="ident">files</span>.<span class="ident">swap_remove</span>(<span class="number">0</span>));
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="ident">MasterReq::REM_MEM_REG</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">acked_protocol_features</span>
@@ -1366,7 +1508,7 @@
                 <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span>
                     <span class="self">self</span>.<span class="ident">extract_request_body</span>::<span class="op">&lt;</span><span class="ident">VhostUserSingleMemoryRegion</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">backend</span>.<span class="ident">remove_mem_region</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>);
-                <span class="self">self</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_ack_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">res</span>)<span class="question-mark">?</span>;
             }
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
@@ -1443,15 +1585,16 @@
         <span class="kw">match</span> <span class="ident">res</span> {
             <span class="prelude-val">Ok</span>(<span class="kw-2">ref</span> <span class="ident">buf</span>) <span class="kw">if</span> <span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">msg</span>.<span class="ident">size</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">reply</span> <span class="op">=</span> <span class="ident">VhostUserConfig::new</span>(<span class="ident">msg</span>.<span class="ident">offset</span>, <span class="ident">buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">flags</span>);
-                <span class="self">self</span>.<span class="ident">send_reply_with_payload</span>(<span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">reply</span>, <span class="ident">buf</span>.<span class="ident">as_slice</span>())<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>
+                    .<span class="ident">send_reply_with_payload</span>(<span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">reply</span>, <span class="ident">buf</span>.<span class="ident">as_slice</span>())<span class="question-mark">?</span>;
             }
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">reply</span> <span class="op">=</span> <span class="ident">VhostUserConfig::new</span>(<span class="ident">msg</span>.<span class="ident">offset</span>, <span class="number">0</span>, <span class="ident">flags</span>);
-                <span class="self">self</span>.<span class="ident">send_reply_message</span>(<span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">reply</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_reply_message</span>(<span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">reply</span>)<span class="question-mark">?</span>;
             }
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">reply</span> <span class="op">=</span> <span class="ident">VhostUserConfig::new</span>(<span class="ident">msg</span>.<span class="ident">offset</span>, <span class="number">0</span>, <span class="ident">flags</span>);
-                <span class="self">self</span>.<span class="ident">send_reply_message</span>(<span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">reply</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">send_reply_message</span>(<span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">reply</span>)<span class="question-mark">?</span>;
             }
         }
         <span class="prelude-val">Ok</span>(())
@@ -1488,28 +1631,7 @@
         <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
         <span class="ident">files</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">u8</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="ident">MAX_MSG_SIZE</span> <span class="op">|</span><span class="op">|</span> <span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">VhostUserU64</span><span class="op">&gt;</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
-        }
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">std::ptr::read_unaligned</span>(<span class="ident">buf</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">VhostUserU64</span>) };
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">msg</span>.<span class="ident">is_valid</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
-        }
-
-        <span class="comment">// Bits (0-7) of the payload contain the vring index. Bit 8 is the</span>
-        <span class="comment">// invalid FD flag. This bit is set when there is no file descriptor</span>
-        <span class="comment">// in the ancillary data. This signals that polling will be used</span>
-        <span class="comment">// instead of waiting for the call.</span>
-        <span class="comment">// If Bit 8 is unset, the data must contain a file descriptor.</span>
-        <span class="kw">let</span> <span class="ident">has_fd</span> <span class="op">=</span> (<span class="ident">msg</span>.<span class="ident">value</span> <span class="op">&amp;</span> <span class="number">0x100u64</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span>;
-
-        <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">take_single_file</span>(<span class="ident">files</span>);
-
-        <span class="kw">if</span> <span class="ident">has_fd</span> <span class="op">&amp;&amp;</span> <span class="ident">file</span>.<span class="ident">is_none</span>() <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">has_fd</span> <span class="op">&amp;&amp;</span> <span class="ident">file</span>.<span class="ident">is_some</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
-        }
-
-        <span class="prelude-val">Ok</span>((<span class="ident">msg</span>.<span class="ident">value</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="ident">file</span>))
+        <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">handle_vring_fd_request</span>(<span class="ident">buf</span>, <span class="ident">files</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">check_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -1576,68 +1698,10 @@
             <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">protocol_features</span>.<span class="ident">contains</span>(<span class="ident">pflag</span>)
             <span class="op">&amp;&amp;</span> (<span class="self">self</span>.<span class="ident">acked_protocol_features</span> <span class="op">&amp;</span> <span class="ident">pflag</span>.<span class="ident">bits</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>
         {
-            <span class="self">self</span>.<span class="ident">reply_ack_enabled</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">reply_ack_enabled</span> <span class="op">=</span> <span class="bool-val">true</span>;
         } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">reply_ack_enabled</span> <span class="op">=</span> <span class="bool-val">false</span>;
+            <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">reply_ack_enabled</span> <span class="op">=</span> <span class="bool-val">false</span>;
         }
-    }
-
-    <span class="kw">fn</span> <span class="ident">new_reply_header</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Sized</span> <span class="op">+</span> <span class="ident">DataInit</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>,
-        <span class="ident">payload_size</span>: <span class="ident">usize</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="op">&gt;</span> <span class="ident">MAX_MSG_SIZE</span>
-            <span class="op">|</span><span class="op">|</span> <span class="ident">payload_size</span> <span class="op">&gt;</span> <span class="ident">MAX_MSG_SIZE</span>
-            <span class="op">|</span><span class="op">|</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="op">+</span> <span class="ident">payload_size</span> <span class="op">&gt;</span> <span class="ident">MAX_MSG_SIZE</span>
-        {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidParam</span>);
-        }
-        <span class="self">self</span>.<span class="ident">check_state</span>()<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">VhostUserMsgHeader::new</span>(
-            <span class="ident">req</span>.<span class="ident">get_code</span>(),
-            <span class="ident">VhostUserHeaderFlag::REPLY</span>.<span class="ident">bits</span>(),
-            (<span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="op">+</span> <span class="ident">payload_size</span>) <span class="kw">as</span> <span class="ident">u32</span>,
-        ))
-    }
-
-    <span class="kw">fn</span> <span class="ident">send_ack_message</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>,
-        <span class="ident">res</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">reply_ack_enabled</span> <span class="op">&amp;&amp;</span> <span class="ident">req</span>.<span class="ident">is_need_reply</span>() {
-            <span class="kw">let</span> <span class="ident">hdr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_reply_header</span>::<span class="op">&lt;</span><span class="ident">VhostUserU64</span><span class="op">&gt;</span>(<span class="ident">req</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">res</span> {
-                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1</span>,
-            };
-            <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">VhostUserU64::new</span>(<span class="ident">val</span>);
-            <span class="self">self</span>.<span class="ident">main_sock</span>.<span class="ident">send_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-        }
-        <span class="ident">res</span>
-    }
-
-    <span class="kw">fn</span> <span class="ident">send_reply_message</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">DataInit</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>,
-        <span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">hdr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_reply_header</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">req</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">main_sock</span>.<span class="ident">send_message</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">msg</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="kw">fn</span> <span class="ident">send_reply_with_payload</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Sized</span> <span class="op">+</span> <span class="ident">DataInit</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>,
-        <span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>,
-        <span class="ident">payload</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">hdr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_reply_header</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">req</span>, <span class="ident">payload</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">main_sock</span>
-            .<span class="ident">send_message_with_payload</span>(<span class="kw-2">&amp;</span><span class="ident">hdr</span>, <span class="ident">msg</span>, <span class="ident">payload</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(())
     }
 }
 
@@ -1645,7 +1709,7 @@
     <span class="kw">for</span> <span class="ident">SlaveReqHandler</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">E</span><span class="op">&gt;</span>
 {
     <span class="kw">fn</span> <span class="ident">as_raw_fd</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawFd</span> {
-        <span class="self">self</span>.<span class="ident">main_sock</span>.<span class="ident">as_raw_fd</span>()
+        <span class="self">self</span>.<span class="ident">slave_req_helper</span>.<span class="ident">endpoint</span>.<span class="ident">as_raw_fd</span>()
     }
 }
 
