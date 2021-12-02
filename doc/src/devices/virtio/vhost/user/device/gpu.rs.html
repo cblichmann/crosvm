@@ -522,6 +522,9 @@
 <span id="522">522</span>
 <span id="523">523</span>
 <span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -655,7 +658,10 @@
             <span class="kw">break</span>;
         }
 
-        <span class="ident">state</span>.<span class="ident">borrow_mut</span>().<span class="ident">process_resource_bridge</span>(<span class="ident">tube</span>.<span class="ident">as_source</span>());
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">state</span>.<span class="ident">borrow_mut</span>().<span class="ident">process_resource_bridge</span>(<span class="ident">tube</span>.<span class="ident">as_source</span>()) {
+            <span class="macro">error!</span>(<span class="string">&quot;Failed to process resource bridge: {}&quot;</span>, <span class="ident">e</span>);
+            <span class="kw">break</span>;
+        }
     }
 }
 
