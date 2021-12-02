@@ -130,6 +130,7 @@
 <span id="130">130</span>
 <span id="131">131</span>
 <span id="132">132</span>
+<span id="133">133</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -153,14 +154,14 @@
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">DecoderSession</span> {
     <span class="doccomment">/// Tell how many output buffers will be used for this session and which format they will carry.</span>
     <span class="doccomment">/// This method must be called after a `ProvidePictureBuffers` event is emitted, and before the</span>
-    <span class="doccomment">/// first call to `use_output_buffers()`.</span>
+    <span class="doccomment">/// first call to `use_output_buffer()`.</span>
     <span class="kw">fn</span> <span class="ident">set_output_parameters</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">buffer_count</span>: <span class="ident">usize</span>, <span class="ident">format</span>: <span class="ident">Format</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
     <span class="doccomment">/// Decode the compressed stream contained in [`offset`..`offset`+`bytes_used`]</span>
-    <span class="doccomment">/// of the shared memory in `descriptor`. `bitstream_id` is the identifier for that</span>
+    <span class="doccomment">/// of the shared memory in `resource`. `bitstream_id` is the identifier for that</span>
     <span class="doccomment">/// part of the stream (most likely, a timestamp).</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// The device takes ownership of `descriptor` and is responsible for closing it</span>
+    <span class="doccomment">/// The device takes ownership of `resource` and is responsible for closing it</span>
     <span class="doccomment">/// once it is not used anymore.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The device will emit a `NotifyEndOfBitstreamBuffer` event after the input</span>
@@ -177,8 +178,8 @@
         <span class="ident">bytes_used</span>: <span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
-    <span class="doccomment">/// Flush the decoder device, i.e. finish processing of all queued decode</span>
-    <span class="doccomment">/// requests.</span>
+    <span class="doccomment">/// Flush the decoder device, i.e. finish processing all queued decode requests and emit frames</span>
+    <span class="doccomment">/// for them.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The device will emit a `FlushCompleted` event once the flush is done.</span>
     <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
@@ -227,15 +228,16 @@
     <span class="doccomment">/// Return the decoding capabilities for this backend instance.</span>
     <span class="kw">fn</span> <span class="ident">get_capabilities</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Capability</span>;
 
-    <span class="doccomment">/// Create a new decoding session for the passed `profile`.</span>
+    <span class="doccomment">/// Create a new decoding session for the passed `format`.</span>
     <span class="kw">fn</span> <span class="ident">new_session</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">format</span>: <span class="ident">Format</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VideoResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Session</span><span class="op">&gt;</span>;
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">DecoderEvent</span> {
-    <span class="doccomment">/// Emitted when the device knows the buffer format it will need to decode</span>
-    <span class="doccomment">/// frames, and how many buffers it will need. The decoder is supposed to</span>
-    <span class="doccomment">/// provide buffers of the requested dimensions using `use_output_buffer`.</span>
+    <span class="doccomment">/// Emitted when the device knows the buffer format it will need to decode frames, and how many</span>
+    <span class="doccomment">/// buffers it will need. The decoder is supposed to call `set_output_parameters()` to confirm</span>
+    <span class="doccomment">/// the pixel format and actual number of buffers used, and provide buffers of the requested</span>
+    <span class="doccomment">/// dimensions using `use_output_buffer()`.</span>
     <span class="ident">ProvidePictureBuffers</span> {
         <span class="ident">min_num_buffers</span>: <span class="ident">u32</span>,
         <span class="ident">width</span>: <span class="ident">i32</span>,
