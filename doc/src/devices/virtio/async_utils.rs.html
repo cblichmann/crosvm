@@ -43,6 +43,12 @@
 <span id="43">43</span>
 <span id="44">44</span>
 <span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -70,12 +76,18 @@
 <span class="doccomment">/// Async task that resamples the status of the interrupt when the guest sends a request by</span>
 <span class="doccomment">/// signalling the resample event associated with the interrupt.</span>
 <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">handle_irq_resample</span>(<span class="ident">ex</span>: <span class="kw-2">&amp;</span><span class="ident">Executor</span>, <span class="ident">interrupt</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Interrupt</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">resample_evt</span>) <span class="op">=</span> <span class="ident">interrupt</span>.<span class="ident">borrow</span>().<span class="ident">get_resample_evt</span>() {
+    <span class="comment">// Clone resample_evt if interrupt has one.</span>
+    <span class="comment">// This is a separate block so that we do not hold a RefCell borrow across await.</span>
+    <span class="kw">let</span> <span class="ident">resample_evt</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">resample_evt</span>) <span class="op">=</span> <span class="ident">interrupt</span>.<span class="ident">borrow</span>().<span class="ident">get_resample_evt</span>() {
         <span class="kw">let</span> <span class="ident">resample_evt</span> <span class="op">=</span> <span class="ident">resample_evt</span>
             .<span class="ident">try_clone</span>()
             .<span class="ident">context</span>(<span class="string">&quot;resample_evt.try_clone() failed&quot;</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">resample_evt</span> <span class="op">=</span>
-            <span class="ident">EventAsync::new</span>(<span class="ident">resample_evt</span>.<span class="number">0</span>, <span class="ident">ex</span>).<span class="ident">context</span>(<span class="string">&quot;failed to create async resample event&quot;</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Some</span>(<span class="ident">EventAsync::new</span>(<span class="ident">resample_evt</span>.<span class="number">0</span>, <span class="ident">ex</span>).<span class="ident">context</span>(<span class="string">&quot;failed to create async resample event&quot;</span>)<span class="question-mark">?</span>)
+    } <span class="kw">else</span> {
+        <span class="prelude-val">None</span>
+    };
+
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">resample_evt</span>) <span class="op">=</span> <span class="ident">resample_evt</span> {
         <span class="kw">loop</span> {
             <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">resample_evt</span>
                 .<span class="ident">next_val</span>()
