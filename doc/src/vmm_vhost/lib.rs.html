@@ -534,7 +534,7 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">message</span>;
 
 <span class="kw">mod</span> <span class="ident">connection</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span><span class="ident">::connection</span>::{<span class="ident">SocketEndpoint</span>, <span class="ident">SocketListener</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span><span class="ident">::connection</span>::{<span class="ident">Endpoint</span>, <span class="ident">EndpointExt</span>, <span class="ident">SocketEndpoint</span>, <span class="ident">SocketListener</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;vmm&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">master</span>;

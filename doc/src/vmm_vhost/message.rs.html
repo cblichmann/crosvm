@@ -1302,11 +1302,11 @@
 <span class="doccomment">/// Maximum number of vrings supported.</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VHOST_USER_MAX_VRINGS</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0x8000u64</span>;
 
-<span class="comment">// TODO(keiichiw): Can&#39;t we avoid exposing `Req`?</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
+<span class="doccomment">/// Used for the payload in Vhost Master messages.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Req</span>:
     <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Copy</span> <span class="op">+</span> <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">PartialOrd</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>
 {
+    <span class="doccomment">/// Is the entity valid.</span>
     <span class="kw">fn</span> <span class="ident">is_valid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
 }
 
@@ -1489,7 +1489,7 @@
 <span class="doccomment">/// machine native byte order.</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">packed</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Req</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VhostUserMsgHeader</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Req</span><span class="op">&gt;</span> {
     <span class="ident">request</span>: <span class="ident">u32</span>,
     <span class="ident">flags</span>: <span class="ident">u32</span>,
     <span class="ident">size</span>: <span class="ident">u32</span>,
