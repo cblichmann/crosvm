@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["device",""],["proxy",""],["vmm",""]]});
+initSidebarItems({"mod":[["device",""],["proxy","This module implements the “Vhost User” Virtio device as specified here - https://stefanha.github.io/virtio/vhost-user-slave.html#x1-2830007 It acts as a proxy between the Vhost User Master running in a sibling VM’s VMM and Virtio Vhost User Slave implementation in the device VM."],["vmm",""]]});

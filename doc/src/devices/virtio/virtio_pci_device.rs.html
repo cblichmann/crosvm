@@ -786,6 +786,15 @@
 <span id="786">786</span>
 <span id="787">787</span>
 <span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -819,13 +828,18 @@
     <span class="ident">IsrConfig</span> <span class="op">=</span> <span class="number">3</span>,
     <span class="ident">DeviceConfig</span> <span class="op">=</span> <span class="number">4</span>,
     <span class="ident">PciConfig</span> <span class="op">=</span> <span class="number">5</span>,
+    <span class="comment">// Doorbell, Notification and SharedMemory are Virtio Vhost User related PCI</span>
+    <span class="comment">// capabilities. Specified in 5.7.7.4 here</span>
+    <span class="comment">// https://stefanha.github.io/virtio/vhost-user-slave.html#x1-2830007.</span>
+    <span class="ident">DoorbellConfig</span> <span class="op">=</span> <span class="number">6</span>,
+    <span class="ident">NotificationConfig</span> <span class="op">=</span> <span class="number">7</span>,
     <span class="ident">SharedMemoryConfig</span> <span class="op">=</span> <span class="number">8</span>,
 }
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">struct</span> <span class="ident">VirtioPciCap</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VirtioPciCap</span> {
     <span class="comment">// _cap_vndr and _cap_next are autofilled based on id() in pci configuration</span>
     <span class="ident">_cap_vndr</span>: <span class="ident">u8</span>,    <span class="comment">// Generic PCI field: PCI_CAP_ID_VNDR</span>
     <span class="ident">_cap_next</span>: <span class="ident">u8</span>,    <span class="comment">// Generic PCI field: next ptr</span>
@@ -867,6 +881,10 @@
             <span class="ident">offset</span>: <span class="ident">Le32::from</span>(<span class="ident">offset</span>),
             <span class="ident">length</span>: <span class="ident">Le32::from</span>(<span class="ident">length</span>),
         }
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_cap_len</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cap_len</span>: <span class="ident">u8</span>) {
+        <span class="self">self</span>.<span class="ident">cap_len</span> <span class="op">=</span> <span class="ident">cap_len</span>;
     }
 }
 

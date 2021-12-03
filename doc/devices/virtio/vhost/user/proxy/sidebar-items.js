@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Error",""]],"struct":[["VirtioVhostUser",""]],"type":[["Result",""]]});
+initSidebarItems({"enum":[["Error",""]],"struct":[["VirtioPciDoorbellCap",""],["VirtioVhostUser",""]],"type":[["Result",""]]});
