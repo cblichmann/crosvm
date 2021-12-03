@@ -1302,18 +1302,6 @@
 <span id="1302">1302</span>
 <span id="1303">1303</span>
 <span id="1304">1304</span>
-<span id="1305">1305</span>
-<span id="1306">1306</span>
-<span id="1307">1307</span>
-<span id="1308">1308</span>
-<span id="1309">1309</span>
-<span id="1310">1310</span>
-<span id="1311">1311</span>
-<span id="1312">1312</span>
-<span id="1313">1313</span>
-<span id="1314">1314</span>
-<span id="1315">1315</span>
-<span id="1316">1316</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1769,15 +1757,6 @@
             <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">resume_notify_devices</span>,
         )<span class="question-mark">?</span>;
 
-        <span class="comment">// Use IRQ info in ACPI if provided by the user.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">noirq</span> <span class="op">=</span> <span class="bool-val">true</span>;
-
-        <span class="kw">for</span> <span class="ident">sdt</span> <span class="kw">in</span> <span class="ident">acpi_dev_resource</span>.<span class="ident">sdts</span>.<span class="ident">iter</span>() {
-            <span class="kw">if</span> <span class="ident">sdt</span>.<span class="ident">is_signature</span>(<span class="string">b&quot;DSDT&quot;</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">sdt</span>.<span class="ident">is_signature</span>(<span class="string">b&quot;APIC&quot;</span>) {
-                <span class="ident">noirq</span> <span class="op">=</span> <span class="bool-val">false</span>;
-            }
-        }
-
         <span class="ident">irq_chip</span>
             .<span class="ident">finalize_devices</span>(<span class="ident">system_allocator</span>, <span class="kw-2">&amp;</span><span class="ident">io_bus</span>, <span class="kw-2">&amp;</span><span class="ident">mmio_bus</span>)
             .<span class="ident">map_err</span>(<span class="ident">Error::RegisterIrqfd</span>)<span class="question-mark">?</span>;
@@ -1791,7 +1770,7 @@
         <span class="comment">// should be rethought.</span>
 
         <span class="comment">// Note that this puts the mptable at 0x9FC00 in guest physical memory.</span>
-        <span class="ident">mptable::setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">vcpu_count</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="ident">pci_irqs</span>).<span class="ident">map_err</span>(<span class="ident">Error::SetupMptable</span>)<span class="question-mark">?</span>;
+        <span class="ident">mptable::setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">vcpu_count</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="kw-2">&amp;</span><span class="ident">pci_irqs</span>).<span class="ident">map_err</span>(<span class="ident">Error::SetupMptable</span>)<span class="question-mark">?</span>;
         <span class="ident">smbios::setup_smbios</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">components</span>.<span class="ident">dmi_path</span>).<span class="ident">map_err</span>(<span class="ident">Error::SetupSmbios</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">host_cpus</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">components</span>.<span class="ident">host_cpu_topology</span> {
@@ -1808,14 +1787,11 @@
             <span class="ident">acpi_dev_resource</span>,
             <span class="ident">host_cpus</span>,
             <span class="ident">kvm_vcpu_ids</span>,
+            <span class="kw-2">&amp;</span><span class="ident">pci_irqs</span>,
         )
         .<span class="ident">ok_or</span>(<span class="ident">Error::CreateAcpi</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmdline</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::get_base_linux_cmdline</span>();
-
-        <span class="kw">if</span> <span class="ident">noirq</span> {
-            <span class="ident">cmdline</span>.<span class="ident">insert_str</span>(<span class="string">&quot;acpi=noirq&quot;</span>).<span class="ident">unwrap</span>();
-        }
 
         <span class="ident">get_serial_cmdline</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cmdline</span>, <span class="ident">serial_parameters</span>, <span class="string">&quot;io&quot;</span>)
             .<span class="ident">map_err</span>(<span class="ident">Error::GetSerialCmdline</span>)<span class="question-mark">?</span>;

@@ -588,7 +588,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">setup_mptable</span>(
     <span class="ident">mem</span>: <span class="kw-2">&amp;</span><span class="ident">GuestMemory</span>,
     <span class="ident">num_cpus</span>: <span class="ident">u8</span>,
-    <span class="ident">pci_irqs</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">PciAddress</span>, <span class="ident">u32</span>, <span class="ident">PciInterruptPin</span>)<span class="op">&gt;</span>,
+    <span class="ident">pci_irqs</span>: <span class="kw-2">&amp;</span>[(<span class="ident">PciAddress</span>, <span class="ident">u32</span>, <span class="ident">PciInterruptPin</span>)],
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="comment">// Used to keep track of the next base pointer into the MP table.</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">base_mp</span> <span class="op">=</span> <span class="ident">GuestAddress</span>(<span class="ident">MPTABLE_START</span>);
@@ -767,7 +767,7 @@
     }
 
     <span class="kw">let</span> <span class="ident">starting_isa_irq_num</span> <span class="op">=</span> <span class="ident">pci_irqs</span>
-        .<span class="ident">into_iter</span>()
+        .<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">irq_num</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">irq_num</span> <span class="op">+</span> <span class="number">1</span>)
         .<span class="ident">fold</span>(<span class="kw">super</span><span class="ident">::X86_64_IRQ_BASE</span>, <span class="ident">u32::max</span>) <span class="kw">as</span> <span class="ident">u8</span>;
 
@@ -874,7 +874,7 @@
         )])
         .<span class="ident">unwrap</span>();
 
-        <span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">num_cpus</span>, <span class="ident">Vec::new</span>()).<span class="ident">unwrap</span>();
+        <span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">num_cpus</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">unwrap</span>();
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -882,7 +882,7 @@
         <span class="kw">let</span> <span class="ident">num_cpus</span> <span class="op">=</span> <span class="number">255</span>;
         <span class="kw">let</span> <span class="ident">mem</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="ident">MPTABLE_START</span>), <span class="number">0x1000</span>)]).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert!</span>(<span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">num_cpus</span>, <span class="ident">Vec::new</span>()).<span class="ident">is_err</span>());
+        <span class="macro">assert!</span>(<span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">num_cpus</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">is_err</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -894,7 +894,7 @@
         )])
         .<span class="ident">unwrap</span>();
 
-        <span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">num_cpus</span>, <span class="ident">Vec::new</span>()).<span class="ident">unwrap</span>();
+        <span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">num_cpus</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">mpf_intel</span> <span class="op">=</span> <span class="ident">mem</span>.<span class="ident">read_obj_from_addr</span>(<span class="ident">GuestAddress</span>(<span class="ident">MPTABLE_START</span>)).<span class="ident">unwrap</span>();
 
@@ -910,7 +910,7 @@
         )])
         .<span class="ident">unwrap</span>();
 
-        <span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">num_cpus</span>, <span class="ident">Vec::new</span>()).<span class="ident">unwrap</span>();
+        <span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">num_cpus</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">mpf_intel</span>: <span class="ident">mpf_intel</span> <span class="op">=</span> <span class="ident">mem</span>.<span class="ident">read_obj_from_addr</span>(<span class="ident">GuestAddress</span>(<span class="ident">MPTABLE_START</span>)).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">mpc_offset</span> <span class="op">=</span> <span class="ident">GuestAddress</span>(<span class="ident">mpf_intel</span>.<span class="ident">physptr</span> <span class="kw">as</span> <span class="ident">u64</span>);
@@ -936,7 +936,7 @@
         .<span class="ident">unwrap</span>();
 
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">MAX_CPUS</span> {
-            <span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">i</span>, <span class="ident">Vec::new</span>()).<span class="ident">unwrap</span>();
+            <span class="ident">setup_mptable</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">i</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">unwrap</span>();
 
             <span class="kw">let</span> <span class="ident">mpf_intel</span>: <span class="ident">mpf_intel</span> <span class="op">=</span> <span class="ident">mem</span>.<span class="ident">read_obj_from_addr</span>(<span class="ident">GuestAddress</span>(<span class="ident">MPTABLE_START</span>)).<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">mpc_offset</span> <span class="op">=</span> <span class="ident">GuestAddress</span>(<span class="ident">mpf_intel</span>.<span class="ident">physptr</span> <span class="kw">as</span> <span class="ident">u64</span>);
