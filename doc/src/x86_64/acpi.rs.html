@@ -467,6 +467,9 @@
 <span id="467">467</span>
 <span id="468">468</span>
 <span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -885,13 +888,16 @@
     <span class="comment">// Add interrupt overrides for the PCI IRQs so that they are reported as level triggered, as</span>
     <span class="comment">// required by the PCI bus. The source and system GSI are identical, so this does not actually</span>
     <span class="comment">// override the mapping; we just use it to set the level-triggered flag.</span>
-    <span class="kw">for</span> (<span class="kw">_</span>, <span class="ident">irq_num</span>, <span class="kw">_</span>) <span class="kw">in</span> <span class="ident">pci_irqs</span>.<span class="ident">iter</span>() {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">unique_pci_irqs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">pci_irqs</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">irq_num</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">irq_num</span>).<span class="ident">collect</span>();
+    <span class="ident">unique_pci_irqs</span>.<span class="ident">sort_unstable</span>();
+    <span class="ident">unique_pci_irqs</span>.<span class="ident">dedup</span>();
+    <span class="kw">for</span> <span class="ident">irq_num</span> <span class="kw">in</span> <span class="ident">unique_pci_irqs</span> {
         <span class="ident">madt</span>.<span class="ident">append</span>(<span class="ident">IoapicInterruptSourceOverride</span> {
             <span class="ident">_type</span>: <span class="ident">MADT_TYPE_INTERRUPT_SOURCE_OVERRIDE</span>,
             <span class="ident">_length</span>: <span class="ident">std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">IoapicInterruptSourceOverride</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u8</span>,
             <span class="ident">_bus</span>: <span class="number">0</span>, <span class="comment">// ISA</span>
-            <span class="ident">_source</span>: <span class="kw-2">*</span><span class="ident">irq_num</span> <span class="kw">as</span> <span class="ident">u8</span>,
-            <span class="ident">_gsi</span>: <span class="kw-2">*</span><span class="ident">irq_num</span>,
+            <span class="ident">_source</span>: <span class="ident">irq_num</span> <span class="kw">as</span> <span class="ident">u8</span>,
+            <span class="ident">_gsi</span>: <span class="ident">irq_num</span>,
             <span class="ident">_flags</span>: <span class="ident">MADT_INT_POLARITY_ACTIVE_LOW</span> <span class="op">|</span> <span class="ident">MADT_INT_TRIGGER_LEVEL</span>,
         });
     }
