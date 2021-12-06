@@ -429,6 +429,12 @@
 <span id="429">429</span>
 <span id="430">430</span>
 <span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright (C) 2019 Alibaba Cloud Computing. All rights reserved.</span>
 <span class="comment">// SPDX-License-Identifier: Apache-2.0</span>
@@ -438,8 +444,13 @@
 <span class="kw">mod</span> <span class="ident">socket</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span><span class="ident">::socket</span>::{<span class="ident">SocketEndpoint</span>, <span class="ident">SocketListener</span>};
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;vfio-device&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">vfio</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;vfio-device&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span><span class="ident">::vfio</span>::{<span class="ident">VfioDevice</span>, <span class="ident">VfioEndpoint</span>, <span class="ident">VfioListener</span>};
+
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
-<span class="kw">use</span> <span class="ident">std::io::IoSliceMut</span>;
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">IoSlice</span>, <span class="ident">IoSliceMut</span>};
 <span class="kw">use</span> <span class="ident">std::mem</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::io::RawFd</span>;
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
@@ -456,7 +467,7 @@
     <span class="kw">type</span> <span class="ident">Connection</span>;
 
     <span class="doccomment">/// Accept an incoming connection.</span>
-    <span class="kw">fn</span> <span class="ident">accept</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Connection</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">accept</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Connection</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Change blocking status on the listener.</span>
     <span class="kw">fn</span> <span class="ident">set_nonblocking</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">block</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
@@ -477,7 +488,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Return:</span>
     <span class="doccomment">/// * - number of bytes sent on success</span>
-    <span class="kw">fn</span> <span class="ident">send_iovec</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">iovs</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>[<span class="ident">u8</span>]], <span class="ident">fds</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RawFd</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">send_iovec</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">iovs</span>: <span class="kw-2">&amp;</span>[<span class="ident">IoSlice</span>], <span class="ident">fds</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RawFd</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Reads bytes into the given scatter/gather vectors with optional attached file.</span>
     <span class="doccomment">///</span>
@@ -551,7 +562,8 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_sent</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">while</span> <span class="op">!</span><span class="ident">iovs</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">send_iovec</span>(<span class="ident">iovs</span>, <span class="ident">fds</span>) {
+            <span class="kw">let</span> <span class="ident">iovec</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">iovs</span>.<span class="ident">iter_mut</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">IoSlice::new</span>(<span class="ident">i</span>)).<span class="ident">collect</span>();
+            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">send_iovec</span>(<span class="kw-2">&amp;</span><span class="ident">iovec</span>, <span class="ident">fds</span>) {
                 <span class="prelude-val">Ok</span>(<span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">break</span>;
                 }
@@ -574,7 +586,7 @@
     <span class="doccomment">/// # Return:</span>
     <span class="doccomment">/// * - number of bytes sent on success</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">send_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">fds</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RawFd</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">send_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">IoSlice</span>, <span class="ident">fds</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RawFd</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">send_iovec</span>(<span class="kw-2">&amp;</span>[<span class="ident">data</span>], <span class="ident">fds</span>)
     }
 

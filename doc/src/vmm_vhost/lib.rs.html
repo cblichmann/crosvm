@@ -487,6 +487,14 @@
 <span id="487">487</span>
 <span id="488">488</span>
 <span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright (C) 2019 Alibaba Cloud. All rights reserved.</span>
 <span class="comment">// SPDX-License-Identifier: Apache-2.0 or BSD-3-Clause</span>
@@ -522,6 +530,7 @@
 
 <span class="attribute">#![<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;vmm&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;device&quot;</span>))]</span>
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io::Error</span> <span class="kw">as</span> <span class="ident">IOError</span>;
 
@@ -535,6 +544,9 @@
 
 <span class="kw">mod</span> <span class="ident">connection</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span><span class="ident">::connection</span>::{<span class="ident">Endpoint</span>, <span class="ident">EndpointExt</span>, <span class="ident">SocketEndpoint</span>, <span class="ident">SocketListener</span>};
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;vfio-device&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span><span class="ident">::connection</span>::{<span class="ident">VfioDevice</span>, <span class="ident">VfioEndpoint</span>, <span class="ident">VfioListener</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;vmm&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">master</span>;
@@ -608,6 +620,9 @@
     <span class="doccomment">/// Should retry the socket operation again.</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;temporary socket error: {0}&quot;</span>)]</span>
     <span class="ident">SocketRetry</span>(<span class="ident">std::io::Error</span>),
+    <span class="doccomment">/// Error from VFIO device.</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;error occurred in VFIO device: {0}&quot;</span>)]</span>
+    <span class="ident">VfioDeviceError</span>(<span class="ident">anyhow::Error</span>),
 }
 
 <span class="kw">impl</span> <span class="ident">Error</span> {
@@ -629,6 +644,7 @@
             <span class="ident">Error::SocketError</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Error::SocketConnect</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
             <span class="ident">Error::FeatureMismatch</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
             <span class="ident">Error::ReqHandlerError</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">Error::VfioDeviceError</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         }
     }
 }

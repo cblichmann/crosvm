@@ -465,7 +465,7 @@
 <span class="doccomment">//! Structs for Unix Domain Socket listener and endpoint.</span>
 
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">ErrorKind</span>, <span class="ident">IoSliceMut</span>};
+<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">ErrorKind</span>, <span class="ident">IoSlice</span>, <span class="ident">IoSliceMut</span>};
 <span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::io</span>::{<span class="ident">AsRawFd</span>, <span class="ident">FromRawFd</span>, <span class="ident">RawFd</span>};
 <span class="kw">use</span> <span class="ident">std::os::unix::net</span>::{<span class="ident">UnixListener</span>, <span class="ident">UnixStream</span>};
@@ -510,7 +510,7 @@
     <span class="doccomment">/// * - Some(UnixStream): new UnixStream object if new incoming connection is available.</span>
     <span class="doccomment">/// * - None: no incoming connection available.</span>
     <span class="doccomment">/// * - SocketError: errors from accept().</span>
-    <span class="kw">fn</span> <span class="ident">accept</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Connection</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">accept</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Connection</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">loop</span> {
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">fd</span>.<span class="ident">accept</span>() {
                 <span class="prelude-val">Ok</span>((<span class="ident">socket</span>, <span class="ident">_addr</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">socket</span>)),
@@ -596,7 +596,7 @@
     <span class="doccomment">/// * - SocketRetry: temporary error caused by signals or short of resources.</span>
     <span class="doccomment">/// * - SocketBroken: the underline socket is broken.</span>
     <span class="doccomment">/// * - SocketError: other socket related errors.</span>
-    <span class="kw">fn</span> <span class="ident">send_iovec</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">iovs</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>[<span class="ident">u8</span>]], <span class="ident">fds</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RawFd</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">send_iovec</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">iovs</span>: <span class="kw-2">&amp;</span>[<span class="ident">IoSlice</span>], <span class="ident">fds</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RawFd</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">rfds</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">fds</span> {
             <span class="prelude-val">Some</span>(<span class="ident">rfds</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">rfds</span>,
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[],
@@ -694,7 +694,7 @@
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
 
         <span class="comment">// accept on a fd without incoming connection</span>
@@ -707,20 +707,20 @@
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">sock</span> <span class="op">=</span> <span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from_stream</span>(<span class="ident">sock</span>);
 
         <span class="kw">let</span> <span class="ident">buf1</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0x1</span>, <span class="number">0x2</span>, <span class="number">0x3</span>, <span class="number">0x4</span>];
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>.<span class="ident">send_slice</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..], <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>.<span class="ident">send_slice</span>(<span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]), <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">len</span>, <span class="number">4</span>);
         <span class="kw">let</span> (<span class="ident">bytes</span>, <span class="ident">buf2</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">slave</span>.<span class="ident">recv_into_buf</span>(<span class="number">0x1000</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">bytes</span>, <span class="number">4</span>);
         <span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..], <span class="kw-2">&amp;</span><span class="ident">buf2</span>[..<span class="ident">bytes</span>]);
 
-        <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>.<span class="ident">send_slice</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..], <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>.<span class="ident">send_slice</span>(<span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]), <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">len</span>, <span class="number">4</span>);
         <span class="kw">let</span> (<span class="ident">bytes</span>, <span class="ident">buf2</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">slave</span>.<span class="ident">recv_into_buf</span>(<span class="number">0x2</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">bytes</span>, <span class="number">2</span>);
@@ -735,7 +735,7 @@
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">sock</span> <span class="op">=</span> <span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
@@ -747,7 +747,7 @@
         <span class="comment">// Normal case for sending/receiving file descriptors</span>
         <span class="kw">let</span> <span class="ident">buf1</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0x1</span>, <span class="number">0x2</span>, <span class="number">0x3</span>, <span class="number">0x4</span>];
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>
-            .<span class="ident">send_slice</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..], <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="ident">fd</span>.<span class="ident">as_raw_fd</span>()]))
+            .<span class="ident">send_slice</span>(<span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="ident">fd</span>.<span class="ident">as_raw_fd</span>()]))
             .<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">len</span>, <span class="number">4</span>);
 
@@ -770,7 +770,7 @@
         <span class="comment">// Receiving side: data(header) with fds, data(body)</span>
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>
             .<span class="ident">send_slice</span>(
-                <span class="kw-2">&amp;</span><span class="ident">buf1</span>[..],
+                <span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]),
                 <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>()]),
             )
             .<span class="ident">unwrap</span>();
@@ -799,7 +799,7 @@
         <span class="comment">// Receiving side: data(header), data(body) with fds</span>
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>
             .<span class="ident">send_slice</span>(
-                <span class="kw-2">&amp;</span><span class="ident">buf1</span>[..],
+                <span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]),
                 <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>()]),
             )
             .<span class="ident">unwrap</span>();
@@ -816,11 +816,11 @@
         <span class="comment">// Following communication pattern should work:</span>
         <span class="comment">// Sending side: data, data with fds</span>
         <span class="comment">// Receiving side: data, data with fds</span>
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>.<span class="ident">send_slice</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..], <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>.<span class="ident">send_slice</span>(<span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]), <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">len</span>, <span class="number">4</span>);
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>
             .<span class="ident">send_slice</span>(
-                <span class="kw-2">&amp;</span><span class="ident">buf1</span>[..],
+                <span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]),
                 <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>()]),
             )
             .<span class="ident">unwrap</span>();
@@ -852,11 +852,11 @@
         <span class="comment">// Following communication pattern should not work:</span>
         <span class="comment">// Sending side: data1, data2 with fds</span>
         <span class="comment">// Receiving side: data + partial of data2, left of data2 with fds</span>
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>.<span class="ident">send_slice</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..], <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>.<span class="ident">send_slice</span>(<span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]), <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">len</span>, <span class="number">4</span>);
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>
             .<span class="ident">send_slice</span>(
-                <span class="kw-2">&amp;</span><span class="ident">buf1</span>[..],
+                <span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]),
                 <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>()]),
             )
             .<span class="ident">unwrap</span>();
@@ -872,7 +872,7 @@
         <span class="comment">// If the target fd array is too small, extra file descriptors will get lost.</span>
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>
             .<span class="ident">send_slice</span>(
-                <span class="kw-2">&amp;</span><span class="ident">buf1</span>[..],
+                <span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]),
                 <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>(), <span class="ident">fd</span>.<span class="ident">as_raw_fd</span>()]),
             )
             .<span class="ident">unwrap</span>();
@@ -888,7 +888,7 @@
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">sock</span> <span class="op">=</span> <span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
