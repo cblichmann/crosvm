@@ -1122,6 +1122,70 @@
 <span id="1122">1122</span>
 <span id="1123">1123</span>
 <span id="1124">1124</span>
+<span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
+<span id="1131">1131</span>
+<span id="1132">1132</span>
+<span id="1133">1133</span>
+<span id="1134">1134</span>
+<span id="1135">1135</span>
+<span id="1136">1136</span>
+<span id="1137">1137</span>
+<span id="1138">1138</span>
+<span id="1139">1139</span>
+<span id="1140">1140</span>
+<span id="1141">1141</span>
+<span id="1142">1142</span>
+<span id="1143">1143</span>
+<span id="1144">1144</span>
+<span id="1145">1145</span>
+<span id="1146">1146</span>
+<span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
+<span id="1150">1150</span>
+<span id="1151">1151</span>
+<span id="1152">1152</span>
+<span id="1153">1153</span>
+<span id="1154">1154</span>
+<span id="1155">1155</span>
+<span id="1156">1156</span>
+<span id="1157">1157</span>
+<span id="1158">1158</span>
+<span id="1159">1159</span>
+<span id="1160">1160</span>
+<span id="1161">1161</span>
+<span id="1162">1162</span>
+<span id="1163">1163</span>
+<span id="1164">1164</span>
+<span id="1165">1165</span>
+<span id="1166">1166</span>
+<span id="1167">1167</span>
+<span id="1168">1168</span>
+<span id="1169">1169</span>
+<span id="1170">1170</span>
+<span id="1171">1171</span>
+<span id="1172">1172</span>
+<span id="1173">1173</span>
+<span id="1174">1174</span>
+<span id="1175">1175</span>
+<span id="1176">1176</span>
+<span id="1177">1177</span>
+<span id="1178">1178</span>
+<span id="1179">1179</span>
+<span id="1180">1180</span>
+<span id="1181">1181</span>
+<span id="1182">1182</span>
+<span id="1183">1183</span>
+<span id="1184">1184</span>
+<span id="1185">1185</span>
+<span id="1186">1186</span>
+<span id="1187">1187</span>
+<span id="1188">1188</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1215,16 +1279,21 @@
     <span class="ident">Delete</span>,
 }
 
+<span class="kw">enum</span> <span class="ident">IommuType</span> {
+    <span class="ident">Type1V2</span> <span class="op">=</span> <span class="ident">VFIO_TYPE1v2_IOMMU</span> <span class="kw">as</span> <span class="ident">isize</span>,
+    <span class="ident">NoIommu</span> <span class="op">=</span> <span class="ident">VFIO_NOIOMMU_IOMMU</span> <span class="kw">as</span> <span class="ident">isize</span>,
+}
+
 <span class="doccomment">/// VfioContainer contain multi VfioGroup, and delegate an IOMMU domain table</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VfioContainer</span> {
     <span class="ident">container</span>: <span class="ident">File</span>,
     <span class="ident">groups</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VfioGroup</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">host_iommu</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">const</span> <span class="ident">VFIO_API_VERSION</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0</span>;
 <span class="kw">impl</span> <span class="ident">VfioContainer</span> {
-    <span class="doccomment">/// Open VfioContainer</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">new_inner</span>(<span class="ident">host_iommu</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">container</span> <span class="op">=</span> <span class="ident">OpenOptions::new</span>()
             .<span class="ident">read</span>(<span class="bool-val">true</span>)
             .<span class="ident">write</span>(<span class="bool-val">true</span>)
@@ -1240,30 +1309,33 @@
         <span class="prelude-val">Ok</span>(<span class="ident">VfioContainer</span> {
             <span class="ident">container</span>,
             <span class="ident">groups</span>: <span class="ident">HashMap::new</span>(),
+            <span class="ident">host_iommu</span>,
         })
+    }
+
+    <span class="doccomment">/// Open VfioContainer with IOMMU enabled.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="self">Self</span><span class="ident">::new_inner</span>(<span class="bool-val">true</span> <span class="comment">/* host_iommu */</span>)
+    }
+
+    <span class="doccomment">/// Open VfioContainer with IOMMU enabled.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_noiommu</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="self">Self</span><span class="ident">::new_inner</span>(<span class="bool-val">false</span> <span class="comment">/* host_iommu */</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">is_group_set</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">group_id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">groups</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">group_id</span>).<span class="ident">is_some</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">check_extension</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">val</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">if</span> <span class="ident">val</span> <span class="op">!</span><span class="op">=</span> <span class="ident">VFIO_TYPE1_IOMMU</span> <span class="op">&amp;&amp;</span> <span class="ident">val</span> <span class="op">!</span><span class="op">=</span> <span class="ident">VFIO_TYPE1v2_IOMMU</span> {
-            <span class="macro">panic!</span>(<span class="string">&quot;IOMMU type error&quot;</span>);
-        }
-
+    <span class="kw">fn</span> <span class="ident">check_extension</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">val</span>: <span class="ident">IommuType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="comment">// Safe as file is vfio container and make sure val is valid.</span>
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ioctl_with_val</span>(<span class="self">self</span>, <span class="ident">VFIO_CHECK_EXTENSION</span>(), <span class="ident">val</span>.<span class="ident">into</span>()) };
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ioctl_with_val</span>(<span class="self">self</span>, <span class="ident">VFIO_CHECK_EXTENSION</span>(), <span class="ident">val</span> <span class="kw">as</span> <span class="ident">u64</span>) };
         <span class="ident">ret</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">set_iommu</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">val</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
-        <span class="kw">if</span> <span class="ident">val</span> <span class="op">!</span><span class="op">=</span> <span class="ident">VFIO_TYPE1_IOMMU</span> <span class="op">&amp;&amp;</span> <span class="ident">val</span> <span class="op">!</span><span class="op">=</span> <span class="ident">VFIO_TYPE1v2_IOMMU</span> {
-            <span class="macro">panic!</span>(<span class="string">&quot;IOMMU type error&quot;</span>);
-        }
-
+    <span class="kw">fn</span> <span class="ident">set_iommu</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">val</span>: <span class="ident">IommuType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
         <span class="comment">// Safe as file is vfio container and make sure val is valid.</span>
-        <span class="kw">unsafe</span> { <span class="ident">ioctl_with_val</span>(<span class="self">self</span>, <span class="ident">VFIO_SET_IOMMU</span>(), <span class="ident">val</span>.<span class="ident">into</span>()) }
+        <span class="kw">unsafe</span> { <span class="ident">ioctl_with_val</span>(<span class="self">self</span>, <span class="ident">VFIO_SET_IOMMU</span>(), <span class="ident">val</span> <span class="kw">as</span> <span class="ident">u64</span>) }
     }
 
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">vfio_dma_map</span>(
@@ -1329,11 +1401,11 @@
     }
 
     <span class="kw">fn</span> <span class="ident">init</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">guest_mem</span>: <span class="kw-2">&amp;</span><span class="ident">GuestMemory</span>, <span class="ident">iommu_enabled</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">check_extension</span>(<span class="ident">VFIO_TYPE1v2_IOMMU</span>) {
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">check_extension</span>(<span class="ident">IommuType::Type1V2</span>) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VfioError::VfioType1V2</span>);
         }
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">set_iommu</span>(<span class="ident">VFIO_TYPE1v2_IOMMU</span>) <span class="op">&lt;</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">set_iommu</span>(<span class="ident">IommuType::Type1V2</span>) <span class="op">&lt;</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VfioError::ContainerSetIOMMU</span>(<span class="ident">get_error</span>()));
         }
 
@@ -1349,7 +1421,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">get_group</span>(
+    <span class="kw">fn</span> <span class="ident">get_group_with_vm</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">id</span>: <span class="ident">u32</span>,
         <span class="ident">vm</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">Vm</span>,
@@ -1358,8 +1430,7 @@
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">groups</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">id</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">group</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">group</span>.<span class="ident">clone</span>()),
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">VfioGroup::new</span>(<span class="self">self</span>, <span class="ident">id</span>)<span class="question-mark">?</span>));
-
+                <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">VfioGroup::new</span>(<span class="self">self</span>, <span class="self">self</span>.<span class="ident">host_iommu</span>, <span class="ident">id</span>)<span class="question-mark">?</span>));
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">groups</span>.<span class="ident">is_empty</span>() {
                     <span class="comment">// Before the first group is added into container, do once cotainer</span>
                     <span class="comment">// initialize for a vm</span>
@@ -1375,6 +1446,24 @@
 
                 <span class="self">self</span>.<span class="ident">groups</span>.<span class="ident">insert</span>(<span class="ident">id</span>, <span class="ident">group</span>.<span class="ident">clone</span>());
 
+                <span class="prelude-val">Ok</span>(<span class="ident">group</span>)
+            }
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_group</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VfioGroup</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">groups</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">id</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">group</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">group</span>.<span class="ident">clone</span>()),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">VfioGroup::new</span>(<span class="self">self</span>, <span class="self">self</span>.<span class="ident">host_iommu</span>, <span class="ident">id</span>)<span class="question-mark">?</span>));
+
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">groups</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">host_iommu</span> {
+                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">set_iommu</span>(<span class="ident">IommuType::NoIommu</span>) <span class="op">&lt;</span> <span class="number">0</span> {
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">VfioError::ContainerSetIOMMU</span>(<span class="ident">get_error</span>()));
+                    }
+                }
+
+                <span class="self">self</span>.<span class="ident">groups</span>.<span class="ident">insert</span>(<span class="ident">id</span>, <span class="ident">group</span>.<span class="ident">clone</span>());
                 <span class="prelude-val">Ok</span>(<span class="ident">group</span>)
             }
         }
@@ -1418,11 +1507,12 @@
 }
 
 <span class="kw">impl</span> <span class="ident">VfioGroup</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">container</span>: <span class="kw-2">&amp;</span><span class="ident">VfioContainer</span>, <span class="ident">id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">group_path</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="string">&quot;/dev/vfio/&quot;</span>);
-        <span class="kw">let</span> <span class="ident">s_id</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">id</span>;
-        <span class="ident">group_path</span>.<span class="ident">push_str</span>(<span class="ident">s_id</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>());
-
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">container</span>: <span class="kw-2">&amp;</span><span class="ident">VfioContainer</span>, <span class="ident">host_iommu</span>: <span class="ident">bool</span>, <span class="ident">id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">group_path</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">host_iommu</span> {
+            <span class="macro">format!</span>(<span class="string">&quot;/dev/vfio/{}&quot;</span>, <span class="ident">id</span>)
+        } <span class="kw">else</span> {
+            <span class="macro">format!</span>(<span class="string">&quot;/dev/vfio/noiommu-{}&quot;</span>, <span class="ident">id</span>)
+        };
         <span class="kw">let</span> <span class="ident">group_file</span> <span class="op">=</span> <span class="ident">OpenOptions::new</span>()
             .<span class="ident">read</span>(<span class="bool-val">true</span>)
             .<span class="ident">write</span>(<span class="bool-val">true</span>)
@@ -1464,7 +1554,7 @@
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">get_group_id</span>(<span class="ident">sysfspath</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_group_id</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">sysfspath</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">uuid_path</span> <span class="op">=</span> <span class="ident">PathBuf::new</span>();
         <span class="ident">uuid_path</span>.<span class="ident">push</span>(<span class="ident">sysfspath</span>);
         <span class="ident">uuid_path</span>.<span class="ident">push</span>(<span class="string">&quot;iommu_group&quot;</span>);
@@ -1560,8 +1650,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">///  * `sysfspath` - the path to the PCI device, e.g. /sys/bus/pci/devices/0000:02:00.0</span>
     <span class="doccomment">///  * `iommu_enabled` - whether virtio IOMMU is enabled on this device</span>
-    <span class="kw">fn</span> <span class="ident">vfio_get_container</span>(
-        <span class="ident">sysfspath</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="kw">fn</span> <span class="ident">vfio_get_container</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+        <span class="ident">sysfspath</span>: <span class="ident">P</span>,
         <span class="ident">iommu_enabled</span>: <span class="ident">bool</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VfioContainer</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
@@ -1580,8 +1670,8 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VfioCommonSetup</span>;
 
 <span class="kw">impl</span> <span class="ident">VfioCommonTrait</span> <span class="kw">for</span> <span class="ident">VfioCommonSetup</span> {
-    <span class="kw">fn</span> <span class="ident">vfio_get_container</span>(
-        <span class="ident">sysfspath</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="kw">fn</span> <span class="ident">vfio_get_container</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+        <span class="ident">sysfspath</span>: <span class="ident">P</span>,
         <span class="ident">iommu_enabled</span>: <span class="ident">bool</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VfioContainer</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">iommu_enabled</span> {
@@ -1602,7 +1692,7 @@
                 })
             }
             <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">group_id</span> <span class="op">=</span> <span class="ident">VfioGroup::get_group_id</span>(<span class="ident">sysfspath</span>)<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">group_id</span> <span class="op">=</span> <span class="ident">VfioGroup::get_group_id</span>(<span class="kw-2">&amp;</span><span class="ident">sysfspath</span>)<span class="question-mark">?</span>;
 
                 <span class="comment">// One VFIO container is used for all devices belong to one VFIO group</span>
                 <span class="ident">IOMMU_CONTAINERS</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
@@ -1668,15 +1758,47 @@
     <span class="doccomment">/// Create a new vfio device, then guest read/write on this device could be</span>
     <span class="doccomment">/// transfered into kernel vfio.</span>
     <span class="doccomment">/// sysfspath specify the vfio device path in sys file system.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">sysfspath</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>,
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_passthrough</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+        <span class="ident">sysfspath</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
         <span class="ident">vm</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">Vm</span>,
         <span class="ident">container</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VfioContainer</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">iommu_enabled</span>: <span class="ident">bool</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">group_id</span> <span class="op">=</span> <span class="ident">VfioGroup::get_group_id</span>(<span class="ident">sysfspath</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="ident">container</span>.<span class="ident">lock</span>().<span class="ident">get_group</span>(<span class="ident">group_id</span>, <span class="ident">vm</span>, <span class="ident">iommu_enabled</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">name_osstr</span> <span class="op">=</span> <span class="ident">sysfspath</span>.<span class="ident">file_name</span>().<span class="ident">ok_or</span>(<span class="ident">VfioError::InvalidPath</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">group_id</span> <span class="op">=</span> <span class="ident">VfioGroup::get_group_id</span>(<span class="kw-2">&amp;</span><span class="ident">sysfspath</span>)<span class="question-mark">?</span>;
+
+        <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="ident">container</span>
+            .<span class="ident">lock</span>()
+            .<span class="ident">get_group_with_vm</span>(<span class="ident">group_id</span>, <span class="ident">vm</span>, <span class="ident">iommu_enabled</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">name_osstr</span> <span class="op">=</span> <span class="ident">sysfspath</span>
+            .<span class="ident">as_ref</span>()
+            .<span class="ident">file_name</span>()
+            .<span class="ident">ok_or</span>(<span class="ident">VfioError::InvalidPath</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">name_str</span> <span class="op">=</span> <span class="ident">name_osstr</span>.<span class="ident">to_str</span>().<span class="ident">ok_or</span>(<span class="ident">VfioError::InvalidPath</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="ident">name_str</span>);
+        <span class="kw">let</span> <span class="ident">dev</span> <span class="op">=</span> <span class="ident">group</span>.<span class="ident">lock</span>().<span class="ident">get_device</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">regions</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::get_regions</span>(<span class="kw-2">&amp;</span><span class="ident">dev</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">group_descriptor</span> <span class="op">=</span> <span class="ident">group</span>.<span class="ident">lock</span>().<span class="ident">as_raw_descriptor</span>();
+
+        <span class="prelude-val">Ok</span>(<span class="ident">VfioDevice</span> {
+            <span class="ident">dev</span>,
+            <span class="ident">name</span>,
+            <span class="ident">container</span>,
+            <span class="ident">group_descriptor</span>,
+            <span class="ident">group_id</span>,
+            <span class="ident">regions</span>,
+        })
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+        <span class="ident">sysfspath</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
+        <span class="ident">container</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VfioContainer</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">group_id</span> <span class="op">=</span> <span class="ident">VfioGroup::get_group_id</span>(<span class="kw-2">&amp;</span><span class="ident">sysfspath</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="ident">container</span>.<span class="ident">lock</span>().<span class="ident">get_group</span>(<span class="ident">group_id</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">name_osstr</span> <span class="op">=</span> <span class="ident">sysfspath</span>
+            .<span class="ident">as_ref</span>()
+            .<span class="ident">file_name</span>()
+            .<span class="ident">ok_or</span>(<span class="ident">VfioError::InvalidPath</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">name_str</span> <span class="op">=</span> <span class="ident">name_osstr</span>.<span class="ident">to_str</span>().<span class="ident">ok_or</span>(<span class="ident">VfioError::InvalidPath</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="ident">name_str</span>);
 
@@ -2245,6 +2367,12 @@
             <span class="ident">config</span>.<span class="ident">as_slice</span>(),
             <span class="ident">offset</span>.<span class="ident">into</span>(),
         );
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">AsRawDescriptor</span> <span class="kw">for</span> <span class="ident">VfioDevice</span> {
+    <span class="kw">fn</span> <span class="ident">as_raw_descriptor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawDescriptor</span> {
+        <span class="self">self</span>.<span class="ident">dev</span>.<span class="ident">as_raw_descriptor</span>()
     }
 }
 </pre></div>
