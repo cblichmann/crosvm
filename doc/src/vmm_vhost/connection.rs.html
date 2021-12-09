@@ -435,19 +435,25 @@
 <span id="435">435</span>
 <span id="436">436</span>
 <span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright (C) 2019 Alibaba Cloud Computing. All rights reserved.</span>
 <span class="comment">// SPDX-License-Identifier: Apache-2.0</span>
 
 <span class="doccomment">//! Common data structures for listener and endpoint.</span>
 
-<span class="kw">mod</span> <span class="ident">socket</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span><span class="ident">::socket</span>::{<span class="ident">SocketEndpoint</span>, <span class="ident">SocketListener</span>};
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">socket</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;vfio-device&quot;</span>)]</span>
-<span class="kw">mod</span> <span class="ident">vfio</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;vfio-device&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span><span class="ident">::vfio</span>::{<span class="ident">VfioDevice</span>, <span class="ident">VfioEndpoint</span>, <span class="ident">VfioListener</span>};
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">vfio</span>;
 
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">IoSlice</span>, <span class="ident">IoSliceMut</span>};
@@ -552,6 +558,12 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Return:</span>
     <span class="doccomment">/// * - number of bytes sent on success</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # TODO</span>
+    <span class="doccomment">/// This function takes a slice of `&amp;[u8]` instead of `IoSlice` because the internal</span>
+    <span class="doccomment">/// cursor needs to be moved by `advance_slices()`.</span>
+    <span class="doccomment">/// Once `IoSlice::advance_slices()` becomes stable, this should be updated.</span>
+    <span class="doccomment">/// &lt;https://github.com/rust-lang/rust/issues/62726&gt;.</span>
     <span class="kw">fn</span> <span class="ident">send_iovec_all</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="kw-2">mut</span> <span class="ident">iovs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="kw-2">&amp;</span>[<span class="ident">u8</span>]],
@@ -687,6 +699,12 @@
     <span class="doccomment">/// * - (number of bytes received, [received fds]) on success</span>
     <span class="doccomment">/// * - SocketBroken: the underline socket is broken.</span>
     <span class="doccomment">/// * - SocketError: other socket related errors.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # TODO</span>
+    <span class="doccomment">/// This function takes a slice of `&amp;mut [u8]` instead of `IoSliceMut` because the internal</span>
+    <span class="doccomment">/// cursor needs to be moved by `advance_slices_mut()`.</span>
+    <span class="doccomment">/// Once `IoSliceMut::advance_slices()` becomes stable, this should be updated.</span>
+    <span class="doccomment">/// &lt;https://github.com/rust-lang/rust/issues/62726&gt;.</span>
     <span class="kw">fn</span> <span class="ident">recv_into_bufs_all</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="kw-2">mut</span> <span class="ident">bufs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]],

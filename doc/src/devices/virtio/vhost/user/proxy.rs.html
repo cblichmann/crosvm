@@ -612,23 +612,61 @@
 <span id="612">612</span>
 <span id="613">613</span>
 <span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
 <span class="doccomment">//! This module implements the &quot;Vhost User&quot; Virtio device as specified here -</span>
-<span class="doccomment">//! &lt;https://stefanha.github.io/virtio/vhost-user-slave.html#x1-2830007&gt; It acts</span>
-<span class="doccomment">//! as a proxy between the Vhost User Master running in a sibling VM&#39;s VMM and</span>
-<span class="doccomment">//! Virtio Vhost User Slave implementation (referred to as `device backend` in</span>
-<span class="doccomment">//! this module) in the device VM.</span>
+<span class="doccomment">//! &lt;https://stefanha.github.io/virtio/vhost-user-slave.html#x1-2830007&gt;. The</span>
+<span class="doccomment">//! device implements the Virtio-Vhost-User protocol. It acts as a proxy between</span>
+<span class="doccomment">//! the Vhost-user Master (referred to as the `Vhost-user sibling` in this</span>
+<span class="doccomment">//! module) running in a sibling VM&#39;s VMM and Virtio-Vhost-User Slave</span>
+<span class="doccomment">//! implementation (referred to as `device backend` in this module) in the</span>
+<span class="doccomment">//! device VM.</span>
 
 <span class="kw">use</span> <span class="ident">std::io</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::net</span>::{<span class="ident">UnixListener</span>, <span class="ident">UnixStream</span>};
 <span class="kw">use</span> <span class="ident">std::path::Path</span>;
 <span class="kw">use</span> <span class="ident">std::thread</span>;
 
-<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Event</span>, <span class="ident">EventType</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>, <span class="ident">WaitContext</span>};
+<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">Event</span>, <span class="ident">EventType</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>, <span class="ident">WaitContext</span>};
 <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">DataInit</span>, <span class="ident">Le32</span>};
 <span class="kw">use</span> <span class="ident">resources::Alloc</span>;
 <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
@@ -671,6 +709,8 @@
 <span class="comment">// in our interest to not waste space here and correlate it tightly to the</span>
 <span class="comment">// actual maximum memory a sibling VM can have.</span>
 <span class="kw">const</span> <span class="ident">BAR_SIZE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">33</span>;
+<span class="kw">const</span> <span class="ident">CONFIG_UUID_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">16</span>;
+<span class="kw">const</span> <span class="ident">VIRTIO_VHOST_USER_STATUS_SLAVE_UP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0</span>;
 
 <span class="comment">// Bar configuration.</span>
 <span class="comment">// All offsets are from the starting of bar `BAR_INDEX`.</span>
@@ -711,12 +751,12 @@
     <span class="doccomment">/// There are no more available descriptors to receive into.</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;no rx descriptors available&quot;</span>)]</span>
     <span class="ident">RxDescriptorsExhausted</span>,
-    <span class="doccomment">/// Removing read event from the VhostVmmSocket fd events failed.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to disable EPOLLIN on VhostVmmSocket fd: {0}&quot;</span>)]</span>
-    <span class="ident">WaitContextDisableVhostVmmSocket</span>(<span class="ident">base::Error</span>),
-    <span class="doccomment">/// Adding read event to the VhostVmmSocket fd events failed.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to enable EPOLLIN on VhostVmmSocket fd: {0}&quot;</span>)]</span>
-    <span class="ident">WaitContextEnableVhostVmmSocket</span>(<span class="ident">base::Error</span>),
+    <span class="doccomment">/// Removing read event from the sibling VM socket events failed.</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to disable EPOLLIN on sibling VM socket fd: {0}&quot;</span>)]</span>
+    <span class="ident">WaitContextDisableSiblingVmSocket</span>(<span class="ident">base::Error</span>),
+    <span class="doccomment">/// Adding read event to the sibling VM socket events failed.</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to enable EPOLLIN on sibling VM socket fd: {0}&quot;</span>)]</span>
+    <span class="ident">WaitContextEnableSiblingVmSocket</span>(<span class="ident">base::Error</span>),
     <span class="doccomment">/// Failed to wait for events.</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;failed to wait for events: {0}&quot;</span>)]</span>
     <span class="ident">WaitError</span>(<span class="ident">base::Error</span>),
@@ -730,31 +770,53 @@
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Default</span>)]</span>
+<span class="comment">// Device configuration as per section 5.7.4.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="kw">struct</span> <span class="ident">VirtioVhostUserConfig</span> {
     <span class="ident">status</span>: <span class="ident">Le32</span>,
     <span class="ident">max_vhost_queues</span>: <span class="ident">Le32</span>,
-    <span class="ident">uuid</span>: [<span class="ident">u8</span>; <span class="number">16</span>],
+    <span class="ident">uuid</span>: [<span class="ident">u8</span>; <span class="ident">CONFIG_UUID_SIZE</span>],
 }
 
 <span class="comment">// Safe because it only has data and has no implicit padding.</span>
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">VirtioVhostUserConfig</span> {}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">VirtioVhostUserConfig</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">VirtioVhostUserConfig</span> {
+            <span class="ident">status</span>: <span class="ident">Le32::from</span>(<span class="number">0</span>),
+            <span class="ident">max_vhost_queues</span>: <span class="ident">Le32::from</span>(<span class="ident">MAX_VHOST_DEVICE_QUEUES</span> <span class="kw">as</span> <span class="ident">u32</span>),
+            <span class="ident">uuid</span>: [<span class="number">0</span>; <span class="ident">CONFIG_UUID_SIZE</span>],
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">VirtioVhostUserConfig</span> {
+    <span class="kw">fn</span> <span class="ident">is_slave_up</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">check_status_bit</span>(<span class="ident">VIRTIO_VHOST_USER_STATUS_SLAVE_UP</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">check_status_bit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bit</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">status</span>.<span class="ident">to_native</span>();
+        <span class="ident">status</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">bit</span>) <span class="op">&gt;</span> <span class="number">0</span>
+    }
+}
 
 <span class="kw">struct</span> <span class="ident">Worker</span> {
     <span class="ident">mem</span>: <span class="ident">GuestMemory</span>,
     <span class="ident">interrupt</span>: <span class="ident">Interrupt</span>,
     <span class="ident">rx_queue</span>: <span class="ident">Queue</span>,
     <span class="ident">tx_queue</span>: <span class="ident">Queue</span>,
-    <span class="ident">vhost_vmm_socket</span>: <span class="ident">UnixStream</span>,
+    <span class="ident">sibling_socket</span>: <span class="ident">UnixStream</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Worker</span> {
     <span class="kw">fn</span> <span class="ident">run</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rx_queue_evt</span>: <span class="ident">Event</span>, <span class="ident">tx_queue_evt</span>: <span class="ident">Event</span>, <span class="ident">kill_evt</span>: <span class="ident">Event</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PollToken</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
         <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Token</span> {
-            <span class="comment">// Data is available on the vhost vmm socket.</span>
-            <span class="ident">VhostVmmSocket</span>,
+            <span class="comment">// Data is available on the Vhost-user sibling socket.</span>
+            <span class="ident">SiblingSocket</span>,
             <span class="comment">// The device backend has made a read buffer available.</span>
             <span class="ident">RxQueue</span>,
             <span class="comment">// The device backend has sent a buffer to the `Worker::tx_queue`.</span>
@@ -764,29 +826,25 @@
         }
 
         <span class="kw">let</span> <span class="ident">wait_ctx</span>: <span class="ident">WaitContext</span><span class="op">&lt;</span><span class="ident">Token</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">WaitContext::build_with</span>(<span class="kw-2">&amp;</span>[
-            (<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">vhost_vmm_socket</span>, <span class="ident">Token::VhostVmmSocket</span>),
+            (<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sibling_socket</span>, <span class="ident">Token::SiblingSocket</span>),
             (<span class="kw-2">&amp;</span><span class="ident">rx_queue_evt</span>, <span class="ident">Token::RxQueue</span>),
             (<span class="kw-2">&amp;</span><span class="ident">tx_queue_evt</span>, <span class="ident">Token::TxQueue</span>),
             (<span class="kw-2">&amp;</span><span class="ident">kill_evt</span>, <span class="ident">Token::Kill</span>),
         ])
         .<span class="ident">map_err</span>(<span class="ident">Error::CreateWaitContext</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vhost_vmm_socket_polling_enabled</span> <span class="op">=</span> <span class="bool-val">true</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sibling_socket_polling_enabled</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="lifetime">&#39;wait</span>: <span class="kw">loop</span> {
             <span class="kw">let</span> <span class="ident">events</span> <span class="op">=</span> <span class="ident">wait_ctx</span>.<span class="ident">wait</span>().<span class="ident">map_err</span>(<span class="ident">Error::WaitError</span>)<span class="question-mark">?</span>;
             <span class="kw">for</span> <span class="ident">event</span> <span class="kw">in</span> <span class="ident">events</span>.<span class="ident">iter</span>().<span class="ident">filter</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">is_readable</span>) {
                 <span class="kw">match</span> <span class="ident">event</span>.<span class="ident">token</span> {
-                    <span class="ident">Token::VhostVmmSocket</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">process_rx</span>() {
+                    <span class="ident">Token::SiblingSocket</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">process_rx</span>() {
                         <span class="prelude-val">Ok</span>(()) <span class="op">=</span><span class="op">&gt;</span> {}
                         <span class="prelude-val">Err</span>(<span class="ident">Error::RxDescriptorsExhausted</span>) <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="ident">wait_ctx</span>
-                                .<span class="ident">modify</span>(
-                                    <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">vhost_vmm_socket</span>,
-                                    <span class="ident">EventType::None</span>,
-                                    <span class="ident">Token::VhostVmmSocket</span>,
-                                )
-                                .<span class="ident">map_err</span>(<span class="ident">Error::WaitContextDisableVhostVmmSocket</span>)<span class="question-mark">?</span>;
-                            <span class="ident">vhost_vmm_socket_polling_enabled</span> <span class="op">=</span> <span class="bool-val">false</span>;
+                                .<span class="ident">modify</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sibling_socket</span>, <span class="ident">EventType::None</span>, <span class="ident">Token::SiblingSocket</span>)
+                                .<span class="ident">map_err</span>(<span class="ident">Error::WaitContextDisableSiblingVmSocket</span>)<span class="question-mark">?</span>;
+                            <span class="ident">sibling_socket_polling_enabled</span> <span class="op">=</span> <span class="bool-val">false</span>;
                         }
                         <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
                     },
@@ -795,15 +853,11 @@
                             <span class="macro">error!</span>(<span class="string">&quot;net: error reading rx queue Event: {}&quot;</span>, <span class="ident">e</span>);
                             <span class="kw">break</span> <span class="lifetime">&#39;wait</span>;
                         }
-                        <span class="kw">if</span> <span class="op">!</span><span class="ident">vhost_vmm_socket_polling_enabled</span> {
+                        <span class="kw">if</span> <span class="op">!</span><span class="ident">sibling_socket_polling_enabled</span> {
                             <span class="ident">wait_ctx</span>
-                                .<span class="ident">modify</span>(
-                                    <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">vhost_vmm_socket</span>,
-                                    <span class="ident">EventType::Read</span>,
-                                    <span class="ident">Token::VhostVmmSocket</span>,
-                                )
-                                .<span class="ident">map_err</span>(<span class="ident">Error::WaitContextEnableVhostVmmSocket</span>)<span class="question-mark">?</span>;
-                            <span class="ident">vhost_vmm_socket_polling_enabled</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                                .<span class="ident">modify</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sibling_socket</span>, <span class="ident">EventType::Read</span>, <span class="ident">Token::SiblingSocket</span>)
+                                .<span class="ident">map_err</span>(<span class="ident">Error::WaitContextEnableSiblingVmSocket</span>)<span class="question-mark">?</span>;
+                            <span class="ident">sibling_socket_polling_enabled</span> <span class="op">=</span> <span class="bool-val">true</span>;
                         }
                     }
                     <span class="ident">Token::TxQueue</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -839,7 +893,7 @@
             <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">desc_chain</span>.<span class="ident">index</span>;
             <span class="kw">let</span> <span class="ident">bytes_written</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">Writer::new</span>(<span class="self">self</span>.<span class="ident">mem</span>.<span class="ident">clone</span>(), <span class="ident">desc_chain</span>) {
                 <span class="prelude-val">Ok</span>(<span class="kw-2">mut</span> <span class="ident">writer</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">match</span> <span class="ident">writer</span>.<span class="ident">write_from</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">vhost_vmm_socket</span>, <span class="ident">writer</span>.<span class="ident">available_bytes</span>()) {
+                    <span class="kw">match</span> <span class="ident">writer</span>.<span class="ident">write_from</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">sibling_socket</span>, <span class="ident">writer</span>.<span class="ident">available_bytes</span>()) {
                         <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {}
                         <span class="prelude-val">Err</span>(<span class="kw-2">ref</span> <span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">kind</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">io::ErrorKind::WriteZero</span> <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="macro">error!</span>(<span class="string">&quot;rx: buffer is too small to hold frame&quot;</span>);
@@ -882,7 +936,7 @@
             <span class="kw">match</span> <span class="ident">Reader::new</span>(<span class="self">self</span>.<span class="ident">mem</span>.<span class="ident">clone</span>(), <span class="ident">desc_chain</span>) {
                 <span class="prelude-val">Ok</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">expected_count</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">available_bytes</span>();
-                    <span class="kw">match</span> <span class="ident">reader</span>.<span class="ident">read_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">vhost_vmm_socket</span>, <span class="ident">expected_count</span>) {
+                    <span class="kw">match</span> <span class="ident">reader</span>.<span class="ident">read_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">sibling_socket</span>, <span class="ident">expected_count</span>) {
                         <span class="prelude-val">Ok</span>(<span class="ident">count</span>) <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="comment">// Datagram messages should be sent as whole.</span>
                             <span class="comment">// TODO: Should this be a panic! as it will violate the Linux API.</span>
@@ -938,7 +992,10 @@
 }
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VirtioVhostUser</span> {
-    <span class="ident">vhost_vmm_socket</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">UnixStream</span><span class="op">&gt;</span>,
+    <span class="comment">// Path to open and accept a socket connection from the Vhost-user sibling.</span>
+    <span class="ident">sibling_socket</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">UnixStream</span><span class="op">&gt;</span>,
+
+    <span class="comment">// Device configuration.</span>
     <span class="ident">config</span>: <span class="ident">VirtioVhostUserConfig</span>,
     <span class="ident">kill_evt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Event</span><span class="op">&gt;</span>,
     <span class="ident">worker_thread</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">thread::JoinHandle</span><span class="op">&lt;</span><span class="ident">Worker</span><span class="op">&gt;</span><span class="op">&gt;</span>,
@@ -949,20 +1006,24 @@
     <span class="ident">notification_select</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>,
     <span class="comment">// Stores msix vectors corresponding to each device backend queue.</span>
     <span class="ident">notification_msix_vectors</span>: [<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>; <span class="ident">MAX_VHOST_DEVICE_QUEUES</span>],
+
+    <span class="comment">// Is Vhost-user sibling connected.</span>
+    <span class="ident">sibling_connected</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">VirtioVhostUser</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">vhost_vmm_socket_path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">VirtioVhostUser</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">UnixListener::bind</span>(<span class="ident">vhost_vmm_socket_path</span>).<span class="ident">map_err</span>(<span class="ident">Error::CreateListener</span>)<span class="question-mark">?</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">sibling_socket_path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">VirtioVhostUser</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">UnixListener::bind</span>(<span class="ident">sibling_socket_path</span>).<span class="ident">map_err</span>(<span class="ident">Error::CreateListener</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> (<span class="ident">socket</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">map_err</span>(<span class="ident">Error::AcceptConnection</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">VirtioVhostUser</span> {
-            <span class="ident">vhost_vmm_socket</span>: <span class="prelude-val">Some</span>(<span class="ident">socket</span>),
+            <span class="ident">sibling_socket</span>: <span class="prelude-val">Some</span>(<span class="ident">socket</span>),
             <span class="ident">config</span>: <span class="ident">Default::default</span>(),
             <span class="ident">kill_evt</span>: <span class="prelude-val">None</span>,
             <span class="ident">worker_thread</span>: <span class="prelude-val">None</span>,
             <span class="ident">pci_bar</span>: <span class="prelude-val">None</span>,
             <span class="ident">notification_select</span>: <span class="prelude-val">None</span>,
             <span class="ident">notification_msix_vectors</span>: [<span class="prelude-val">None</span>; <span class="ident">MAX_VHOST_DEVICE_QUEUES</span>],
+            <span class="ident">sibling_connected</span>: <span class="bool-val">false</span>,
         })
     }
 
@@ -1028,6 +1089,12 @@
         <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">u16::to_le_bytes</span>(<span class="ident">val</span>);
         <span class="ident">data</span>[..<span class="number">2</span>].<span class="ident">copy_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">d</span>);
     }
+
+    <span class="comment">// Wait for Vhost-user sibling to connect.</span>
+    <span class="kw">fn</span> <span class="ident">wait_for_sibling</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="comment">// TODO(abhishekbh): Implement incoming sibling connection.</span>
+        <span class="macro">info!</span>(<span class="string">&quot;wait for sibling to connect&quot;</span>);
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">VirtioVhostUser</span> {
@@ -1069,13 +1136,18 @@
     }
 
     <span class="kw">fn</span> <span class="ident">write_config</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">offset</span>: <span class="ident">u64</span>, <span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
-        <span class="comment">// TODO: Confirm if `data` is guaranteed to be sent in LE.</span>
         <span class="ident">copy_config</span>(
             <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">as_mut_slice</span>(),
             <span class="ident">offset</span>,
             <span class="ident">data</span>,
             <span class="number">0</span>, <span class="comment">/* src_offset */</span>
         );
+
+        <span class="comment">// The driver has indicated that it&#39;s safe for the Vhost-user sibling to</span>
+        <span class="comment">// initiate a connection and send data over.</span>
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">is_slave_up</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">sibling_connected</span> {
+            <span class="self">self</span>.<span class="ident">wait_for_sibling</span>();
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">get_device_caps</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="kw">crate</span><span class="ident">::pci::PciCapability</span><span class="op">&gt;</span><span class="op">&gt;</span> {
@@ -1150,8 +1222,8 @@
 
         <span class="comment">// The socket will be moved to the worker thread. Guaranteed to be valid as a connection is</span>
         <span class="comment">// ensured in `VirtioVhostUser::new`.</span>
-        <span class="kw">let</span> <span class="ident">vhost_vmm_socket</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">vhost_vmm_socket</span>
+        <span class="kw">let</span> <span class="ident">sibling_socket</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">sibling_socket</span>
             .<span class="ident">take</span>()
             .<span class="ident">expect</span>(<span class="string">&quot;socket connection missing&quot;</span>);
 
@@ -1165,7 +1237,7 @@
                     <span class="ident">interrupt</span>,
                     <span class="ident">rx_queue</span>,
                     <span class="ident">tx_queue</span>,
-                    <span class="ident">vhost_vmm_socket</span>,
+                    <span class="ident">sibling_socket</span>,
                 };
                 <span class="kw">let</span> <span class="ident">rx_queue_evt</span> <span class="op">=</span> <span class="ident">queue_evts</span>.<span class="ident">remove</span>(<span class="number">0</span>);
                 <span class="kw">let</span> <span class="ident">tx_queue_evt</span> <span class="op">=</span> <span class="ident">queue_evts</span>.<span class="ident">remove</span>(<span class="number">0</span>);

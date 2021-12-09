@@ -502,6 +502,9 @@
 <span id="502">502</span>
 <span id="503">503</span>
 <span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -536,6 +539,8 @@
 <span class="kw">use</span> <span class="ident">devices::virtio::VideoBackendType</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;audio&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">devices::Ac97Parameters</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;direct&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident">devices::BusRange</span>;
 <span class="kw">use</span> <span class="ident">devices::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">devices::StubPciParameters</span>;
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">getegid</span>, <span class="ident">geteuid</span>};
@@ -601,9 +606,10 @@
 
 <span class="doccomment">/// Direct IO forwarding options</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;direct&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DirectIoOption</span> {
     <span class="kw">pub</span> <span class="ident">path</span>: <span class="ident">PathBuf</span>,
-    <span class="kw">pub</span> <span class="ident">ranges</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">u64</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">ranges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BusRange</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">DEFAULT_TOUCH_DEVICE_HEIGHT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1024</span>;
@@ -823,7 +829,7 @@
     <span class="kw">pub</span> <span class="ident">cpu_capacity</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">u32</span><span class="op">&gt;</span>, <span class="comment">// CPU index -&gt; capacity</span>
     <span class="kw">pub</span> <span class="ident">per_vm_core_scheduling</span>: <span class="ident">bool</span>,
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;audio_cras&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">cras_snd</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CrasSndParameters</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">cras_snds</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">CrasSndParameters</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">delay_rt</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">no_smt</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">memory</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
@@ -921,7 +927,7 @@
             <span class="ident">cpu_capacity</span>: <span class="ident">BTreeMap::new</span>(),
             <span class="ident">per_vm_core_scheduling</span>: <span class="bool-val">false</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;audio_cras&quot;</span>)]</span>
-            <span class="ident">cras_snd</span>: <span class="prelude-val">None</span>,
+            <span class="ident">cras_snds</span>: <span class="ident">Vec::new</span>(),
             <span class="ident">delay_rt</span>: <span class="bool-val">false</span>,
             <span class="ident">no_smt</span>: <span class="bool-val">false</span>,
             <span class="ident">memory</span>: <span class="prelude-val">None</span>,

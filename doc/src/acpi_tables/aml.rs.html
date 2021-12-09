@@ -1961,6 +1961,123 @@
 <span id="1961">1961</span>
 <span id="1962">1962</span>
 <span id="1963">1963</span>
+<span id="1964">1964</span>
+<span id="1965">1965</span>
+<span id="1966">1966</span>
+<span id="1967">1967</span>
+<span id="1968">1968</span>
+<span id="1969">1969</span>
+<span id="1970">1970</span>
+<span id="1971">1971</span>
+<span id="1972">1972</span>
+<span id="1973">1973</span>
+<span id="1974">1974</span>
+<span id="1975">1975</span>
+<span id="1976">1976</span>
+<span id="1977">1977</span>
+<span id="1978">1978</span>
+<span id="1979">1979</span>
+<span id="1980">1980</span>
+<span id="1981">1981</span>
+<span id="1982">1982</span>
+<span id="1983">1983</span>
+<span id="1984">1984</span>
+<span id="1985">1985</span>
+<span id="1986">1986</span>
+<span id="1987">1987</span>
+<span id="1988">1988</span>
+<span id="1989">1989</span>
+<span id="1990">1990</span>
+<span id="1991">1991</span>
+<span id="1992">1992</span>
+<span id="1993">1993</span>
+<span id="1994">1994</span>
+<span id="1995">1995</span>
+<span id="1996">1996</span>
+<span id="1997">1997</span>
+<span id="1998">1998</span>
+<span id="1999">1999</span>
+<span id="2000">2000</span>
+<span id="2001">2001</span>
+<span id="2002">2002</span>
+<span id="2003">2003</span>
+<span id="2004">2004</span>
+<span id="2005">2005</span>
+<span id="2006">2006</span>
+<span id="2007">2007</span>
+<span id="2008">2008</span>
+<span id="2009">2009</span>
+<span id="2010">2010</span>
+<span id="2011">2011</span>
+<span id="2012">2012</span>
+<span id="2013">2013</span>
+<span id="2014">2014</span>
+<span id="2015">2015</span>
+<span id="2016">2016</span>
+<span id="2017">2017</span>
+<span id="2018">2018</span>
+<span id="2019">2019</span>
+<span id="2020">2020</span>
+<span id="2021">2021</span>
+<span id="2022">2022</span>
+<span id="2023">2023</span>
+<span id="2024">2024</span>
+<span id="2025">2025</span>
+<span id="2026">2026</span>
+<span id="2027">2027</span>
+<span id="2028">2028</span>
+<span id="2029">2029</span>
+<span id="2030">2030</span>
+<span id="2031">2031</span>
+<span id="2032">2032</span>
+<span id="2033">2033</span>
+<span id="2034">2034</span>
+<span id="2035">2035</span>
+<span id="2036">2036</span>
+<span id="2037">2037</span>
+<span id="2038">2038</span>
+<span id="2039">2039</span>
+<span id="2040">2040</span>
+<span id="2041">2041</span>
+<span id="2042">2042</span>
+<span id="2043">2043</span>
+<span id="2044">2044</span>
+<span id="2045">2045</span>
+<span id="2046">2046</span>
+<span id="2047">2047</span>
+<span id="2048">2048</span>
+<span id="2049">2049</span>
+<span id="2050">2050</span>
+<span id="2051">2051</span>
+<span id="2052">2052</span>
+<span id="2053">2053</span>
+<span id="2054">2054</span>
+<span id="2055">2055</span>
+<span id="2056">2056</span>
+<span id="2057">2057</span>
+<span id="2058">2058</span>
+<span id="2059">2059</span>
+<span id="2060">2060</span>
+<span id="2061">2061</span>
+<span id="2062">2062</span>
+<span id="2063">2063</span>
+<span id="2064">2064</span>
+<span id="2065">2065</span>
+<span id="2066">2066</span>
+<span id="2067">2067</span>
+<span id="2068">2068</span>
+<span id="2069">2069</span>
+<span id="2070">2070</span>
+<span id="2071">2071</span>
+<span id="2072">2072</span>
+<span id="2073">2073</span>
+<span id="2074">2074</span>
+<span id="2075">2075</span>
+<span id="2076">2076</span>
+<span id="2077">2077</span>
+<span id="2078">2078</span>
+<span id="2079">2079</span>
+<span id="2080">2080</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -2019,10 +2136,12 @@
 <span class="kw">const</span> <span class="ident">MODOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x85</span>;
 <span class="kw">const</span> <span class="ident">NOTIFYOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x86</span>;
 <span class="kw">const</span> <span class="ident">INDEXOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x88</span>;
+<span class="kw">const</span> <span class="ident">CREATEDWFIELDOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x8a</span>;
 <span class="kw">const</span> <span class="ident">LEQUALOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x93</span>;
 <span class="kw">const</span> <span class="ident">LLESSOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x95</span>;
 <span class="kw">const</span> <span class="ident">TOSTRINGOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x9c</span>;
 <span class="kw">const</span> <span class="ident">IFOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0xa0</span>;
+<span class="kw">const</span> <span class="ident">ELSEOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0xa1</span>;
 <span class="kw">const</span> <span class="ident">WHILEOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0xa2</span>;
 <span class="kw">const</span> <span class="ident">RETURNOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0xa4</span>;
 <span class="kw">const</span> <span class="ident">ONESOP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0xff</span>;
@@ -2177,6 +2296,15 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">NAMEOP</span>];
         <span class="ident">path</span>.<span class="ident">to_aml_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes</span>);
         <span class="ident">inner</span>.<span class="ident">to_aml_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes</span>);
+        <span class="ident">Name</span> { <span class="ident">bytes</span> }
+    }
+
+    <span class="doccomment">/// Create Field name object</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * &#39;field_name&#39; - name string</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_field_name</span>(<span class="ident">field_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+        <span class="ident">bytes</span>.<span class="ident">extend_from_slice</span>(<span class="ident">field_name</span>.<span class="ident">as_bytes</span>());
         <span class="ident">Name</span> { <span class="ident">bytes</span> }
     }
 }
@@ -2904,6 +3032,36 @@ package length is 2**28.&quot;
     }
 }
 
+<span class="doccomment">/// Else object</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Else</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">body</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Aml</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Else</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Create Else object.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">body</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Aml</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">Else</span> { <span class="ident">body</span> }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Aml</span> <span class="kw">for</span> <span class="ident">Else</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">to_aml_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">aml</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+        <span class="kw">for</span> <span class="ident">child</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">body</span>.<span class="ident">iter</span>() {
+            <span class="ident">child</span>.<span class="ident">to_aml_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes</span>);
+        }
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pkg_length</span> <span class="op">=</span> <span class="ident">create_pkg_length</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>, <span class="bool-val">true</span>);
+        <span class="ident">pkg_length</span>.<span class="ident">reverse</span>();
+        <span class="kw">for</span> <span class="ident">byte</span> <span class="kw">in</span> <span class="ident">pkg_length</span> {
+            <span class="ident">bytes</span>.<span class="ident">insert</span>(<span class="number">0</span>, <span class="ident">byte</span>);
+        }
+
+        <span class="ident">bytes</span>.<span class="ident">insert</span>(<span class="number">0</span>, <span class="ident">ELSEOP</span>);
+        <span class="ident">aml</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes</span>)
+    }
+}
+
 <span class="doccomment">/// Equal object with its right part and left part, which are both ACPI objects.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Equal</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">right</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Aml</span>,
@@ -3155,6 +3313,7 @@ package length is 2**28.&quot;
 <span class="macro">binary_op!</span>(<span class="ident">Mod</span>, <span class="ident">MODOP</span>);
 <span class="macro">binary_op!</span>(<span class="ident">Index</span>, <span class="ident">INDEXOP</span>);
 <span class="macro">binary_op!</span>(<span class="ident">ToString</span>, <span class="ident">TOSTRINGOP</span>);
+<span class="macro">binary_op!</span>(<span class="ident">CreateDWordField</span>, <span class="ident">CREATEDWFIELDOP</span>);
 
 <span class="doccomment">/// MethodCall object with the method name and parameter objects.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MethodCall</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -3205,6 +3364,81 @@ package length is 2**28.&quot;
         <span class="ident">bytes</span>.<span class="ident">insert</span>(<span class="number">0</span>, <span class="ident">BUFFEROP</span>);
 
         <span class="ident">aml</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes</span>)
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Uuid</span> {
+    <span class="ident">name</span>: <span class="ident">Buffer</span>,
+}
+
+<span class="kw">fn</span> <span class="ident">hex2byte</span>(<span class="ident">v1</span>: <span class="ident">char</span>, <span class="ident">v2</span>: <span class="ident">char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">let</span> <span class="ident">hi</span> <span class="op">=</span> <span class="ident">v1</span>.<span class="ident">to_digit</span>(<span class="number">16</span>).<span class="ident">unwrap</span>() <span class="kw">as</span> <span class="ident">u8</span>;
+    <span class="macro">assert!</span>(<span class="ident">hi</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">15</span>);
+    <span class="kw">let</span> <span class="ident">lo</span> <span class="op">=</span> <span class="ident">v2</span>.<span class="ident">to_digit</span>(<span class="number">16</span>).<span class="ident">unwrap</span>() <span class="kw">as</span> <span class="ident">u8</span>;
+    <span class="macro">assert!</span>(<span class="ident">lo</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">15</span>);
+
+    (<span class="ident">hi</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>) <span class="op">|</span> <span class="ident">lo</span>
+}
+
+<span class="kw">impl</span> <span class="ident">Uuid</span> {
+    <span class="comment">// Create Uuid object</span>
+    <span class="comment">// eg. UUID: aabbccdd-eeff-gghh-iijj-kkllmmnnoopp</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">name_vec</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">chars</span>().<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+
+        <span class="macro">assert_eq!</span>(<span class="ident">name_vec</span>.<span class="ident">len</span>(), <span class="number">36</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">name_vec</span>[<span class="number">8</span>], <span class="string">&#39;-&#39;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">name_vec</span>[<span class="number">13</span>], <span class="string">&#39;-&#39;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">name_vec</span>[<span class="number">18</span>], <span class="string">&#39;-&#39;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">name_vec</span>[<span class="number">23</span>], <span class="string">&#39;-&#39;</span>);
+
+        <span class="comment">// dd - at offset 00</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">6</span>], <span class="ident">name_vec</span>[<span class="number">7</span>]));
+        <span class="comment">// cc - at offset 01</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">4</span>], <span class="ident">name_vec</span>[<span class="number">5</span>]));
+        <span class="comment">// bb - at offset 02</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">2</span>], <span class="ident">name_vec</span>[<span class="number">3</span>]));
+        <span class="comment">// aa - at offset 03</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">0</span>], <span class="ident">name_vec</span>[<span class="number">1</span>]));
+
+        <span class="comment">// ff - at offset 04</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">11</span>], <span class="ident">name_vec</span>[<span class="number">12</span>]));
+        <span class="comment">// ee - at offset 05</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">9</span>], <span class="ident">name_vec</span>[<span class="number">10</span>]));
+
+        <span class="comment">// hh - at offset 06</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">16</span>], <span class="ident">name_vec</span>[<span class="number">17</span>]));
+        <span class="comment">// gg - at offset 07</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">14</span>], <span class="ident">name_vec</span>[<span class="number">15</span>]));
+
+        <span class="comment">// ii - at offset 08</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">19</span>], <span class="ident">name_vec</span>[<span class="number">20</span>]));
+        <span class="comment">// jj - at offset 09</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">21</span>], <span class="ident">name_vec</span>[<span class="number">22</span>]));
+
+        <span class="comment">// kk - at offset 10</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">24</span>], <span class="ident">name_vec</span>[<span class="number">25</span>]));
+        <span class="comment">// ll - at offset 11</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">26</span>], <span class="ident">name_vec</span>[<span class="number">27</span>]));
+        <span class="comment">// mm - at offset 12</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">28</span>], <span class="ident">name_vec</span>[<span class="number">29</span>]));
+        <span class="comment">// nn - at offset 13</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">30</span>], <span class="ident">name_vec</span>[<span class="number">31</span>]));
+        <span class="comment">// oo - at offset 14</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">32</span>], <span class="ident">name_vec</span>[<span class="number">33</span>]));
+        <span class="comment">// pp - at offset 15</span>
+        <span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">hex2byte</span>(<span class="ident">name_vec</span>[<span class="number">34</span>], <span class="ident">name_vec</span>[<span class="number">35</span>]));
+
+        <span class="ident">Uuid</span> {
+            <span class="ident">name</span>: <span class="ident">Buffer::new</span>(<span class="ident">data</span>),
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Aml</span> <span class="kw">for</span> <span class="ident">Uuid</span> {
+    <span class="kw">fn</span> <span class="ident">to_aml_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">bytes</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
+        <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">to_aml_bytes</span>(<span class="ident">bytes</span>)
     }
 }
 

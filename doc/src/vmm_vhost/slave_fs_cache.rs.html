@@ -225,7 +225,7 @@
 <span class="kw">use</span> <span class="ident">std::os::unix::net::UnixStream</span>;
 <span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>, <span class="ident">MutexGuard</span>};
 
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::connection</span>::{<span class="ident">EndpointExt</span>, <span class="ident">SocketEndpoint</span>};
+<span class="kw">use</span> <span class="kw">super</span><span class="ident">::connection</span>::{<span class="ident">socket::Endpoint</span> <span class="kw">as</span> <span class="ident">SocketEndpoint</span>, <span class="ident">EndpointExt</span>};
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::message</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Error</span>, <span class="ident">HandlerResult</span>, <span class="prelude-ty">Result</span>, <span class="ident">VhostUserMasterReqHandler</span>};
 
@@ -326,7 +326,7 @@
 
     <span class="doccomment">/// Create a new instance from a `UnixStream` object.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_stream</span>(<span class="ident">sock</span>: <span class="ident">UnixStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span><span class="ident">::new</span>(<span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">SlaveReq</span><span class="op">&gt;</span><span class="ident">::from_stream</span>(<span class="ident">sock</span>))
+        <span class="self">Self</span><span class="ident">::new</span>(<span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">SlaveReq</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">sock</span>))
     }
 
     <span class="doccomment">/// Set the negotiation state of the `VHOST_USER_PROTOCOL_F_REPLY_ACK` protocol feature.</span>
@@ -391,7 +391,7 @@
     <span class="kw">fn</span> <span class="ident">test_slave_fs_cache_recv_negative</span>() {
         <span class="kw">let</span> (<span class="ident">p1</span>, <span class="ident">p2</span>) <span class="op">=</span> <span class="ident">UnixStream::pair</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">fs_cache</span> <span class="op">=</span> <span class="ident">SlaveFsCacheReq::from_stream</span>(<span class="ident">p1</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">SlaveReq</span><span class="op">&gt;</span><span class="ident">::from_stream</span>(<span class="ident">p2</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">SlaveReq</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">p2</span>);
 
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">VhostUserFSSlaveMsg</span><span class="op">&gt;</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hdr</span> <span class="op">=</span> <span class="ident">VhostUserMsgHeader::new</span>(

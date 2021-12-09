@@ -458,6 +458,7 @@
 <span id="458">458</span>
 <span id="459">459</span>
 <span id="460">460</span>
+<span id="461">461</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// SPDX-License-Identifier: Apache-2.0</span>
@@ -474,16 +475,16 @@
 <span class="kw">use</span> <span class="ident">sys_util</span>::{<span class="ident">AsRawDescriptor</span>, <span class="ident">RawDescriptor</span>, <span class="ident">ScmSocket</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::connection</span>::{<span class="ident">Endpoint</span>, <span class="ident">Listener</span>, <span class="ident">Req</span>};
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::connection</span>::{<span class="ident">Endpoint</span> <span class="kw">as</span> <span class="ident">EndpointTrait</span>, <span class="ident">Listener</span> <span class="kw">as</span> <span class="ident">ListenerTrait</span>, <span class="ident">Req</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::message</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Unix domain socket listener for accepting incoming connections.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SocketListener</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Listener</span> {
     <span class="ident">fd</span>: <span class="ident">UnixListener</span>,
     <span class="ident">path</span>: <span class="ident">PathBuf</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">SocketListener</span> {
+<span class="kw">impl</span> <span class="ident">Listener</span> {
     <span class="doccomment">/// Create a unix domain socket listener.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Return:</span>
@@ -494,14 +495,14 @@
             <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">std::fs::remove_file</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>);
         }
         <span class="kw">let</span> <span class="ident">fd</span> <span class="op">=</span> <span class="ident">UnixListener::bind</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">map_err</span>(<span class="ident">Error::SocketError</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">SocketListener</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">Listener</span> {
             <span class="ident">fd</span>,
             <span class="ident">path</span>: <span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">to_owned</span>(),
         })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Listener</span> <span class="kw">for</span> <span class="ident">SocketListener</span> {
+<span class="kw">impl</span> <span class="ident">ListenerTrait</span> <span class="kw">for</span> <span class="ident">Listener</span> {
     <span class="kw">type</span> <span class="ident">Connection</span> <span class="op">=</span> <span class="ident">UnixStream</span>;
 
     <span class="doccomment">/// Accept an incoming connection.</span>
@@ -539,27 +540,26 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">AsRawFd</span> <span class="kw">for</span> <span class="ident">SocketListener</span> {
+<span class="kw">impl</span> <span class="ident">AsRawFd</span> <span class="kw">for</span> <span class="ident">Listener</span> {
     <span class="kw">fn</span> <span class="ident">as_raw_fd</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawFd</span> {
         <span class="self">self</span>.<span class="ident">fd</span>.<span class="ident">as_raw_fd</span>()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">SocketListener</span> {
+<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Listener</span> {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
         <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">std::fs::remove_file</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">path</span>);
     }
 }
 
 <span class="doccomment">/// Unix domain socket endpoint for vhost-user connection.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Req</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Req</span><span class="op">&gt;</span> {
     <span class="ident">sock</span>: <span class="ident">UnixStream</span>,
     <span class="ident">_r</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Req</span><span class="op">&gt;</span> <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Create an endpoint from a stream object.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_stream</span>(<span class="ident">sock</span>: <span class="ident">UnixStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Req</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">UnixStream</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">sock</span>: <span class="ident">UnixStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">sock</span>,
             <span class="ident">_r</span>: <span class="ident">PhantomData</span>,
@@ -567,11 +567,13 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Req</span><span class="op">&gt;</span> <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Listener</span> <span class="op">=</span> <span class="ident">SocketListener</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Req</span><span class="op">&gt;</span> <span class="ident">EndpointTrait</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Listener</span> <span class="op">=</span> <span class="ident">Listener</span>;
 
     <span class="doccomment">/// Create an endpoint from a stream object.</span>
-    <span class="kw">fn</span> <span class="ident">from_connection</span>(<span class="ident">sock</span>: <span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Listener</span> <span class="kw">as</span> <span class="ident">Listener</span><span class="op">&gt;</span><span class="ident">::Connection</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from_connection</span>(
+        <span class="ident">sock</span>: <span class="op">&lt;</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">EndpointTrait</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Listener</span> <span class="kw">as</span> <span class="ident">ListenerTrait</span><span class="op">&gt;</span><span class="ident">::Connection</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">sock</span>,
             <span class="ident">_r</span>: <span class="ident">PhantomData</span>,
@@ -585,7 +587,7 @@
     <span class="doccomment">/// * - SocketConnect: failed to connect to peer.</span>
     <span class="kw">fn</span> <span class="ident">connect</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">sock</span> <span class="op">=</span> <span class="ident">UnixStream::connect</span>(<span class="ident">path</span>).<span class="ident">map_err</span>(<span class="ident">Error::SocketConnect</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span><span class="ident">::from_stream</span>(<span class="ident">sock</span>))
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span><span class="ident">::from</span>(<span class="ident">sock</span>))
     }
 
     <span class="doccomment">/// Sends bytes from scatter-gather vectors over the socket with optional attached file</span>
@@ -654,13 +656,13 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Req</span><span class="op">&gt;</span> <span class="ident">AsRawFd</span> <span class="kw">for</span> <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Req</span><span class="op">&gt;</span> <span class="ident">AsRawFd</span> <span class="kw">for</span> <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">as_raw_fd</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawFd</span> {
         <span class="self">self</span>.<span class="ident">sock</span>.<span class="ident">as_raw_fd</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Req</span><span class="op">&gt;</span> <span class="ident">AsRawDescriptor</span> <span class="kw">for</span> <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Req</span><span class="op">&gt;</span> <span class="ident">AsRawDescriptor</span> <span class="kw">for</span> <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">as_raw_descriptor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawDescriptor</span> {
         <span class="self">self</span>.<span class="ident">as_raw_fd</span>()
     }
@@ -684,7 +686,7 @@
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Listener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
 
         <span class="macro">assert!</span>(<span class="ident">listener</span>.<span class="ident">as_raw_fd</span>() <span class="op">&gt;</span> <span class="number">0</span>);
     }
@@ -694,7 +696,7 @@
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Listener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
 
         <span class="comment">// accept on a fd without incoming connection</span>
@@ -707,11 +709,11 @@
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Listener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">Endpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">sock</span> <span class="op">=</span> <span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from_stream</span>(<span class="ident">sock</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave</span> <span class="op">=</span> <span class="ident">Endpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">sock</span>);
 
         <span class="kw">let</span> <span class="ident">buf1</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0x1</span>, <span class="number">0x2</span>, <span class="number">0x3</span>, <span class="number">0x4</span>];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">master</span>.<span class="ident">send_slice</span>(<span class="ident">IoSlice::new</span>(<span class="kw-2">&amp;</span><span class="ident">buf1</span>[..]), <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
@@ -735,11 +737,11 @@
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Listener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">Endpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">sock</span> <span class="op">=</span> <span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from_stream</span>(<span class="ident">sock</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave</span> <span class="op">=</span> <span class="ident">Endpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">sock</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fd</span> <span class="op">=</span> <span class="ident">tempfile</span>().<span class="ident">unwrap</span>();
         <span class="macro">write!</span>(<span class="ident">fd</span>, <span class="string">&quot;test&quot;</span>).<span class="ident">unwrap</span>();
@@ -888,11 +890,11 @@
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Listener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">Endpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">sock</span> <span class="op">=</span> <span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from_stream</span>(<span class="ident">sock</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave</span> <span class="op">=</span> <span class="ident">Endpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">sock</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hdr1</span> <span class="op">=</span>
             <span class="ident">VhostUserMsgHeader::new</span>(<span class="ident">MasterReq::GET_FEATURES</span>, <span class="number">0</span>, <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">u32</span>);

@@ -904,12 +904,24 @@
 <span id="904">904</span>
 <span id="905">905</span>
 <span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright (C) 2019 Alibaba Cloud Computing. All rights reserved.</span>
 <span class="comment">// SPDX-License-Identifier: Apache-2.0</span>
 
 <span class="kw">use</span> <span class="ident">std::fs::File</span>;
-<span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
 <span class="kw">use</span> <span class="ident">std::mem</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::io</span>::{<span class="ident">AsRawFd</span>, <span class="ident">RawFd</span>};
 <span class="kw">use</span> <span class="ident">std::os::unix::net::UnixStream</span>;
@@ -918,9 +930,19 @@
 
 <span class="kw">use</span> <span class="ident">data_model::DataInit</span>;
 
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::connection</span>::{<span class="ident">Endpoint</span>, <span class="ident">EndpointExt</span>, <span class="ident">SocketEndpoint</span>};
+<span class="kw">use</span> <span class="kw">super</span><span class="ident">::connection</span>::{<span class="ident">socket::Endpoint</span> <span class="kw">as</span> <span class="ident">SocketEndpoint</span>, <span class="ident">Endpoint</span>, <span class="ident">EndpointExt</span>};
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::message</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">take_single_file</span>, <span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Debug</span>)]</span>
+<span class="doccomment">/// Vhost-user protocol variants used for the communication.</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Protocol</span> {
+    <span class="doccomment">/// Use the regular vhost-user protocol.</span>
+    <span class="ident">Regular</span>,
+    <span class="doccomment">/// Use the virtio-vhost-user protocol, which is proxied through virtqueues.</span>
+    <span class="doccomment">/// The protocol is mostly same as the vhost-user protocol but no file transfer is allowed.</span>
+    <span class="ident">Virtio</span>,
+}
 
 <span class="doccomment">/// Services provided to the master by the slave with interior mutability.</span>
 <span class="doccomment">///</span>
@@ -944,7 +966,8 @@
 <span class="doccomment">/// [SlaveReqHandler]: struct.SlaveReqHandler.html</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">VhostUserSlaveReqHandler</span> {
-    <span class="kw">fn</span> <span class="ident">use_virtio_vhost_user</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
+    <span class="doccomment">/// Returns the type of vhost-user protocol that the handler support.</span>
+    <span class="kw">fn</span> <span class="ident">protocol</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Protocol</span>;
 
     <span class="kw">fn</span> <span class="ident">set_owner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
     <span class="kw">fn</span> <span class="ident">reset_owner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
@@ -986,8 +1009,9 @@
 <span class="doccomment">/// This is a helper trait mirroring the [VhostUserSlaveReqHandler] trait.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">VhostUserSlaveReqHandlerMut</span> {
-    <span class="kw">fn</span> <span class="ident">use_virtio_vhost_user</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="bool-val">false</span>
+    <span class="doccomment">/// Returns the type of vhost-user protocol that the handler support.</span>
+    <span class="kw">fn</span> <span class="ident">protocol</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Protocol</span> {
+        <span class="ident">Protocol::Regular</span>
     }
 
     <span class="kw">fn</span> <span class="ident">set_owner</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
@@ -1034,8 +1058,8 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">VhostUserSlaveReqHandlerMut</span><span class="op">&gt;</span> <span class="ident">VhostUserSlaveReqHandler</span> <span class="kw">for</span> <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">use_virtio_vhost_user</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="ident">T::use_virtio_vhost_user</span>()
+    <span class="kw">fn</span> <span class="ident">protocol</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Protocol</span> {
+        <span class="ident">T::protocol</span>()
     }
 
     <span class="kw">fn</span> <span class="ident">set_owner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -1146,24 +1170,24 @@
 }
 
 <span class="doccomment">/// Abstracts |Endpoint| related operations for vhost-user slave implementations.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SlaveReqHelper</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">VhostUserSlaveReqHandler</span>, <span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SlaveReqHelper</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Underlying endpoint for communication.</span>
     <span class="ident">endpoint</span>: <span class="ident">E</span>,
 
+    <span class="doccomment">/// Protocol used for the communication.</span>
+    <span class="ident">protocol</span>: <span class="ident">Protocol</span>,
+
     <span class="doccomment">/// Sending ack for messages without payload.</span>
     <span class="ident">reply_ack_enabled</span>: <span class="ident">bool</span>,
-
-    <span class="doccomment">/// Phantom data to store the type information.</span>
-    <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">VhostUserSlaveReqHandler</span>, <span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">SlaveReqHelper</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">E</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">SlaveReqHelper</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Creates a new |SlaveReqHelper| instance with an |Endpoint| underneath it.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">endpoint</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">endpoint</span>: <span class="ident">E</span>, <span class="ident">protocol</span>: <span class="ident">Protocol</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">SlaveReqHelper</span> {
             <span class="ident">endpoint</span>,
+            <span class="ident">protocol</span>,
             <span class="ident">reply_ack_enabled</span>: <span class="bool-val">false</span>,
-            <span class="ident">phantom</span>: <span class="ident">PhantomData</span>,
         }
     }
 
@@ -1238,7 +1262,8 @@
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
         }
 
-        <span class="kw">if</span> <span class="ident">S::use_virtio_vhost_user</span>() {
+        <span class="comment">// Virtio-vhost-user protocol doesn&#39;t send FDs.</span>
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">protocol</span> <span class="op">=</span><span class="op">=</span> <span class="ident">Protocol::Virtio</span> {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">msg</span>.<span class="ident">value</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="prelude-val">None</span>));
         }
 
@@ -1272,7 +1297,7 @@
 <span class="doccomment">/// [VhostUserSlaveReqHandler]: trait.VhostUserSlaveReqHandler.html</span>
 <span class="doccomment">/// [SlaveReqHandler]: struct.SlaveReqHandler.html</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SlaveReqHandler</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">VhostUserSlaveReqHandler</span>, <span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">slave_req_helper</span>: <span class="ident">SlaveReqHelper</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">E</span><span class="op">&gt;</span>,
+    <span class="ident">slave_req_helper</span>: <span class="ident">SlaveReqHelper</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>,
     <span class="comment">// the vhost-user backend device object</span>
     <span class="ident">backend</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
 
@@ -1288,7 +1313,7 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">VhostUserSlaveReqHandler</span><span class="op">&gt;</span> <span class="ident">SlaveReqHandler</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Create a vhost-user slave endpoint from a connected socket.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_stream</span>(<span class="ident">socket</span>: <span class="ident">UnixStream</span>, <span class="ident">backend</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span><span class="ident">::new</span>(<span class="ident">SocketEndpoint::from_stream</span>(<span class="ident">socket</span>), <span class="ident">backend</span>)
+        <span class="self">Self</span><span class="ident">::new</span>(<span class="ident">SocketEndpoint::from</span>(<span class="ident">socket</span>), <span class="ident">backend</span>)
     }
 }
 
@@ -1296,7 +1321,7 @@
     <span class="doccomment">/// Create a vhost-user slave endpoint.</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">endpoint</span>: <span class="ident">E</span>, <span class="ident">backend</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">SlaveReqHandler</span> {
-            <span class="ident">slave_req_helper</span>: <span class="ident">SlaveReqHelper::new</span>(<span class="ident">endpoint</span>),
+            <span class="ident">slave_req_helper</span>: <span class="ident">SlaveReqHelper::new</span>(<span class="ident">endpoint</span>, <span class="ident">S::protocol</span>()),
             <span class="ident">backend</span>,
             <span class="ident">virtio_features</span>: <span class="number">0</span>,
             <span class="ident">acked_virtio_features</span>: <span class="number">0</span>,
@@ -1612,15 +1637,16 @@
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
         }
 
-        <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">S::use_virtio_vhost_user</span>() {
-            <span class="macro">vec!</span>[]
-        } <span class="kw">else</span> {
-            <span class="comment">// validate number of fds matching number of memory regions</span>
-            <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="ident">files</span>.<span class="ident">ok_or</span>(<span class="ident">Error::InvalidMessage</span>)<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="ident">files</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">msg</span>.<span class="ident">num_regions</span> <span class="kw">as</span> <span class="ident">usize</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
+        <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">S::protocol</span>() {
+            <span class="ident">Protocol::Regular</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="comment">// validate number of fds matching number of memory regions</span>
+                <span class="kw">let</span> <span class="ident">files</span> <span class="op">=</span> <span class="ident">files</span>.<span class="ident">ok_or</span>(<span class="ident">Error::InvalidMessage</span>)<span class="question-mark">?</span>;
+                <span class="kw">if</span> <span class="ident">files</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">msg</span>.<span class="ident">num_regions</span> <span class="kw">as</span> <span class="ident">usize</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidMessage</span>);
+                }
+                <span class="ident">files</span>
             }
-            <span class="ident">files</span>
+            <span class="ident">Protocol::Virtio</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec!</span>[],
         };
 
         <span class="comment">// Validate memory regions</span>
@@ -1801,7 +1827,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_slave_req_handler_new</span>() {
         <span class="kw">let</span> (<span class="ident">p1</span>, <span class="ident">_p2</span>) <span class="op">=</span> <span class="ident">UnixStream::pair</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">endpoint</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from_stream</span>(<span class="ident">p1</span>);
+        <span class="kw">let</span> <span class="ident">endpoint</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">p1</span>);
         <span class="kw">let</span> <span class="ident">backend</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">DummySlaveReqHandler::new</span>()));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">handler</span> <span class="op">=</span> <span class="ident">SlaveReqHandler::new</span>(<span class="ident">endpoint</span>, <span class="ident">backend</span>);
 

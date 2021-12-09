@@ -278,7 +278,7 @@
 
 <span class="kw">impl</span> <span class="ident">DirectMmio</span> {
     <span class="doccomment">/// Create simple direct mmio access device.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">read_only</span>: <span class="ident">bool</span>, <span class="ident">ranges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BusRange</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">io::Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">read_only</span>: <span class="ident">bool</span>, <span class="ident">ranges</span>: <span class="kw-2">&amp;</span>[<span class="ident">BusRange</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">io::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">dev</span> <span class="op">=</span> <span class="ident">OpenOptions::new</span>()
             .<span class="ident">read</span>(<span class="bool-val">true</span>)
             .<span class="ident">write</span>(<span class="op">!</span><span class="ident">read_only</span>)
@@ -292,7 +292,7 @@
             <span class="ident">Protection::read_write</span>()
         };
 
-        <span class="kw">for</span> <span class="ident">range</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">ranges</span> {
+        <span class="kw">for</span> <span class="ident">range</span> <span class="kw">in</span> <span class="ident">ranges</span> {
             <span class="comment">// set to the page start</span>
             <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">range</span>.<span class="ident">base</span> <span class="op">&amp;</span> (<span class="op">!</span>((<span class="ident">pagesize</span>() <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">u64</span>));
             <span class="comment">// set to the next page of the end address</span>

@@ -495,6 +495,10 @@
 <span id="495">495</span>
 <span id="496">496</span>
 <span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -765,7 +769,7 @@
         <span class="ident">write</span>, <span class="ident">writev</span>,
     };
 
-    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">data_model::VolatileSlice</span>;
+    <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">IoBufMut</span>, <span class="ident">VolatileSlice</span>};
 }
 
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
@@ -796,7 +800,8 @@
                 <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
                 <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice</span>],
             ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">iovecs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>);
+                <span class="kw">let</span> <span class="ident">iobufs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>);
+                <span class="kw">let</span> <span class="ident">iovecs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::IoBufMut::as_iobufs</span>(<span class="ident">iobufs</span>);
 
                 <span class="kw">if</span> <span class="ident">iovecs</span>.<span class="ident">is_empty</span>() {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">0</span>);
@@ -842,7 +847,8 @@
                 <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
                 <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice</span>],
             ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">iovecs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>);
+                <span class="kw">let</span> <span class="ident">iobufs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>);
+                <span class="kw">let</span> <span class="ident">iovecs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::IoBufMut::as_iobufs</span>(<span class="ident">iobufs</span>);
 
                 <span class="kw">if</span> <span class="ident">iovecs</span>.<span class="ident">is_empty</span>() {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">0</span>);
@@ -899,7 +905,8 @@
                 <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice</span>],
                 <span class="ident">offset</span>: <span class="ident">u64</span>,
             ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">iovecs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>);
+                <span class="kw">let</span> <span class="ident">iobufs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>);
+                <span class="kw">let</span> <span class="ident">iovecs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::IoBufMut::as_iobufs</span>(<span class="ident">iobufs</span>);
 
                 <span class="kw">if</span> <span class="ident">iovecs</span>.<span class="ident">is_empty</span>() {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">0</span>);
@@ -950,7 +957,8 @@
                 <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice</span>],
                 <span class="ident">offset</span>: <span class="ident">u64</span>,
             ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">iovecs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>);
+                <span class="kw">let</span> <span class="ident">iobufs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>);
+                <span class="kw">let</span> <span class="ident">iovecs</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::file_traits::lib::IoBufMut::as_iobufs</span>(<span class="ident">iobufs</span>);
 
                 <span class="kw">if</span> <span class="ident">iovecs</span>.<span class="ident">is_empty</span>() {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">0</span>);

@@ -210,7 +210,7 @@
 <span class="doccomment">/// It is unsafe for `T` to be `DataInit` if `T` contains implicit padding. (LLVM considers access</span>
 <span class="doccomment">/// to implicit padding to be undefined behavior, which can cause UB when working with `T`.</span>
 <span class="doccomment">/// For details on structure padding in Rust, see</span>
-<span class="doccomment">/// https://doc.rust-lang.org/reference/type-layout.html#the-c-representation</span>
+<span class="doccomment">/// &lt;https://doc.rust-lang.org/reference/type-layout.html#the-c-representation&gt;.</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">DataInit</span>: <span class="ident">Copy</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
     <span class="doccomment">/// Converts a slice of raw data into a reference of `Self`.</span>
     <span class="doccomment">///</span>

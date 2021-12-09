@@ -470,6 +470,72 @@
 <span id="470">470</span>
 <span id="471">471</span>
 <span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -491,6 +557,19 @@
     <span class="doccomment">/// Additional system descriptor tables.</span>
     <span class="kw">pub</span> <span class="ident">sdts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">SDT</span><span class="op">&gt;</span>,
 }
+
+<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>, <span class="ident">packed</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Default</span>)]</span>
+<span class="kw">struct</span> <span class="ident">GenericAddress</span> {
+    <span class="ident">_space_id</span>: <span class="ident">u8</span>,
+    <span class="ident">_bit_width</span>: <span class="ident">u8</span>,
+    <span class="ident">_bit_offset</span>: <span class="ident">u8</span>,
+    <span class="ident">_access_width</span>: <span class="ident">u8</span>,
+    <span class="ident">_address</span>: <span class="ident">u64</span>,
+}
+
+<span class="comment">// Safe as GenericAddress structure only contains raw data</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">GenericAddress</span> {}
 
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Default</span>)]</span>
@@ -547,6 +626,9 @@
 <span class="comment">// Safe as LocalAPIC structure only contains raw data</span>
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">DataInit</span> <span class="kw">for</span> <span class="ident">Localx2Apic</span> {}
 
+<span class="comment">// Space ID for GenericAddress</span>
+<span class="kw">const</span> <span class="ident">ADR_SPACE_SYSTEM_IO</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
+
 <span class="kw">const</span> <span class="ident">OEM_REVISION</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="comment">//DSDT</span>
 <span class="kw">const</span> <span class="ident">DSDT_REVISION</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">6</span>;
@@ -557,6 +639,7 @@
 <span class="comment">// FADT flags</span>
 <span class="kw">const</span> <span class="ident">FADT_POWER_BUTTON</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>;
 <span class="kw">const</span> <span class="ident">FADT_SLEEP_BUTTON</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">5</span>;
+<span class="kw">const</span> <span class="ident">FADT_RESET_REGISTER</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">10</span>;
 <span class="comment">// FADT fields offset</span>
 <span class="kw">const</span> <span class="ident">FADT_FIELD_FACS_ADDR32</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">36</span>;
 <span class="kw">const</span> <span class="ident">FADT_FIELD_DSDT_ADDR32</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">40</span>;
@@ -567,6 +650,8 @@
 <span class="kw">const</span> <span class="ident">FADT_FIELD_PM1A_EVENT_BLK_LEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">88</span>;
 <span class="kw">const</span> <span class="ident">FADT_FIELD_PM1A_CONTROL_BLK_LEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">89</span>;
 <span class="kw">const</span> <span class="ident">FADT_FIELD_FLAGS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">112</span>;
+<span class="kw">const</span> <span class="ident">FADT_FIELD_RESET_REGISTER</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">116</span>;
+<span class="kw">const</span> <span class="ident">FADT_FIELD_RESET_VALUE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">130</span>;
 <span class="kw">const</span> <span class="ident">FADT_FIELD_MINOR_REVISION</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">131</span>;
 <span class="kw">const</span> <span class="ident">FADT_FIELD_FACS_ADDR</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">132</span>;
 <span class="kw">const</span> <span class="ident">FADT_FIELD_DSDT_ADDR</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">140</span>;
@@ -598,6 +683,13 @@
 
 <span class="kw">const</span> <span class="ident">CPUID_LEAF0_EBX_CPUID_SHIFT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">24</span>; <span class="comment">// Offset of initial apic id.</span>
 
+<span class="comment">// MCFG</span>
+<span class="kw">const</span> <span class="ident">MCFG_LEN</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">60</span>;
+<span class="kw">const</span> <span class="ident">MCFG_REVISION</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">MCFG_FIELD_BASE_ADDRESS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">44</span>;
+<span class="kw">const</span> <span class="ident">MCFG_FIELD_START_BUS_NUMBER</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">54</span>;
+<span class="kw">const</span> <span class="ident">MCFG_FIELD_END_BUS_NUMBER</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">55</span>;
+
 <span class="kw">fn</span> <span class="ident">create_dsdt_table</span>(<span class="ident">amls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SDT</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dsdt</span> <span class="op">=</span> <span class="ident">SDT::new</span>(
         <span class="kw-2">*</span><span class="string">b&quot;DSDT&quot;</span>,
@@ -615,7 +707,7 @@
     <span class="ident">dsdt</span>
 }
 
-<span class="kw">fn</span> <span class="ident">create_facp_table</span>(<span class="ident">sci_irq</span>: <span class="ident">u16</span>, <span class="ident">pm_iobase</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SDT</span> {
+<span class="kw">fn</span> <span class="ident">create_facp_table</span>(<span class="ident">sci_irq</span>: <span class="ident">u16</span>, <span class="ident">pm_iobase</span>: <span class="ident">u32</span>, <span class="ident">reset_port</span>: <span class="ident">u32</span>, <span class="ident">reset_value</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SDT</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">facp</span> <span class="op">=</span> <span class="ident">SDT::new</span>(
         <span class="kw-2">*</span><span class="string">b&quot;FACP&quot;</span>,
         <span class="ident">FADT_LEN</span>,
@@ -625,7 +717,8 @@
         <span class="ident">OEM_REVISION</span>,
     );
 
-    <span class="kw">let</span> <span class="ident">fadt_flags</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">FADT_POWER_BUTTON</span> <span class="op">|</span> <span class="ident">FADT_SLEEP_BUTTON</span>; <span class="comment">// mask POWER and SLEEP BUTTON</span>
+    <span class="kw">let</span> <span class="ident">fadt_flags</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">FADT_POWER_BUTTON</span> <span class="op">|</span> <span class="ident">FADT_SLEEP_BUTTON</span> <span class="op">|</span> <span class="comment">// mask POWER and SLEEP BUTTON</span>
+                          <span class="ident">FADT_RESET_REGISTER</span>; <span class="comment">// indicate we support FADT RESET_REG</span>
     <span class="ident">facp</span>.<span class="ident">write</span>(<span class="ident">FADT_FIELD_FLAGS</span>, <span class="ident">fadt_flags</span>);
 
     <span class="comment">// SCI Interrupt</span>
@@ -651,6 +744,19 @@
         <span class="ident">FADT_FIELD_PM1A_CONTROL_BLK_LEN</span>,
         <span class="ident">devices::acpi::ACPIPM_RESOURCE_CONTROLBLK_LEN</span> <span class="kw">as</span> <span class="ident">u8</span>,
     );
+
+    <span class="comment">// Reset register.</span>
+    <span class="ident">facp</span>.<span class="ident">write</span>(
+        <span class="ident">FADT_FIELD_RESET_REGISTER</span>,
+        <span class="ident">GenericAddress</span> {
+            <span class="ident">_space_id</span>: <span class="ident">ADR_SPACE_SYSTEM_IO</span>,
+            <span class="ident">_bit_width</span>: <span class="number">8</span>,
+            <span class="ident">_bit_offset</span>: <span class="number">0</span>,
+            <span class="ident">_access_width</span>: <span class="number">8</span>,
+            <span class="ident">_address</span>: <span class="ident">reset_port</span>.<span class="ident">into</span>(),
+        },
+    );
+    <span class="ident">facp</span>.<span class="ident">write</span>(<span class="ident">FADT_FIELD_RESET_VALUE</span>, <span class="ident">reset_value</span>);
 
     <span class="ident">facp</span>.<span class="ident">write</span>(<span class="ident">FADT_FIELD_MINOR_REVISION</span>, <span class="ident">FADT_MINOR_REVISION</span>); <span class="comment">// FADT minor version</span>
     <span class="ident">facp</span>.<span class="ident">write</span>(<span class="ident">FADT_FIELD_HYPERVISOR_ID</span>, <span class="kw-2">*</span><span class="string">b&quot;CROSVM&quot;</span>); <span class="comment">// Hypervisor Vendor Identity</span>
@@ -774,14 +880,22 @@
 <span class="doccomment">/// * `pci_rqs` - PCI device to IRQ number assignments as returned by</span>
 <span class="doccomment">///               `arch::generate_pci_root()` (device address, IRQ number, and PCI</span>
 <span class="doccomment">///               interrupt pin assignment).</span>
+<span class="doccomment">/// * `pcie_cfg_mmio` - Base address for the pcie enhanced configuration access mechanism</span>
+<span class="doccomment">/// *  `max_bus` - Max bus number in MCFG table</span>
+<span class="doccomment">///</span>
+
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_acpi_tables</span>(
     <span class="ident">guest_mem</span>: <span class="kw-2">&amp;</span><span class="ident">GuestMemory</span>,
     <span class="ident">num_cpus</span>: <span class="ident">u8</span>,
     <span class="ident">sci_irq</span>: <span class="ident">u32</span>,
+    <span class="ident">reset_port</span>: <span class="ident">u32</span>,
+    <span class="ident">reset_value</span>: <span class="ident">u8</span>,
     <span class="ident">acpi_dev_resource</span>: <span class="ident">AcpiDevResource</span>,
     <span class="ident">host_cpus</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VcpuAffinity</span><span class="op">&gt;</span>,
     <span class="ident">apic_ids</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
     <span class="ident">pci_irqs</span>: <span class="kw-2">&amp;</span>[(<span class="ident">PciAddress</span>, <span class="ident">u32</span>, <span class="ident">PciInterruptPin</span>)],
+    <span class="ident">pcie_cfg_mmio</span>: <span class="ident">u64</span>,
+    <span class="ident">max_bus</span>: <span class="ident">u8</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">GuestAddress</span><span class="op">&gt;</span> {
     <span class="comment">// RSDP is at the HI RSDP WINDOW</span>
     <span class="kw">let</span> <span class="ident">rsdp_offset</span> <span class="op">=</span> <span class="ident">GuestAddress</span>(<span class="kw">super</span><span class="ident">::ACPI_HI_RSDP_WINDOW_BASE</span>);
@@ -829,7 +943,8 @@
 
     <span class="comment">// FACP aka FADT</span>
     <span class="kw">let</span> <span class="ident">pm_iobase</span> <span class="op">=</span> <span class="ident">acpi_dev_resource</span>.<span class="ident">pm_iobase</span> <span class="kw">as</span> <span class="ident">u32</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">facp</span> <span class="op">=</span> <span class="ident">facp</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">create_facp_table</span>(<span class="ident">sci_irq</span> <span class="kw">as</span> <span class="ident">u16</span>, <span class="ident">pm_iobase</span>));
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">facp</span> <span class="op">=</span> <span class="ident">facp</span>
+        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">create_facp_table</span>(<span class="ident">sci_irq</span> <span class="kw">as</span> <span class="ident">u16</span>, <span class="ident">pm_iobase</span>, <span class="ident">reset_port</span>, <span class="ident">reset_value</span>));
 
     <span class="comment">// Crosvm FACP overrides.</span>
     <span class="ident">facp</span>.<span class="ident">write</span>(<span class="ident">FADT_FIELD_SMI_COMMAND</span>, <span class="number">0u32</span>);
@@ -919,6 +1034,23 @@
     }
 
     <span class="ident">guest_mem</span>.<span class="ident">write_at_addr</span>(<span class="ident">madt</span>.<span class="ident">as_slice</span>(), <span class="ident">offset</span>).<span class="ident">ok</span>()<span class="question-mark">?</span>;
+    <span class="ident">tables</span>.<span class="ident">push</span>(<span class="ident">offset</span>.<span class="number">0</span>);
+    <span class="ident">offset</span> <span class="op">=</span> <span class="ident">next_offset</span>(<span class="ident">offset</span>, <span class="ident">madt</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>)<span class="question-mark">?</span>;
+
+    <span class="comment">// MCFG</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mcfg</span> <span class="op">=</span> <span class="ident">SDT::new</span>(
+        <span class="kw-2">*</span><span class="string">b&quot;MCFG&quot;</span>,
+        <span class="ident">MCFG_LEN</span>,
+        <span class="ident">MCFG_REVISION</span>,
+        <span class="kw-2">*</span><span class="string">b&quot;CROSVM&quot;</span>,
+        <span class="kw-2">*</span><span class="string">b&quot;CROSVMDT&quot;</span>,
+        <span class="ident">OEM_REVISION</span>,
+    );
+    <span class="ident">mcfg</span>.<span class="ident">write</span>(<span class="ident">MCFG_FIELD_BASE_ADDRESS</span>, <span class="ident">pcie_cfg_mmio</span>);
+    <span class="ident">mcfg</span>.<span class="ident">write</span>(<span class="ident">MCFG_FIELD_START_BUS_NUMBER</span>, <span class="number">0_u8</span>);
+    <span class="ident">mcfg</span>.<span class="ident">write</span>(<span class="ident">MCFG_FIELD_END_BUS_NUMBER</span>, <span class="ident">max_bus</span>);
+
+    <span class="ident">guest_mem</span>.<span class="ident">write_at_addr</span>(<span class="ident">mcfg</span>.<span class="ident">as_slice</span>(), <span class="ident">offset</span>).<span class="ident">ok</span>()<span class="question-mark">?</span>;
     <span class="ident">tables</span>.<span class="ident">push</span>(<span class="ident">offset</span>.<span class="number">0</span>);
     <span class="ident">offset</span> <span class="op">=</span> <span class="ident">next_offset</span>(<span class="ident">offset</span>, <span class="ident">madt</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>)<span class="question-mark">?</span>;
 

@@ -1130,6 +1130,9 @@
 <span id="1130">1130</span>
 <span id="1131">1131</span>
 <span id="1132">1132</span>
+<span id="1133">1133</span>
+<span id="1134">1134</span>
+<span id="1135">1135</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright (C) 2019 Alibaba Cloud Computing. All rights reserved.</span>
 <span class="comment">// SPDX-License-Identifier: Apache-2.0</span>
@@ -1146,7 +1149,7 @@
 <span class="kw">use</span> <span class="ident">data_model::DataInit</span>;
 <span class="kw">use</span> <span class="ident">sys_util::EventFd</span>;
 
-<span class="kw">use</span> <span class="kw">super</span><span class="ident">::connection</span>::{<span class="ident">Endpoint</span>, <span class="ident">EndpointExt</span>, <span class="ident">SocketEndpoint</span>};
+<span class="kw">use</span> <span class="kw">super</span><span class="ident">::connection</span>::{<span class="ident">Endpoint</span>, <span class="ident">EndpointExt</span>};
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::message</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">take_single_file</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">VhostUserError</span>, <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">VhostUserResult</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::backend</span>::{<span class="ident">VhostBackend</span>, <span class="ident">VhostUserMemoryRegionInfo</span>, <span class="ident">VringConfigData</span>};
@@ -1207,13 +1210,20 @@
 
 <span class="doccomment">/// Struct for the vhost-user master endpoint.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Master</span> {
-    <span class="ident">node</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">MasterInternal</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Master</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="ident">node</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">MasterInternal</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">Master</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">UnixStream</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">Master</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Create a new instance from a Unix stream socket.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_stream</span>(<span class="ident">sock</span>: <span class="ident">UnixStream</span>, <span class="ident">max_queue_num</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span><span class="ident">::new</span>(<span class="ident">E::from</span>(<span class="ident">sock</span>), <span class="ident">max_queue_num</span>)
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">Master</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Create a new instance.</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">ep</span>: <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>, <span class="ident">max_queue_num</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">ep</span>: <span class="ident">E</span>, <span class="ident">max_queue_num</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Master</span> {
             <span class="ident">node</span>: <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">MasterInternal</span> {
                 <span class="ident">main_sock</span>: <span class="ident">ep</span>,
@@ -1229,16 +1239,8 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">node</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">MutexGuard</span><span class="op">&lt;</span><span class="ident">MasterInternal</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">node</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">MutexGuard</span><span class="op">&lt;</span><span class="ident">MasterInternal</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">node</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>()
-    }
-
-    <span class="doccomment">/// Create a new instance from a Unix stream socket.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_stream</span>(<span class="ident">sock</span>: <span class="ident">UnixStream</span>, <span class="ident">max_queue_num</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span><span class="ident">::new</span>(
-            <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from_stream</span>(<span class="ident">sock</span>),
-            <span class="ident">max_queue_num</span>,
-        )
     }
 
     <span class="doccomment">/// Create a new vhost-user master endpoint.</span>
@@ -1250,7 +1252,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">connect</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>, <span class="ident">max_queue_num</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">retry_count</span> <span class="op">=</span> <span class="number">5</span>;
         <span class="kw">let</span> <span class="ident">endpoint</span> <span class="op">=</span> <span class="kw">loop</span> {
-            <span class="kw">match</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>) {
+            <span class="kw">match</span> <span class="ident">E::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>) {
                 <span class="prelude-val">Ok</span>(<span class="ident">endpoint</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span> <span class="prelude-val">Ok</span>(<span class="ident">endpoint</span>),
                 <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">e</span> {
                     <span class="ident">VhostUserError::SocketConnect</span>(<span class="ident">why</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -1277,7 +1279,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">VhostBackend</span> <span class="kw">for</span> <span class="ident">Master</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">VhostBackend</span> <span class="kw">for</span> <span class="ident">Master</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get from the underlying vhost implementation the feature bitmask.</span>
     <span class="kw">fn</span> <span class="ident">get_features</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">node</span>();
@@ -1457,7 +1459,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">VhostUserMaster</span> <span class="kw">for</span> <span class="ident">Master</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">VhostUserMaster</span> <span class="kw">for</span> <span class="ident">Master</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">get_protocol_features</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">VhostUserProtocolFeatures</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">node</span>();
         <span class="kw">let</span> <span class="ident">flag</span> <span class="op">=</span> <span class="ident">VhostUserVirtioFeatures::PROTOCOL_FEATURES</span>.<span class="ident">bits</span>();
@@ -1675,7 +1677,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">AsRawFd</span> <span class="kw">for</span> <span class="ident">Master</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">AsRawFd</span><span class="op">&gt;</span> <span class="ident">AsRawFd</span> <span class="kw">for</span> <span class="ident">Master</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">as_raw_fd</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawFd</span> {
         <span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">node</span>();
         <span class="ident">node</span>.<span class="ident">main_sock</span>.<span class="ident">as_raw_fd</span>()
@@ -1704,9 +1706,9 @@
     }
 }
 
-<span class="kw">struct</span> <span class="ident">MasterInternal</span> {
+<span class="kw">struct</span> <span class="ident">MasterInternal</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="comment">// Used to send requests to the slave.</span>
-    <span class="ident">main_sock</span>: <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>,
+    <span class="ident">main_sock</span>: <span class="ident">E</span>,
     <span class="comment">// Cached virtio features from the slave.</span>
     <span class="ident">virtio_features</span>: <span class="ident">u64</span>,
     <span class="comment">// Cached acked virtio features from the driver.</span>
@@ -1725,7 +1727,7 @@
     <span class="ident">hdr_flags</span>: <span class="ident">VhostUserHeaderFlag</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">MasterInternal</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">MasterInternal</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">send_request_header</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">code</span>: <span class="ident">MasterReq</span>,
@@ -1895,7 +1897,10 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span><span class="ident">::connection</span>::{<span class="ident">EndpointExt</span>, <span class="ident">Listener</span>, <span class="ident">SocketListener</span>};
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span><span class="ident">::connection</span>::{
+        <span class="ident">socket::Endpoint</span> <span class="kw">as</span> <span class="ident">SocketEndpoint</span>, <span class="ident">socket::Listener</span> <span class="kw">as</span> <span class="ident">SocketListener</span>, <span class="ident">EndpointExt</span>,
+        <span class="ident">Listener</span>,
+    };
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident">tempfile</span>::{<span class="ident">Builder</span>, <span class="ident">TempDir</span>};
 
@@ -1903,12 +1908,14 @@
         <span class="ident">Builder::new</span>().<span class="ident">prefix</span>(<span class="string">&quot;/tmp/vhost_test&quot;</span>).<span class="ident">tempdir</span>().<span class="ident">unwrap</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">create_pair</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Master</span>, <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">create_pair</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+        <span class="ident">path</span>: <span class="ident">P</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Master</span><span class="op">&lt;</span><span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">Master::connect</span>(<span class="ident">path</span>, <span class="number">2</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">slave</span> <span class="op">=</span> <span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
-        (<span class="ident">master</span>, <span class="ident">SocketEndpoint::from_stream</span>(<span class="ident">slave</span>))
+        (<span class="ident">master</span>, <span class="ident">SocketEndpoint::from</span>(<span class="ident">slave</span>))
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1919,9 +1926,8 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">Master::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="number">1</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave</span> <span class="op">=</span>
-            <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from_stream</span>(<span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>());
+        <span class="kw">let</span> <span class="ident">master</span> <span class="op">=</span> <span class="ident">Master</span>::<span class="op">&lt;</span><span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="number">1</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave</span> <span class="op">=</span> <span class="ident">SocketEndpoint</span>::<span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>());
 
         <span class="macro">assert!</span>(<span class="ident">master</span>.<span class="ident">as_raw_fd</span>() <span class="op">&gt;</span> <span class="number">0</span>);
         <span class="comment">// Send two messages continuously</span>
@@ -1948,13 +1954,13 @@
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);
         <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">false</span>).<span class="ident">is_err</span>();
-        <span class="macro">assert!</span>(<span class="ident">Master::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="number">1</span>).<span class="ident">is_err</span>());
+        <span class="macro">assert!</span>(<span class="ident">Master</span>::<span class="op">&lt;</span><span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="number">1</span>).<span class="ident">is_err</span>());
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="ident">SocketListener::new</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="bool-val">false</span>).<span class="ident">is_err</span>());
         <span class="ident">listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">_master</span> <span class="op">=</span> <span class="ident">Master::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="number">1</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">_master</span> <span class="op">=</span> <span class="ident">Master</span>::<span class="op">&lt;</span><span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="number">1</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">_slave</span> <span class="op">=</span> <span class="ident">listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
     }
 
@@ -2096,7 +2102,7 @@
             .<span class="ident">unwrap_err</span>();
     }
 
-    <span class="kw">fn</span> <span class="ident">create_pair2</span>() <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Master</span>, <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">create_pair2</span>() <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Master</span><span class="op">&lt;</span><span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="ident">MasterReq</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">temp_dir</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">dir</span>.<span class="ident">path</span>().<span class="ident">to_owned</span>();
         <span class="ident">path</span>.<span class="ident">push</span>(<span class="string">&quot;sock&quot;</span>);

@@ -764,10 +764,10 @@ resolve to <a href="https://doc.rust-lang.org/1.55.0/core/option/enum.Option.htm
 returned future type will return <code>true</code> from
 <a href="../future/trait.FusedFuture.html#tymethod.is_terminated"><code>FusedFuture::is_terminated</code></a> when the <a href="trait.Stream.html" title="Stream"><code>Stream</code></a> is empty, allowing
 <a href="trait.StreamExt.html#method.select_next_some" title="StreamExt::select_next_some"><code>select_next_some</code></a> to be easily used with
-the [<code>select!</code>] macro.</p>
+the <a href="../macro.select.html" title="select!"><code>select!</code></a> macro.</p>
 <p>If the future is polled after this <a href="trait.Stream.html" title="Stream"><code>Stream</code></a> is empty it will panic.
 Using the future with a <a href="../future/trait.FusedFuture.html"><code>FusedFuture</code></a>-aware primitive like the
-[<code>select!</code>] macro will prevent this.</p>
+<a href="../macro.select.html" title="select!"><code>select!</code></a> macro will prevent this.</p>
 <h1 id="examples-29" class="section-header"><a href="#examples-29">Examples</a></h1>
 <div class="example-wrap"><pre class="rust rust-example-rendered">
 <span class="kw">use</span> <span class="ident">futures</span>::{<span class="ident">future</span>, <span class="ident">select</span>};

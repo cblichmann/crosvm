@@ -139,15 +139,15 @@
     <span class="kw">use</span> <span class="ident">std::sync::Mutex</span>;
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::connection</span>::{<span class="ident">SocketEndpoint</span>, <span class="ident">SocketListener</span>};
+    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::connection::socket</span>::{<span class="ident">Endpoint</span>, <span class="ident">Listener</span>};
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::dummy_slave::DummySlaveReqHandler</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_slave_listener_set_nonblocking</span>() {
         <span class="kw">let</span> <span class="ident">backend</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">DummySlaveReqHandler::new</span>()));
         <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span>
-            <span class="ident">SocketListener::new</span>(<span class="string">&quot;/tmp/vhost_user_lib_unit_test_slave_nonblocking&quot;</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">slave_listener</span> <span class="op">=</span> <span class="ident">SlaveListener</span>::<span class="op">&lt;</span><span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="ident">::new</span>(<span class="ident">listener</span>, <span class="ident">backend</span>).<span class="ident">unwrap</span>();
+            <span class="ident">Listener::new</span>(<span class="string">&quot;/tmp/vhost_user_lib_unit_test_slave_nonblocking&quot;</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">slave_listener</span> <span class="op">=</span> <span class="ident">SlaveListener</span>::<span class="op">&lt;</span><span class="ident">Endpoint</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="ident">::new</span>(<span class="ident">listener</span>, <span class="ident">backend</span>).<span class="ident">unwrap</span>();
 
         <span class="ident">slave_listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="ident">slave_listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">false</span>).<span class="ident">unwrap</span>();
@@ -159,19 +159,19 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;vmm&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_slave_listener_accept</span>() {
-        <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span><span class="ident">::Master</span>;
+        <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::connection::socket::Endpoint</span> <span class="kw">as</span> <span class="ident">SocketEndpoint</span>;
+        <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::Master</span>;
 
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;/tmp/vhost_user_lib_unit_test_slave_accept&quot;</span>;
         <span class="kw">let</span> <span class="ident">backend</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">DummySlaveReqHandler::new</span>()));
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">SocketListener::new</span>(<span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave_listener</span> <span class="op">=</span>
-            <span class="ident">SlaveListener</span>::<span class="op">&lt;</span><span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="ident">::new</span>(<span class="ident">listener</span>, <span class="ident">backend</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Listener::new</span>(<span class="ident">path</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slave_listener</span> <span class="op">=</span> <span class="ident">SlaveListener</span>::<span class="op">&lt;</span><span class="ident">Endpoint</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="ident">::new</span>(<span class="ident">listener</span>, <span class="ident">backend</span>).<span class="ident">unwrap</span>();
 
         <span class="ident">slave_listener</span>.<span class="ident">set_nonblocking</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="ident">slave_listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">is_none</span>());
         <span class="macro">assert!</span>(<span class="ident">slave_listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">is_none</span>());
 
-        <span class="kw">let</span> <span class="ident">_master</span> <span class="op">=</span> <span class="ident">Master::connect</span>(<span class="ident">path</span>, <span class="number">1</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">_master</span> <span class="op">=</span> <span class="ident">Master</span>::<span class="op">&lt;</span><span class="ident">SocketEndpoint</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::connect</span>(<span class="ident">path</span>, <span class="number">1</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">_slave</span> <span class="op">=</span> <span class="ident">slave_listener</span>.<span class="ident">accept</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
     }
 }

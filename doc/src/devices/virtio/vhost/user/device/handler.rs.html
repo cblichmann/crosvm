@@ -853,6 +853,9 @@
 <span id="853">853</span>
 <span id="854">854</span>
 <span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -1617,7 +1620,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_vhost_user_activate</span>() {
-        <span class="kw">use</span> <span class="ident">vmm_vhost</span>::{<span class="ident">SlaveListener</span>, <span class="ident">SocketEndpoint</span>, <span class="ident">SocketListener</span>};
+        <span class="kw">use</span> <span class="ident">vmm_vhost</span>::{
+            <span class="ident">connection::socket</span>::{<span class="ident">Endpoint</span> <span class="kw">as</span> <span class="ident">SocketEndpoint</span>, <span class="ident">Listener</span> <span class="kw">as</span> <span class="ident">SocketListener</span>},
+            <span class="ident">SlaveListener</span>,
+        };
 
         <span class="kw">const</span> <span class="ident">QUEUES_NUM</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">2</span>;
 

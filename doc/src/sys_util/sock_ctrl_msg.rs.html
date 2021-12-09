@@ -577,7 +577,7 @@
     <span class="ident">c_long</span>, <span class="ident">c_void</span>, <span class="ident">cmsghdr</span>, <span class="ident">iovec</span>, <span class="ident">msghdr</span>, <span class="ident">recvmsg</span>, <span class="ident">sendmsg</span>, <span class="ident">MSG_NOSIGNAL</span>, <span class="ident">SCM_RIGHTS</span>, <span class="ident">SOL_SOCKET</span>,
 };
 
-<span class="kw">use</span> <span class="ident">data_model::VolatileSlice</span>;
+<span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">IoBufMut</span>, <span class="ident">VolatileSlice</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::net::UnixSeqpacket</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
@@ -957,11 +957,11 @@
 <span class="comment">// pointer and size are guaranteed to be accurate.</span>
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">AsIobuf</span> <span class="kw">for</span> <span class="ident">VolatileSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">as_iobuf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">iovec</span> {
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">as_iobuf</span>()
+        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">as_iobuf</span>().<span class="ident">as_ref</span>()
     }
 
     <span class="kw">fn</span> <span class="ident">as_iobuf_slice</span>(<span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="self">Self</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">iovec</span>] {
-        <span class="ident">VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>)
+        <span class="ident">IoBufMut::as_iobufs</span>(<span class="ident">VolatileSlice::as_iobufs</span>(<span class="ident">bufs</span>))
     }
 }
 
