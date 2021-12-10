@@ -505,6 +505,8 @@
 <span id="505">505</span>
 <span id="506">506</span>
 <span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -852,6 +854,7 @@
     <span class="kw">pub</span> <span class="ident">net_vq_pairs</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">vhost_net</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">tap_fd</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">RawFd</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">tap_name</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">cid</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">wayland_socket_paths</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">PathBuf</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">x_display</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
@@ -950,6 +953,7 @@
             <span class="ident">net_vq_pairs</span>: <span class="prelude-val">None</span>,
             <span class="ident">vhost_net</span>: <span class="bool-val">false</span>,
             <span class="ident">tap_fd</span>: <span class="ident">Vec::new</span>(),
+            <span class="ident">tap_name</span>: <span class="ident">Vec::new</span>(),
             <span class="ident">cid</span>: <span class="prelude-val">None</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gpu&quot;</span>)]</span>
             <span class="ident">gpu_parameters</span>: <span class="prelude-val">None</span>,

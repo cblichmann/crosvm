@@ -3809,6 +3809,12 @@
 <span id="3809">3809</span>
 <span id="3810">3810</span>
 <span id="3811">3811</span>
+<span id="3812">3812</span>
+<span id="3813">3813</span>
+<span id="3814">3814</span>
+<span id="3815">3815</span>
+<span id="3816">3816</span>
+<span id="3817">3817</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -5659,6 +5665,9 @@
                     })<span class="question-mark">?</span>,
             );
         }
+        <span class="string">&quot;tap-name&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">cfg</span>.<span class="ident">tap_name</span>.<span class="ident">push</span>(<span class="ident">value</span>.<span class="ident">unwrap</span>().<span class="ident">to_owned</span>());
+        }
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gpu&quot;</span>)]</span>
         <span class="string">&quot;gpu&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">gpu_parameters</span> <span class="op">=</span> <span class="ident">cfg</span>.<span class="ident">gpu_parameters</span>.<span class="ident">get_or_insert_with</span>(<span class="ident">Default::default</span>);
@@ -6187,6 +6196,9 @@
           <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;plugin&quot;</span>)]</span>
           <span class="ident">Argument::value</span>(<span class="string">&quot;plugin-gid-map-file&quot;</span>, <span class="string">&quot;PATH&quot;</span>, <span class="string">&quot;Path to the file listing supplemental GIDs that should be mapped in plugin jail.  Can be given more than once.&quot;</span>),
           <span class="ident">Argument::flag</span>(<span class="string">&quot;vhost-net&quot;</span>, <span class="string">&quot;Use vhost for networking.&quot;</span>),
+          <span class="ident">Argument::value</span>(<span class="string">&quot;tap-name&quot;</span>,
+                          <span class="string">&quot;NAME&quot;</span>,
+                          <span class="string">&quot;Name of a configured persistent TAP interface to use for networking. A different virtual network card will be added each time this argument is given.&quot;</span>),
           <span class="ident">Argument::value</span>(<span class="string">&quot;tap-fd&quot;</span>,
                           <span class="string">&quot;fd&quot;</span>,
                           <span class="string">&quot;File descriptor for configured tap device. A different virtual network card will be added each time this argument is given.&quot;</span>),
