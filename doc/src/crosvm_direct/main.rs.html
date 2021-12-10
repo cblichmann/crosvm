@@ -3815,6 +3815,10 @@
 <span id="3815">3815</span>
 <span id="3816">3816</span>
 <span id="3817">3817</span>
+<span id="3818">3818</span>
+<span id="3819">3819</span>
+<span id="3820">3820</span>
+<span id="3821">3821</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -3880,6 +3884,10 @@
     <span class="ident">BalloonControlCommand</span>, <span class="ident">BatteryType</span>, <span class="ident">DiskControlCommand</span>, <span class="ident">UsbControlResult</span>, <span class="ident">VmRequest</span>,
     <span class="ident">VmResponse</span>,
 };
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;scudo&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">global_allocator</span>]</span>
+<span class="kw">static</span> <span class="ident">ALLOCATOR</span>: <span class="ident">scudo::GlobalScudoAllocator</span> <span class="op">=</span> <span class="ident">scudo::GlobalScudoAllocator</span>;
 
 <span class="kw">fn</span> <span class="ident">executable_is_plugin</span>(<span class="ident">executable</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Executable</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="macro">matches!</span>(<span class="ident">executable</span>, <span class="prelude-val">Some</span>(<span class="ident">Executable::Plugin</span>(<span class="kw">_</span>)))
