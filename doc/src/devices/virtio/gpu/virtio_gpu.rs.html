@@ -884,6 +884,7 @@
 <span id="884">884</span>
 <span id="885">885</span>
 <span id="886">886</span>
+<span id="887">887</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -898,7 +899,7 @@
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::gpu::GpuDisplayParameters</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::virtio::resource_bridge</span>::{<span class="ident">BufferInfo</span>, <span class="ident">PlaneInfo</span>, <span class="ident">ResourceInfo</span>, <span class="ident">ResourceResponse</span>};
-<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">ExternalMapping</span>, <span class="ident">Tube</span>};
+<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">ExternalMapping</span>, <span class="ident">SafeDescriptor</span>, <span class="ident">Tube</span>};
 
 <span class="kw">use</span> <span class="ident">data_model::VolatileSlice</span>;
 
@@ -1192,9 +1193,10 @@
         <span class="ident">external_blob</span>: <span class="ident">bool</span>,
         <span class="ident">udmabuf</span>: <span class="ident">bool</span>,
         <span class="ident">fence_handler</span>: <span class="ident">RutabagaFenceHandler</span>,
+        <span class="ident">render_server_fd</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SafeDescriptor</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VirtioGpu</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">rutabaga</span> <span class="op">=</span> <span class="ident">rutabaga_builder</span>
-            .<span class="ident">build</span>(<span class="ident">fence_handler</span>)
+            .<span class="ident">build</span>(<span class="ident">fence_handler</span>, <span class="ident">render_server_fd</span>)
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">error!</span>(<span class="string">&quot;failed to build rutabaga {}&quot;</span>, <span class="ident">e</span>))
             .<span class="ident">ok</span>()<span class="question-mark">?</span>;
 

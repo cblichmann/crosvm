@@ -570,6 +570,13 @@
 <span id="570">570</span>
 <span id="571">571</span>
 <span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
 </pre><pre class="rust">
 <span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
@@ -859,6 +866,7 @@
 <span class="kw">const</span> <span class="ident">VIRGLRENDERER_VENUS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>;
 <span class="kw">const</span> <span class="ident">VIRGLRENDERER_NO_VIRGL</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">7</span>;
 <span class="kw">const</span> <span class="ident">VIRGLRENDERER_USE_ASYNC_FENCE_CB</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>;
+<span class="kw">const</span> <span class="ident">VIRGLRENDERER_MULTI_PROCESS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">9</span>;
 
 <span class="doccomment">/// virglrenderer flag struct.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
@@ -872,6 +880,7 @@
             .<span class="ident">use_egl</span>(<span class="bool-val">true</span>)
             .<span class="ident">use_surfaceless</span>(<span class="bool-val">true</span>)
             .<span class="ident">use_gles</span>(<span class="bool-val">true</span>)
+            .<span class="ident">use_multi_process</span>(<span class="bool-val">false</span>)
     }
 }
 
@@ -938,6 +947,10 @@
     <span class="doccomment">/// Retire fence directly from sync thread.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">use_async_fence_cb</span>(<span class="self">self</span>, <span class="ident">v</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VirglRendererFlags</span> {
         <span class="self">self</span>.<span class="ident">set_flag</span>(<span class="ident">VIRGLRENDERER_USE_ASYNC_FENCE_CB</span>, <span class="ident">v</span>)
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">use_multi_process</span>(<span class="self">self</span>, <span class="ident">v</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VirglRendererFlags</span> {
+        <span class="self">self</span>.<span class="ident">set_flag</span>(<span class="ident">VIRGLRENDERER_MULTI_PROCESS</span>, <span class="ident">v</span>)
     }
 }
 
@@ -1077,9 +1090,10 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGA_MEM_HANDLE_TYPE_OPAQUE_FD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0001</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGA_MEM_HANDLE_TYPE_DMABUF</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0002</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGE_MEM_HANDLE_TYPE_OPAQUE_WIN32</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0003</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGA_FENCE_HANDLE_TYPE_OPAQUE_FD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0004</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGA_FENCE_HANDLE_TYPE_SYNC_FD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0005</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGE_FENCE_HANDLE_TYPE_OPAQUE_WIN32</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0006</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGA_MEM_HANDLE_TYPE_SHM</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0004</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGA_FENCE_HANDLE_TYPE_OPAQUE_FD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0010</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGA_FENCE_HANDLE_TYPE_SYNC_FD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0011</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RUTABAGE_FENCE_HANDLE_TYPE_OPAQUE_WIN32</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0012</span>;
 
 <span class="doccomment">/// Handle to OS-specific memory or synchronization objects.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RutabagaHandle</span> {
