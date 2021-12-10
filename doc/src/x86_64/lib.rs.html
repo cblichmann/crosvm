@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `x86_64&#x2F;src&#x2F;lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../x86_64/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input"name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `x86_64&#x2F;src&#x2F;lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../x86_64/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1435,8 +1435,7 @@
 <span id="1435">1435</span>
 <span id="1436">1436</span>
 <span id="1437">1437</span>
-</pre><pre class="rust">
-<span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
@@ -1488,7 +1487,7 @@
 <span class="kw">use</span> <span class="ident">std::mem</span>;
 <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::bootparam::boot_params</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bootparam::boot_params</span>;
 <span class="kw">use</span> <span class="ident">acpi_tables::sdt::SDT</span>;
 <span class="kw">use</span> <span class="ident">acpi_tables</span>::{<span class="ident">aml</span>, <span class="ident">aml::Aml</span>};
 <span class="kw">use</span> <span class="ident">arch</span>::{
@@ -1801,7 +1800,7 @@
 
     <span class="kw">fn</span> <span class="ident">guest_memory_layout</span>(
         <span class="ident">components</span>: <span class="kw-2">&amp;</span><span class="ident">VmComponents</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">GuestAddress</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>, <span class="self">Self</span><span class="ident">::Error</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">GuestAddress</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">bios_size</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">components</span>.<span class="ident">vm_image</span> {
             <span class="ident">VmImage::Bios</span>(<span class="ident">bios_file</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">bios_file</span>.<span class="ident">metadata</span>().<span class="ident">map_err</span>(<span class="ident">Error::LoadBios</span>)<span class="question-mark">?</span>.<span class="ident">len</span>()),
             <span class="ident">VmImage::Kernel</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
@@ -1814,8 +1813,8 @@
     }
 
     <span class="kw">fn</span> <span class="ident">create_system_allocator</span>(<span class="ident">guest_mem</span>: <span class="kw-2">&amp;</span><span class="ident">GuestMemory</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SystemAllocator</span> {
-        <span class="kw">let</span> <span class="ident">high_mmio_start</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::get_high_mmio_base</span>(<span class="ident">guest_mem</span>);
-        <span class="kw">let</span> <span class="ident">high_mmio_size</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::get_high_mmio_size</span>(<span class="ident">guest_mem</span>);
+        <span class="kw">let</span> <span class="ident">high_mmio_start</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_high_mmio_base</span>(<span class="ident">guest_mem</span>);
+        <span class="kw">let</span> <span class="ident">high_mmio_size</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_high_mmio_size</span>(<span class="ident">guest_mem</span>);
         <span class="ident">SystemAllocator::builder</span>()
             .<span class="ident">add_io_addresses</span>(<span class="number">0xc000</span>, <span class="number">0x10000</span>)
             .<span class="ident">add_low_mmio_addresses</span>(<span class="ident">END_ADDR_BEFORE_32BITS</span>, <span class="ident">PCI_MMIO_SIZE</span>)
@@ -1837,7 +1836,7 @@
         <span class="ident">devs</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">BusDeviceObj</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Minijail</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
         <span class="ident">irq_chip</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">IrqChipX86_64</span>,
         <span class="ident">kvm_vcpu_ids</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">RunnableLinuxVm</span><span class="op">&lt;</span><span class="ident">V</span>, <span class="ident">Vcpu</span><span class="op">&gt;</span>, <span class="self">Self</span><span class="ident">::Error</span><span class="op">&gt;</span>
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">RunnableLinuxVm</span><span class="op">&lt;</span><span class="ident">V</span>, <span class="ident">Vcpu</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">V</span>: <span class="ident">VmX86_64</span>,
         <span class="ident">Vcpu</span>: <span class="ident">VcpuX86_64</span>,
@@ -1894,14 +1893,14 @@
         <span class="kw">let</span> <span class="ident">suspend_evt</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">map_err</span>(<span class="ident">Error::CreateEvent</span>)<span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="op">!</span><span class="ident">components</span>.<span class="ident">no_legacy</span> {
-            <span class="self">Self</span><span class="ident">::setup_legacy_devices</span>(
+            <span class="ident"><span class="self">Self</span>::setup_legacy_devices</span>(
                 <span class="kw-2">&amp;</span><span class="ident">io_bus</span>,
                 <span class="ident">irq_chip</span>.<span class="ident">pit_uses_speaker_port</span>(),
                 <span class="ident">reset_evt</span>.<span class="ident">try_clone</span>().<span class="ident">map_err</span>(<span class="ident">Error::CloneEvent</span>)<span class="question-mark">?</span>,
                 <span class="ident">components</span>.<span class="ident">memory_size</span>,
             )<span class="question-mark">?</span>;
         }
-        <span class="self">Self</span><span class="ident">::setup_serial_devices</span>(
+        <span class="ident"><span class="self">Self</span>::setup_serial_devices</span>(
             <span class="ident">components</span>.<span class="ident">protected_vm</span>,
             <span class="ident">irq_chip</span>.<span class="ident">as_irq_chip_mut</span>(),
             <span class="kw-2">&amp;</span><span class="ident">io_bus</span>,
@@ -1914,7 +1913,7 @@
         <span class="comment">// each bus occupy 1MB mmio for pcie enhanced configuration</span>
         <span class="kw">let</span> <span class="ident">max_bus</span> <span class="op">=</span> ((<span class="ident">PCIE_CFG_MMIO_SIZE</span> <span class="op">/</span> <span class="number">0x100000</span>) <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">u8</span>;
 
-        <span class="kw">let</span> (<span class="ident">acpi_dev_resource</span>, <span class="ident">bat_control</span>) <span class="op">=</span> <span class="self">Self</span><span class="ident">::setup_acpi_devices</span>(
+        <span class="kw">let</span> (<span class="ident">acpi_dev_resource</span>, <span class="ident">bat_control</span>) <span class="op">=</span> <span class="ident"><span class="self">Self</span>::setup_acpi_devices</span>(
             <span class="kw-2">&amp;</span><span class="ident">mem</span>,
             <span class="kw-2">&amp;</span><span class="ident">io_bus</span>,
             <span class="ident">system_allocator</span>,
@@ -1972,7 +1971,7 @@
         )
         .<span class="ident">ok_or</span>(<span class="ident">Error::CreateAcpi</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmdline</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::get_base_linux_cmdline</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmdline</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_base_linux_cmdline</span>();
 
         <span class="kw">if</span> <span class="ident">noirq</span> {
             <span class="ident">cmdline</span>.<span class="ident">insert_str</span>(<span class="string">&quot;acpi=noirq&quot;</span>).<span class="ident">unwrap</span>();
@@ -1999,14 +1998,14 @@
                     <span class="kw-2">&amp;</span><span class="ident">CString::new</span>(<span class="ident">cmdline</span>).<span class="ident">unwrap</span>(),
                 )
                 .<span class="ident">map_err</span>(<span class="ident">Error::LoadCmdline</span>)<span class="question-mark">?</span>;
-                <span class="self">Self</span><span class="ident">::load_bios</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">bios</span>)<span class="question-mark">?</span>
+                <span class="ident"><span class="self">Self</span>::load_bios</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">bios</span>)<span class="question-mark">?</span>
             }
             <span class="ident">VmImage::Kernel</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">kernel_image</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// separate out load_kernel from other setup to get a specific error for</span>
                 <span class="comment">// kernel loading</span>
-                <span class="kw">let</span> (<span class="ident">params</span>, <span class="ident">kernel_end</span>) <span class="op">=</span> <span class="self">Self</span><span class="ident">::load_kernel</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">kernel_image</span>)<span class="question-mark">?</span>;
+                <span class="kw">let</span> (<span class="ident">params</span>, <span class="ident">kernel_end</span>) <span class="op">=</span> <span class="ident"><span class="self">Self</span>::load_kernel</span>(<span class="kw-2">&amp;</span><span class="ident">mem</span>, <span class="ident">kernel_image</span>)<span class="question-mark">?</span>;
 
-                <span class="self">Self</span><span class="ident">::setup_system_memory</span>(
+                <span class="ident"><span class="self">Self</span>::setup_system_memory</span>(
                     <span class="kw-2">&amp;</span><span class="ident">mem</span>,
                     <span class="ident">components</span>.<span class="ident">memory_size</span>,
                     <span class="kw-2">&amp;</span><span class="ident">CString::new</span>(<span class="ident">cmdline</span>).<span class="ident">unwrap</span>(),
@@ -2560,9 +2559,9 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// * mem: The memory to be used by the guest</span>
     <span class="kw">fn</span> <span class="ident">get_high_mmio_size</span>(<span class="ident">mem</span>: <span class="kw-2">&amp;</span><span class="ident">GuestMemory</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
-        <span class="kw">let</span> <span class="ident">phys_mem_end</span> <span class="op">=</span> <span class="self">Self</span><span class="ident">::get_phys_max_addr</span>() <span class="op">+</span> <span class="number">1</span>;
+        <span class="kw">let</span> <span class="ident">phys_mem_end</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_phys_max_addr</span>() <span class="op">+</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="ident">high_mmio_end</span> <span class="op">=</span> <span class="ident">std::cmp::min</span>(<span class="ident">phys_mem_end</span>, <span class="ident">HIGH_MMIO_MAX_END</span>);
-        <span class="ident">high_mmio_end</span> <span class="op">-</span> <span class="self">Self</span><span class="ident">::get_high_mmio_base</span>(<span class="ident">mem</span>)
+        <span class="ident">high_mmio_end</span> <span class="op">-</span> <span class="ident"><span class="self">Self</span>::get_high_mmio_base</span>(<span class="ident">mem</span>)
     }
 
     <span class="doccomment">/// This returns a minimal kernel command for this architecture</span>
@@ -2705,8 +2704,8 @@
                 <span class="kw-2">&amp;</span><span class="ident">aml::AddressSpace::new_memory</span>(
                     <span class="ident">aml::AddressSpaceCachable::NotCacheable</span>,
                     <span class="bool-val">true</span>,
-                    <span class="self">Self</span><span class="ident">::get_high_mmio_base</span>(<span class="ident">mem</span>),
-                    <span class="self">Self</span><span class="ident">::get_high_mmio_size</span>(<span class="ident">mem</span>),
+                    <span class="ident"><span class="self">Self</span>::get_high_mmio_base</span>(<span class="ident">mem</span>),
+                    <span class="ident"><span class="self">Self</span>::get_high_mmio_size</span>(<span class="ident">mem</span>),
                 ),
             ]),
         );
@@ -2873,7 +2872,7 @@
         <span class="macro">assert_eq!</span>(<span class="ident">bios_len</span>, <span class="ident">regions</span>[<span class="number">1</span>].<span class="number">1</span>);
     }
 }
-</pre></div>
+</code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="x86_64" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>

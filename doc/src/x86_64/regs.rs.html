@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `x86_64&#x2F;src&#x2F;regs.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>regs.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../x86_64/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input"name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `x86_64&#x2F;src&#x2F;regs.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>regs.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../x86_64/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -400,8 +400,7 @@
 <span id="400">400</span>
 <span id="401">401</span>
 <span id="402">402</span>
-</pre><pre class="rust">
-<span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
@@ -413,7 +412,7 @@
 <span class="kw">use</span> <span class="ident">thiserror::Error</span>;
 <span class="kw">use</span> <span class="ident">vm_memory</span>::{<span class="ident">GuestAddress</span>, <span class="ident">GuestMemory</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::gdt</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::gdt</span>;
 
 <span class="attribute">#[<span class="ident">sorted</span>]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Error</span>, <span class="ident">Debug</span>)]</span>
@@ -499,7 +498,7 @@
 <span class="kw">fn</span> <span class="ident">append_mtrr_entries</span>(<span class="ident">vpu</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">VcpuX86_64</span>, <span class="ident">pci_start</span>: <span class="ident">u64</span>, <span class="ident">entries</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Register</span><span class="op">&gt;</span>) {
     <span class="comment">// Get VAR MTRR num from MSR_MTRRcap</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">msrs</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">Register</span> {
-        <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_MTRRcap</span>,
+        <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_MTRRcap</span>,
         ..<span class="ident">Default::default</span>()
     }];
     <span class="kw">if</span> <span class="ident">vpu</span>.<span class="ident">get_msrs</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">msrs</span>).<span class="ident">is_err</span>() {
@@ -520,7 +519,7 @@
         <span class="kw">return</span>;
     }
 
-    <span class="kw">let</span> <span class="ident">phys_mask</span>: <span class="ident">u64</span> <span class="op">=</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="kw">crate</span><span class="ident">::cpuid::phy_max_address_bits</span>()) <span class="op">-</span> <span class="number">1</span>;
+    <span class="kw">let</span> <span class="ident">phys_mask</span>: <span class="ident">u64</span> <span class="op">=</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident"><span class="kw">crate</span>::cpuid::phy_max_address_bits</span>()) <span class="op">-</span> <span class="number">1</span>;
     <span class="kw">for</span> (<span class="ident">idx</span>, (<span class="ident">base</span>, <span class="ident">len</span>)) <span class="kw">in</span> <span class="ident">vecs</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
         <span class="kw">let</span> <span class="ident">reg_idx</span> <span class="op">=</span> <span class="ident">idx</span> <span class="kw">as</span> <span class="ident">u32</span> <span class="op">*</span> <span class="number">2</span>;
         <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">Register</span> {
@@ -535,7 +534,7 @@
     }
     <span class="comment">// Disable fixed MTRRs and enable variable MTRRs, set default type as WB</span>
     <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">Register</span> {
-        <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_MTRRdefType</span>,
+        <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_MTRRdefType</span>,
         <span class="ident">value</span>: <span class="ident">MTRR_ENABLE</span> <span class="op">|</span> <span class="ident">MTRR_MEMTYPE_WB</span> <span class="kw">as</span> <span class="ident">u64</span>,
     });
 }
@@ -543,46 +542,46 @@
 <span class="kw">fn</span> <span class="ident">create_msr_entries</span>(<span class="ident">vcpu</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">VcpuX86_64</span>, <span class="ident">pci_start</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Register</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> <span class="op">=</span> <span class="macro">vec!</span>[
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_IA32_SYSENTER_CS</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_IA32_SYSENTER_CS</span>,
             <span class="ident">value</span>: <span class="number">0x0</span>,
         },
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_IA32_SYSENTER_ESP</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_IA32_SYSENTER_ESP</span>,
             <span class="ident">value</span>: <span class="number">0x0</span>,
         },
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_IA32_SYSENTER_EIP</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_IA32_SYSENTER_EIP</span>,
             <span class="ident">value</span>: <span class="number">0x0</span>,
         },
         <span class="comment">// x86_64 specific msrs, we only run on x86_64 not x86</span>
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_STAR</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_STAR</span>,
             <span class="ident">value</span>: <span class="number">0x0</span>,
         },
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_CSTAR</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_CSTAR</span>,
             <span class="ident">value</span>: <span class="number">0x0</span>,
         },
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_KERNEL_GS_BASE</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_KERNEL_GS_BASE</span>,
             <span class="ident">value</span>: <span class="number">0x0</span>,
         },
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_SYSCALL_MASK</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_SYSCALL_MASK</span>,
             <span class="ident">value</span>: <span class="number">0x0</span>,
         },
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_LSTAR</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_LSTAR</span>,
             <span class="ident">value</span>: <span class="number">0x0</span>,
         },
         <span class="comment">// end of x86_64 specific code</span>
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_IA32_TSC</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_IA32_TSC</span>,
             <span class="ident">value</span>: <span class="number">0x0</span>,
         },
         <span class="ident">Register</span> {
-            <span class="ident">id</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_IA32_MISC_ENABLE</span>,
-            <span class="ident">value</span>: <span class="kw">crate</span><span class="ident">::msr_index::MSR_IA32_MISC_ENABLE_FAST_STRING</span> <span class="kw">as</span> <span class="ident">u64</span>,
+            <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_IA32_MISC_ENABLE</span>,
+            <span class="ident">value</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_IA32_MISC_ENABLE_FAST_STRING</span> <span class="kw">as</span> <span class="ident">u64</span>,
         },
     ];
     <span class="ident">append_mtrr_entries</span>(<span class="ident">vcpu</span>, <span class="ident">pci_start</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">entries</span>);
@@ -803,7 +802,7 @@
         <span class="macro">assert_eq!</span>(<span class="ident">X86_CR0_PG</span>, <span class="ident">sregs</span>.<span class="ident">cr0</span>);
     }
 }
-</pre></div>
+</code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="x86_64" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>

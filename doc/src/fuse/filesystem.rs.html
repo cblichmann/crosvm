@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `fuse&#x2F;src&#x2F;filesystem.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>filesystem.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../fuse/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input"name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `fuse&#x2F;src&#x2F;filesystem.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>filesystem.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../fuse/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1191,8 +1191,7 @@
 <span id="1191">1191</span>
 <span id="1192">1192</span>
 <span id="1193">1193</span>
-</pre><pre class="rust">
-<span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
@@ -1203,10 +1202,10 @@
 <span class="kw">use</span> <span class="ident">std::mem</span>;
 <span class="kw">use</span> <span class="ident">std::time::Duration</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::sys</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::sys</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::server::Mapper</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::sys</span>::{
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::server::Mapper</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::sys</span>::{
     <span class="ident">FsOptions</span>, <span class="ident">IoctlFlags</span>, <span class="ident">IoctlIovec</span>, <span class="ident">OpenOptions</span>, <span class="ident">RemoveMappingOne</span>, <span class="ident">SetattrValid</span>, <span class="ident">ROOT_ID</span>,
 };
 
@@ -1601,7 +1600,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// If this call is successful then the lookup count of the `Inode` associated with the returned</span>
     <span class="doccomment">/// `Entry` must be increased by 1.</span>
-    <span class="kw">fn</span> <span class="ident">lookup</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">parent</span>: <span class="self">Self</span><span class="ident">::Inode</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">lookup</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">parent</span>: <span class="ident"><span class="self">Self</span>::Inode</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
@@ -1610,13 +1609,13 @@
     <span class="doccomment">/// Called when the kernel removes an inode from its internal caches. `count` indicates the</span>
     <span class="doccomment">/// amount by which the lookup count for the inode should be decreased. If reducing the lookup</span>
     <span class="doccomment">/// count by `count` causes it to go to zero, then the implementation may delete the `Inode`.</span>
-    <span class="kw">fn</span> <span class="ident">forget</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>, <span class="ident">count</span>: <span class="ident">u64</span>) {}
+    <span class="kw">fn</span> <span class="ident">forget</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>, <span class="ident">count</span>: <span class="ident">u64</span>) {}
 
     <span class="doccomment">/// Forget about multiple inodes.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// `requests` is a vector of `(inode, count)` pairs. See the documentation for `forget` for</span>
     <span class="doccomment">/// more information.</span>
-    <span class="kw">fn</span> <span class="ident">batch_forget</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">requests</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="self">Self</span><span class="ident">::Inode</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">batch_forget</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">requests</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident"><span class="self">Self</span>::Inode</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>) {
         <span class="kw">for</span> (<span class="ident">inode</span>, <span class="ident">count</span>) <span class="kw">in</span> <span class="ident">requests</span> {
             <span class="self">self</span>.<span class="ident">forget</span>(<span class="ident">ctx</span>, <span class="ident">inode</span>, <span class="ident">count</span>)
         }
@@ -1639,8 +1638,8 @@
     <span class="kw">fn</span> <span class="ident">getattr</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Handle</span><span class="op">&gt;</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Handle</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="ident">libc::stat64</span>, <span class="ident">Duration</span>)<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
@@ -1665,16 +1664,16 @@
     <span class="kw">fn</span> <span class="ident">setattr</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">attr</span>: <span class="ident">libc::stat64</span>,
-        <span class="ident">handle</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Handle</span><span class="op">&gt;</span>,
+        <span class="ident">handle</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Handle</span><span class="op">&gt;</span>,
         <span class="ident">valid</span>: <span class="ident">SetattrValid</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="ident">libc::stat64</span>, <span class="ident">Duration</span>)<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
     <span class="doccomment">/// Read a symbolic link.</span>
-    <span class="kw">fn</span> <span class="ident">readlink</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">readlink</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
@@ -1690,7 +1689,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
         <span class="ident">linkname</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
-        <span class="ident">parent</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">parent</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
@@ -1710,7 +1709,7 @@
     <span class="kw">fn</span> <span class="ident">mknod</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
         <span class="ident">mode</span>: <span class="ident">u32</span>,
         <span class="ident">rdev</span>: <span class="ident">u32</span>,
@@ -1730,7 +1729,7 @@
     <span class="kw">fn</span> <span class="ident">mkdir</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">parent</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">parent</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
         <span class="ident">mode</span>: <span class="ident">u32</span>,
         <span class="ident">umask</span>: <span class="ident">u32</span>,
@@ -1742,7 +1741,7 @@
     <span class="kw">fn</span> <span class="ident">chromeos_tmpfile</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">parent</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">parent</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">mode</span>: <span class="ident">u32</span>,
         <span class="ident">umask</span>: <span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&gt;</span> {
@@ -1754,7 +1753,7 @@
     <span class="doccomment">/// If the file&#39;s inode lookup count is non-zero, then the file system is expected to delay</span>
     <span class="doccomment">/// removal of the inode until the lookup count goes to zero. See the documentation of the</span>
     <span class="doccomment">/// `forget` function for more information.</span>
-    <span class="kw">fn</span> <span class="ident">unlink</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">parent</span>: <span class="self">Self</span><span class="ident">::Inode</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">unlink</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">parent</span>: <span class="ident"><span class="self">Self</span>::Inode</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
@@ -1763,7 +1762,7 @@
     <span class="doccomment">/// If the directory&#39;s inode lookup count is non-zero, then the file system is expected to delay</span>
     <span class="doccomment">/// removal of the inode until the lookup count goes to zero. See the documentation of the</span>
     <span class="doccomment">/// `forget` function for more information.</span>
-    <span class="kw">fn</span> <span class="ident">rmdir</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">parent</span>: <span class="self">Self</span><span class="ident">::Inode</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">rmdir</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">parent</span>: <span class="ident"><span class="self">Self</span>::Inode</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
@@ -1782,9 +1781,9 @@
     <span class="kw">fn</span> <span class="ident">rename</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">olddir</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">olddir</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">oldname</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
-        <span class="ident">newdir</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">newdir</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">newname</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
         <span class="ident">flags</span>: <span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -1800,8 +1799,8 @@
     <span class="kw">fn</span> <span class="ident">link</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">newparent</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">newparent</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">newname</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
@@ -1850,9 +1849,9 @@
     <span class="kw">fn</span> <span class="ident">open</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">flags</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Handle</span><span class="op">&gt;</span>, <span class="ident">OpenOptions</span>)<span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Handle</span><span class="op">&gt;</span>, <span class="ident">OpenOptions</span>)<span class="op">&gt;</span> {
         <span class="comment">// Matches the behavior of libfuse.</span>
         <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, <span class="ident">OpenOptions::empty</span>()))
     }
@@ -1874,12 +1873,12 @@
     <span class="kw">fn</span> <span class="ident">create</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">parent</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">parent</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
         <span class="ident">mode</span>: <span class="ident">u32</span>,
         <span class="ident">flags</span>: <span class="ident">u32</span>,
         <span class="ident">umask</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="ident">Entry</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Handle</span><span class="op">&gt;</span>, <span class="ident">OpenOptions</span>)<span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="ident">Entry</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Handle</span><span class="op">&gt;</span>, <span class="ident">OpenOptions</span>)<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
@@ -1901,8 +1900,8 @@
     <span class="kw">fn</span> <span class="ident">read</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">io::Write</span> <span class="op">+</span> <span class="ident">ZeroCopyWriter</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">w</span>: <span class="ident">W</span>,
         <span class="ident">size</span>: <span class="ident">u32</span>,
         <span class="ident">offset</span>: <span class="ident">u64</span>,
@@ -1934,8 +1933,8 @@
     <span class="kw">fn</span> <span class="ident">write</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">io::Read</span> <span class="op">+</span> <span class="ident">ZeroCopyReader</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">r</span>: <span class="ident">R</span>,
         <span class="ident">size</span>: <span class="ident">u32</span>,
         <span class="ident">offset</span>: <span class="ident">u64</span>,
@@ -1971,8 +1970,8 @@
     <span class="kw">fn</span> <span class="ident">flush</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">lock_owner</span>: <span class="ident">u64</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
@@ -1994,9 +1993,9 @@
     <span class="kw">fn</span> <span class="ident">fsync</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">datasync</span>: <span class="ident">bool</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
@@ -2017,8 +2016,8 @@
     <span class="kw">fn</span> <span class="ident">fallocate</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">mode</span>: <span class="ident">u32</span>,
         <span class="ident">offset</span>: <span class="ident">u64</span>,
         <span class="ident">length</span>: <span class="ident">u64</span>,
@@ -2045,9 +2044,9 @@
     <span class="kw">fn</span> <span class="ident">release</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">flags</span>: <span class="ident">u32</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">flush</span>: <span class="ident">bool</span>,
         <span class="ident">flock_release</span>: <span class="ident">bool</span>,
         <span class="ident">lock_owner</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
@@ -2056,7 +2055,7 @@
     }
 
     <span class="doccomment">/// Get information about the file system.</span>
-    <span class="kw">fn</span> <span class="ident">statfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">libc::statvfs64</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">statfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">libc::statvfs64</span><span class="op">&gt;</span> {
         <span class="comment">// Safe because we are zero-initializing a struct with only POD fields.</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">st</span>: <span class="ident">libc::statvfs64</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">mem::zeroed</span>() };
 
@@ -2079,7 +2078,7 @@
     <span class="kw">fn</span> <span class="ident">setxattr</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
         <span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
         <span class="ident">flags</span>: <span class="ident">u32</span>,
@@ -2101,7 +2100,7 @@
     <span class="kw">fn</span> <span class="ident">getxattr</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>,
         <span class="ident">size</span>: <span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">GetxattrReply</span><span class="op">&gt;</span> {
@@ -2120,7 +2119,7 @@
     <span class="doccomment">/// If this method fails with an `ENOSYS` error, then the kernel will treat that as a permanent</span>
     <span class="doccomment">/// failure. The kernel will return `EOPNOTSUPP` for all future calls to `listxattr` without</span>
     <span class="doccomment">/// forwarding them to the file system.</span>
-    <span class="kw">fn</span> <span class="ident">listxattr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>, <span class="ident">size</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">ListxattrReply</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">listxattr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>, <span class="ident">size</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">ListxattrReply</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
@@ -2129,7 +2128,7 @@
     <span class="doccomment">/// If this method fails with an `ENOSYS` error, then the kernel will treat that as a permanent</span>
     <span class="doccomment">/// failure. The kernel will return `EOPNOTSUPP` for all future calls to `removexattr` without</span>
     <span class="doccomment">/// forwarding them to the file system.</span>
-    <span class="kw">fn</span> <span class="ident">removexattr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">removexattr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">CStr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
@@ -2152,9 +2151,9 @@
     <span class="kw">fn</span> <span class="ident">opendir</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">flags</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Handle</span><span class="op">&gt;</span>, <span class="ident">OpenOptions</span>)<span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Handle</span><span class="op">&gt;</span>, <span class="ident">OpenOptions</span>)<span class="op">&gt;</span> {
         <span class="comment">// Matches the behavior of libfuse.</span>
         <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, <span class="ident">OpenOptions::empty</span>()))
     }
@@ -2187,11 +2186,11 @@
     <span class="kw">fn</span> <span class="ident">readdir</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">size</span>: <span class="ident">u32</span>,
         <span class="ident">offset</span>: <span class="ident">u64</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::DirIter</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::DirIter</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
@@ -2211,9 +2210,9 @@
     <span class="kw">fn</span> <span class="ident">fsyncdir</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">datasync</span>: <span class="ident">bool</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
@@ -2231,9 +2230,9 @@
     <span class="kw">fn</span> <span class="ident">releasedir</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
         <span class="ident">flags</span>: <span class="ident">u32</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
@@ -2248,7 +2247,7 @@
     <span class="doccomment">/// If this method returns an `ENOSYS` error, then the kernel will treat it as a permanent</span>
     <span class="doccomment">/// success: all future calls to `access` will return success without being forwarded to the</span>
     <span class="doccomment">/// file system.</span>
-    <span class="kw">fn</span> <span class="ident">access</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>, <span class="ident">mask</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">access</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>, <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>, <span class="ident">mask</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 
@@ -2275,8 +2274,8 @@
     <span class="kw">fn</span> <span class="ident">ioctl</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">io::Read</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">flags</span>: <span class="ident">IoctlFlags</span>,
         <span class="ident">cmd</span>: <span class="ident">u32</span>,
         <span class="ident">arg</span>: <span class="ident">u64</span>,
@@ -2340,11 +2339,11 @@
     <span class="kw">fn</span> <span class="ident">copy_file_range</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode_src</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle_src</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">inode_src</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle_src</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">offset_src</span>: <span class="ident">u64</span>,
-        <span class="ident">inode_dst</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle_dst</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">inode_dst</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle_dst</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">offset_dst</span>: <span class="ident">u64</span>,
         <span class="ident">length</span>: <span class="ident">u64</span>,
         <span class="ident">flags</span>: <span class="ident">u64</span>,
@@ -2366,8 +2365,8 @@
     <span class="kw">fn</span> <span class="ident">set_up_mapping</span><span class="op">&lt;</span><span class="ident">M</span>: <span class="ident">Mapper</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="ident">Context</span>,
-        <span class="ident">inode</span>: <span class="self">Self</span><span class="ident">::Inode</span>,
-        <span class="ident">handle</span>: <span class="self">Self</span><span class="ident">::Handle</span>,
+        <span class="ident">inode</span>: <span class="ident"><span class="self">Self</span>::Inode</span>,
+        <span class="ident">handle</span>: <span class="ident"><span class="self">Self</span>::Handle</span>,
         <span class="ident">file_offset</span>: <span class="ident">u64</span>,
         <span class="ident">mem_offset</span>: <span class="ident">u64</span>,
         <span class="ident">size</span>: <span class="ident">usize</span>,
@@ -2385,7 +2384,7 @@
         <span class="prelude-val">Err</span>(<span class="ident">io::Error::from_raw_os_error</span>(<span class="ident">libc::ENOSYS</span>))
     }
 }
-</pre></div>
+</code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="fuse" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>
