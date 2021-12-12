@@ -6668,7 +6668,7 @@ with a &#39;--backing_file&#39;.&quot;</span>
     };
 
     <span class="ident">result</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-        <span class="macro">error!</span>(<span class="string">&quot;Failed to run {} device: {}&quot;</span>, <span class="ident">device</span>, <span class="ident">e</span>);
+        <span class="macro">error!</span>(<span class="string">&quot;Failed to run {} device: {:#}&quot;</span>, <span class="ident">device</span>, <span class="ident">e</span>);
     })
 }
 
