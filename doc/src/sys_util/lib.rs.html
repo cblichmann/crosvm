@@ -678,6 +678,8 @@
 <span id="678">678</span>
 <span id="679">679</span>
 <span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -712,6 +714,7 @@
 <span class="kw">mod</span> <span class="ident">get_filesystem_type</span>;
 <span class="kw">mod</span> <span class="ident">mmap</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">net</span>;
+<span class="kw">mod</span> <span class="ident">netlink</span>;
 <span class="kw">mod</span> <span class="ident">poll</span>;
 <span class="kw">mod</span> <span class="ident">priority</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">rand</span>;
@@ -742,6 +745,7 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::get_filesystem_type</span>::<span class="kw-2">*</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ioctl</span>::<span class="kw-2">*</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::mmap</span>::<span class="kw-2">*</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::netlink</span>::<span class="kw-2">*</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::poll</span>::<span class="kw-2">*</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::priority</span>::<span class="kw-2">*</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::raw_fd</span>::<span class="kw-2">*</span>;
