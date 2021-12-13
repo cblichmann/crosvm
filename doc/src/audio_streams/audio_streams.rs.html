@@ -816,6 +816,12 @@
 <span id="816">816</span>
 <span id="817">817</span>
 <span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -1172,15 +1178,6 @@
         <span class="prelude-val">Ok</span>(<span class="ident">len</span>)
     }
 
-    <span class="doccomment">/// Writes complete frames to `buf`, and return the number of bytes written.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="comment">// only write complete frames.</span>
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">/</span> <span class="self">self</span>.<span class="ident">frame_size</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">frame_size</span>;
-        <span class="kw">let</span> <span class="ident">written</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">buffer</span>[<span class="self">self</span>.<span class="ident">offset</span>..]).<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..<span class="ident">len</span>])<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="ident">written</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">written</span>)
-    }
-
     <span class="doccomment">/// Reads up to `size` bytes directly from this buffer inside of the given callback function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_copy_cb</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span>[<span class="ident">u8</span>])<span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">size</span>: <span class="ident">usize</span>, <span class="ident">cb</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">calc_len</span>(<span class="ident">size</span>);
@@ -1192,9 +1189,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Write</span> <span class="kw">for</span> <span class="ident">AudioBuffer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="comment">// only write complete frames.</span>
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">/</span> <span class="self">self</span>.<span class="ident">frame_size</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">frame_size</span>;
-        <span class="kw">let</span> <span class="ident">written</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">buffer</span>[<span class="self">self</span>.<span class="ident">offset</span>..]).<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..<span class="ident">len</span>])<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">written</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">buffer</span>[<span class="self">self</span>.<span class="ident">offset</span>..]).<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..<span class="ident">buf</span>.<span class="ident">len</span>()])<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">offset</span> <span class="op">+</span><span class="op">=</span> <span class="ident">written</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">written</span>)
     }
@@ -1494,6 +1489,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident">io</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">invalid_buffer_length</span>() {
@@ -1503,6 +1499,22 @@
             <span class="ident">which_buffer</span>: <span class="bool-val">false</span>,
         };
         <span class="macro">assert!</span>(<span class="ident">PlaybackBuffer::new</span>(<span class="number">2</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pb_buf</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer_drop</span>).<span class="ident">is_err</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">io_copy_audio_buffer</span>() {
+        <span class="kw">const</span> <span class="ident">PERIOD_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">8192</span>;
+        <span class="kw">const</span> <span class="ident">NUM_CHANNELS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">6</span>;
+        <span class="kw">const</span> <span class="ident">FRAME_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">NUM_CHANNELS</span> <span class="op">*</span> <span class="number">2</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dst_buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="ident">PERIOD_SIZE</span> <span class="op">*</span> <span class="ident">FRAME_SIZE</span>];
+        <span class="kw">let</span> <span class="ident">src_buf</span> <span class="op">=</span> [<span class="number">0xa5u8</span>; <span class="ident">PERIOD_SIZE</span> <span class="op">*</span> <span class="ident">FRAME_SIZE</span>];
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">aud_buf</span> <span class="op">=</span> <span class="ident">AudioBuffer</span> {
+            <span class="ident">buffer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dst_buf</span>,
+            <span class="ident">offset</span>: <span class="number">0</span>,
+            <span class="ident">frame_size</span>: <span class="number">6</span> <span class="op">*</span> <span class="number">2</span>,
+        };
+        <span class="ident">io::copy</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span><span class="ident">src_buf</span>[..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">aud_buf</span>).<span class="ident">expect</span>(<span class="string">&quot;all data should be copied.&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">dst_buf</span>, <span class="ident">src_buf</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
