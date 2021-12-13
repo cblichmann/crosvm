@@ -494,6 +494,7 @@
 <span id="494">494</span>
 <span id="495">495</span>
 <span id="496">496</span>
+<span id="497">497</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright (C) 2019 Alibaba Cloud. All rights reserved.</span>
 <span class="comment">// SPDX-License-Identifier: Apache-2.0 or BSD-3-Clause</span>
 
@@ -561,7 +562,8 @@
 <span class="kw">mod</span> <span class="ident">slave_req_handler</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;device&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::slave_req_handler</span>::{
-    <span class="ident">SlaveReqHandler</span>, <span class="ident">SlaveReqHelper</span>, <span class="ident">VhostUserSlaveReqHandler</span>, <span class="ident">VhostUserSlaveReqHandlerMut</span>,
+    <span class="ident">Protocol</span>, <span class="ident">SlaveReqHandler</span>, <span class="ident">SlaveReqHelper</span>, <span class="ident">VhostUserSlaveReqHandler</span>,
+    <span class="ident">VhostUserSlaveReqHandlerMut</span>,
 };
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;device&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">slave_fs_cache</span>;
