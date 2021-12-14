@@ -3487,6 +3487,12 @@
 <span id="3487">3487</span>
 <span id="3488">3488</span>
 <span id="3489">3489</span>
+<span id="3490">3490</span>
+<span id="3491">3491</span>
+<span id="3492">3492</span>
+<span id="3493">3493</span>
+<span id="3494">3494</span>
+<span id="3495">3495</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -4399,6 +4405,12 @@
     <span class="kw">let</span> <span class="ident">jail</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">gpu_jail</span>(<span class="ident">cfg</span>, <span class="string">&quot;gpu_render_server&quot;</span>)<span class="question-mark">?</span> {
         <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">jail</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="comment">// TODO(olv) bind mount and enable shader cache</span>
+
+            <span class="comment">// bind mount /dev/log for syslog</span>
+            <span class="kw">let</span> <span class="ident">log_path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="string">&quot;/dev/log&quot;</span>);
+            <span class="kw">if</span> <span class="ident">log_path</span>.<span class="ident">exists</span>() {
+                <span class="ident">jail</span>.<span class="ident">mount_bind</span>(<span class="ident">log_path</span>, <span class="ident">log_path</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+            }
 
             <span class="comment">// Run as root in the jail to keep capabilities after execve, which is needed for</span>
             <span class="comment">// mounting to work.  All capabilities will be dropped afterwards.</span>
