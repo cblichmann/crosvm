@@ -3819,6 +3819,13 @@
 <span id="3819">3819</span>
 <span id="3820">3820</span>
 <span id="3821">3821</span>
+<span id="3822">3822</span>
+<span id="3823">3823</span>
+<span id="3824">3824</span>
+<span id="3825">3825</span>
+<span id="3826">3826</span>
+<span id="3827">3827</span>
+<span id="3828">3828</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -4765,12 +4772,12 @@
                 <span class="ident">base</span>,
                 <span class="ident">len</span>: <span class="ident">last</span>.<span class="ident">saturating_sub</span>(<span class="ident">base</span>).<span class="ident">saturating_add</span>(<span class="number">1</span>),
             }),
-            (<span class="prelude-val">Err</span>(<span class="ident">e</span>), <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::InvalidValue</span> {
-                <span class="ident">value</span>: <span class="ident">e</span>.<span class="ident">to_string</span>(),
+            (<span class="prelude-val">Err</span>(<span class="kw">_</span>), <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::InvalidValue</span> {
+                <span class="ident">value</span>: <span class="ident">s</span>.<span class="ident">to_owned</span>(),
                 <span class="ident">expected</span>: <span class="ident">String::from</span>(<span class="string">&quot;invalid base range value&quot;</span>),
             }),
-            (<span class="kw">_</span>, <span class="prelude-val">Err</span>(<span class="ident">e</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::InvalidValue</span> {
-                <span class="ident">value</span>: <span class="ident">e</span>.<span class="ident">to_string</span>(),
+            (<span class="kw">_</span>, <span class="prelude-val">Err</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::InvalidValue</span> {
+                <span class="ident">value</span>: <span class="ident">s</span>.<span class="ident">to_owned</span>(),
                 <span class="ident">expected</span>: <span class="ident">String::from</span>(<span class="string">&quot;invalid last range value&quot;</span>),
             }),
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::InvalidValue</span> {
@@ -6185,8 +6192,8 @@
                               gidmap=GIDMAP - The gid map to use for the device&#39;s jail in the format \&quot;inner outer count[,inner outer count]\&quot; (default: 0 &lt;current egid&gt; 1).
                               cache=(never, auto, always) - Indicates whether the VM can cache the contents of the shared directory (default: auto).  When set to \&quot;auto\&quot; and the type is \&quot;fs\&quot;, the VM will use close-to-open consistency for file contents.
                               timeout=SECONDS - How long the VM should consider file attributes and directory entries to be valid (default: 5).  If the VM has exclusive access to the directory, then this should be a large value.  If the directory can be modified by other processes, then this should be 0.
-                              writeback=BOOL - Indicates whether the VM can use writeback caching (default: false).  This is only safe to do when the VM has exclusive access to the files in a directory.  Additionally, the server should have read permission for all files as the VM may issue read requests even for files that are opened write-only.
-                              dax=BOOL - Indicates whether DAX support should be enabled.  Enabling DAX can improve performance for frequently accessed files by mapping regions of the file directory into the VM&#39;s memory, allowing direct access at the cost of slightly increased latency the first time the file is accessed.  Since the mapping is shared directly from the host kernel&#39;s file cache, enabling DAX can improve performance even when the cache policy is \&quot;Never\&quot;.  The default value for this option is \&quot;false\&quot;.
+                              writeback=BOOL - Enables writeback caching (default: false).  This is only safe to do when the VM has exclusive access to the files in a directory.  Additionally, the server should have read permission for all files as the VM may issue read requests even for files that are opened write-only.
+                              dax=BOOL - Enables DAX support.  Enabling DAX can improve performance for frequently accessed files by mapping regions of the file directly into the VM&#39;s memory.  There is a cost of slightly increased latency the first time the file is accessed.  Since the mapping is shared directly from the host kernel&#39;s file cache, enabling DAX can improve performance even when the guest cache policy is \&quot;Never\&quot;.  The default value for this option is \&quot;false\&quot;.
                               posix_acl=BOOL - Indicates whether the shared directory supports POSIX ACLs.  This should only be enabled when the underlying file system supports POSIX ACLs.  The default value for this option is \&quot;true\&quot;.
 &quot;</span>),
           <span class="ident">Argument::value</span>(<span class="string">&quot;seccomp-policy-dir&quot;</span>, <span class="string">&quot;PATH&quot;</span>, <span class="string">&quot;Path to seccomp .policy files.&quot;</span>),
@@ -7636,8 +7643,15 @@ with a &#39;--backing_file&#39;.&quot;</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;direct&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">parse_direct_io_options_invalid</span>() {
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">parse_direct_io_options</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;/dev/mem@0y10&quot;</span>))
-            .<span class="ident">expect_err</span>(<span class="string">&quot;invalid digit found in string&quot;</span>);
+        <span class="macro">assert!</span>(<span class="ident">parse_direct_io_options</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;/dev/mem@0y10&quot;</span>))
+            .<span class="ident">unwrap_err</span>()
+            .<span class="ident">to_string</span>()
+            .<span class="ident">contains</span>(<span class="string">&quot;invalid base range value&quot;</span>));
+
+        <span class="macro">assert!</span>(<span class="ident">parse_direct_io_options</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;/dev/mem@&quot;</span>))
+            .<span class="ident">unwrap_err</span>()
+            .<span class="ident">to_string</span>()
+            .<span class="ident">contains</span>(<span class="string">&quot;invalid base range value&quot;</span>));
     }
 }
 </code></pre></div>

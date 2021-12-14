@@ -1438,7 +1438,7 @@
 <span class="kw">mod</span> <span class="ident">fdt</span>;
 
 <span class="kw">const</span> <span class="ident">SETUP_DTB</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">2</span>;
-<span class="kw">const</span> <span class="ident">X86_64_FDT_MAX_SIZE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0x200000</span>;
+<span class="kw">const</span> <span class="ident">X86_64_FDT_MAX_SIZE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0x20_0000</span>;
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_upper_case_globals</span>)]</span>
@@ -1811,7 +1811,7 @@
         <span class="kw">let</span> <span class="ident">high_mmio_start</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_high_mmio_base</span>(<span class="ident">guest_mem</span>);
         <span class="kw">let</span> <span class="ident">high_mmio_size</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_high_mmio_size</span>(<span class="ident">guest_mem</span>);
         <span class="ident">SystemAllocator::builder</span>()
-            .<span class="ident">add_io_addresses</span>(<span class="number">0xc000</span>, <span class="number">0x10000</span>)
+            .<span class="ident">add_io_addresses</span>(<span class="number">0xc000</span>, <span class="number">0x1_0000</span>)
             .<span class="ident">add_low_mmio_addresses</span>(<span class="ident">END_ADDR_BEFORE_32BITS</span>, <span class="ident">PCI_MMIO_SIZE</span>)
             .<span class="ident">add_high_mmio_addresses</span>(<span class="ident">high_mmio_start</span>, <span class="ident">high_mmio_size</span>)
             .<span class="ident">create_allocator</span>(<span class="ident">X86_64_IRQ_BASE</span>)
