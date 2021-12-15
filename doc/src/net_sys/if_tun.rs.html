@@ -597,6 +597,8 @@
 <span id="597">597</span>
 <span id="598">598</span>
 <span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -828,6 +830,7 @@
     <span class="kw">pub</span> <span class="ident">fds_bits</span>: [<span class="ident">::std::os::raw::c_ulong</span>; <span class="number">16usize</span>],
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
+<span class="attribute">#[<span class="ident">ignore</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout___kernel_fd_set</span>() {
     <span class="macro">assert_eq!</span>(
         <span class="ident">::std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">__kernel_fd_set</span><span class="op">&gt;</span>(),
@@ -1055,6 +1058,7 @@
     <span class="kw">pub</span> <span class="ident">filter</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">sock_filter</span>,
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
+<span class="attribute">#[<span class="ident">ignore</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_sock_fprog</span>() {
     <span class="macro">assert_eq!</span>(
         <span class="ident">::std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">sock_fprog</span><span class="op">&gt;</span>(),

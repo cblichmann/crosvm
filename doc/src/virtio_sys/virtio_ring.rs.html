@@ -483,6 +483,8 @@
 <span id="483">483</span>
 <span id="484">484</span>
 <span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -639,6 +641,7 @@
     <span class="kw">pub</span> <span class="ident">fds_bits</span>: [<span class="ident">::std::os::raw::c_ulong</span>; <span class="number">16usize</span>],
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
+<span class="attribute">#[<span class="ident">ignore</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout___kernel_fd_set</span>() {
     <span class="macro">assert_eq!</span>(
         <span class="ident">::std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">__kernel_fd_set</span><span class="op">&gt;</span>(),
@@ -911,6 +914,7 @@
     <span class="kw">pub</span> <span class="ident">used</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">vring_used</span>,
 }
 <span class="attribute">#[<span class="ident">test</span>]</span>
+<span class="attribute">#[<span class="ident">ignore</span>]</span>
 <span class="kw">fn</span> <span class="ident">bindgen_test_layout_vring</span>() {
     <span class="macro">assert_eq!</span>(
         <span class="ident">::std::mem::size_of</span>::<span class="op">&lt;</span><span class="ident">vring</span><span class="op">&gt;</span>(),
