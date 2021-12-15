@@ -323,19 +323,6 @@
 <span id="323">323</span>
 <span id="324">324</span>
 <span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
-<span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -347,6 +334,7 @@
 <span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">Arc</span>, <span class="ident">MutexGuard</span>};
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
 
+<span class="kw">use</span> <span class="ident">anyhow::Context</span>;
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">SysError</span>, <span class="ident">Event</span>, <span class="ident">WatchingEvents</span>};
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">thiserror::Error</span>;
@@ -384,7 +372,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">descriptor</span>: <span class="ident">TransferDescriptor</span>,
         <span class="ident">complete_event</span>: <span class="ident">Event</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+
     <span class="doccomment">/// Stop is called when trying to stop ring buffer controller. Returns true when stop must be</span>
     <span class="doccomment">/// performed asynchronously. This happens because the handler is handling some descriptor</span>
     <span class="doccomment">/// asynchronously, the stop callback of ring buffer controller must be called after the</span>
@@ -516,15 +505,9 @@
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">TransferDescriptorHandler</span> <span class="op">+</span> <span class="ident">Send</span>,
 {
-    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="comment">// `self.event` triggers ring buffer controller to run, the value read is not important.</span>
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">event</span>.<span class="ident">read</span>() {
-            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {}
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">error!</span>(<span class="string">&quot;cannot read from event: {}&quot;</span>, <span class="ident">e</span>);
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(());
-            }
-        }
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">event</span>.<span class="ident">read</span>().<span class="ident">context</span>(<span class="string">&quot;cannot read from event&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">lock</span>();
 
         <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">state</span> {
@@ -538,13 +521,10 @@
             <span class="ident">RingBufferState::Running</span> <span class="op">=</span><span class="op">&gt;</span> {}
         }
 
-        <span class="kw">let</span> <span class="ident">transfer_descriptor</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">lock_ring_buffer</span>().<span class="ident">dequeue_transfer_descriptor</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">error!</span>(<span class="string">&quot;cannot dequeue transfer descriptor: {}&quot;</span>, <span class="ident">e</span>);
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(());
-            }
-        };
+        <span class="kw">let</span> <span class="ident">transfer_descriptor</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">lock_ring_buffer</span>()
+            .<span class="ident">dequeue_transfer_descriptor</span>()
+            .<span class="ident">context</span>(<span class="string">&quot;cannot dequeue transfer descriptor&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">transfer_descriptor</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">transfer_descriptor</span> {
             <span class="prelude-val">Some</span>(<span class="ident">t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">t</span>,
@@ -555,13 +535,7 @@
             }
         };
 
-        <span class="kw">let</span> <span class="ident">event</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">event</span>.<span class="ident">try_clone</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">evt</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">evt</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">error!</span>(<span class="string">&quot;cannot clone event: {}&quot;</span>, <span class="ident">e</span>);
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(());
-            }
-        };
+        <span class="kw">let</span> <span class="ident">event</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">event</span>.<span class="ident">try_clone</span>().<span class="ident">context</span>(<span class="string">&quot;cannot clone event&quot;</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">handler</span>
             .<span class="ident">lock</span>()
             .<span class="ident">handle_transfer_descriptor</span>(<span class="ident">transfer_descriptor</span>, <span class="ident">event</span>)
@@ -583,7 +557,7 @@
             <span class="kw-2">&amp;</span><span class="self">self</span>,
             <span class="ident">descriptor</span>: <span class="ident">TransferDescriptor</span>,
             <span class="ident">complete_event</span>: <span class="ident">Event</span>,
-        ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
+        ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
             <span class="kw">for</span> <span class="ident">atrb</span> <span class="kw">in</span> <span class="ident">descriptor</span> {
                 <span class="macro">assert_eq!</span>(<span class="ident">atrb</span>.<span class="ident">trb</span>.<span class="ident">get_trb_type</span>().<span class="ident">unwrap</span>(), <span class="ident">TrbType::Normal</span>);
                 <span class="self">self</span>.<span class="ident">sender</span>.<span class="ident">send</span>(<span class="ident">atrb</span>.<span class="ident">trb</span>.<span class="ident">get_parameter</span>() <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">unwrap</span>();

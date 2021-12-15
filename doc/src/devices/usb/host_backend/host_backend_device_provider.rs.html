@@ -289,6 +289,10 @@
 <span id="289">289</span>
 <span id="290">290</span>
 <span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -302,6 +306,8 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::usb::xhci::xhci_backend_device_provider::XhciBackendDeviceProvider</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::utils::AsyncJobQueue</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::utils</span>::{<span class="ident">EventHandler</span>, <span class="ident">EventLoop</span>, <span class="ident">FailHandle</span>};
+
+<span class="kw">use</span> <span class="ident">anyhow::Context</span>;
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Descriptor</span>, <span class="ident">RawDescriptor</span>, <span class="ident">Tube</span>, <span class="ident">WatchingEvents</span>};
 <span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 <span class="kw">use</span> <span class="ident">std::mem</span>;
@@ -564,10 +570,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">EventHandler</span> <span class="kw">for</span> <span class="ident">ProviderInner</span> {
-    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">on_event_helper</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-            <span class="macro">error!</span>(<span class="string">&quot;host backend device provider failed: {}&quot;</span>, <span class="ident">e</span>);
-        })
+    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">on_event_helper</span>()
+            .<span class="ident">context</span>(<span class="string">&quot;host backend device provider failed&quot;</span>)
     }
 }
 
@@ -576,8 +581,11 @@
 }
 
 <span class="kw">impl</span> <span class="ident">EventHandler</span> <span class="kw">for</span> <span class="ident">UsbUtilEventHandler</span> {
-    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">device</span>.<span class="ident">lock</span>().<span class="ident">poll_transfers</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">_e</span><span class="op">|</span> ())
+    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">device</span>
+            .<span class="ident">lock</span>()
+            .<span class="ident">poll_transfers</span>()
+            .<span class="ident">context</span>(<span class="string">&quot;UsbUtilEventHandler poll_transfers failed&quot;</span>)
     }
 }
 </code></pre></div>

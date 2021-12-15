@@ -58,16 +58,14 @@
 <span id="58">58</span>
 <span id="59">59</span>
 <span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::interrupter::Interrupter</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::utils</span>::{<span class="ident">EventHandler</span>, <span class="ident">EventLoop</span>};
+
+<span class="kw">use</span> <span class="ident">anyhow::Context</span>;
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Event</span>, <span class="ident">WatchingEvents</span>};
 <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
@@ -101,15 +99,12 @@
         <span class="prelude-val">Some</span>(<span class="ident">handler</span>)
     }
 }
+
 <span class="kw">impl</span> <span class="ident">EventHandler</span> <span class="kw">for</span> <span class="ident">IntrResampleHandler</span> {
-    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">resample_evt</span>.<span class="ident">read</span>() {
-            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {}
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">error!</span>(<span class="string">&quot;cannot read resample evt: {}&quot;</span>, <span class="ident">e</span>);
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(());
-            }
-        }
+    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">resample_evt</span>
+            .<span class="ident">read</span>()
+            .<span class="ident">context</span>(<span class="string">&quot;cannot read resample evt&quot;</span>)<span class="question-mark">?</span>;
         <span class="macro">usb_debug!</span>(<span class="string">&quot;resample triggered&quot;</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">interrupter</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">interrupter</span>.<span class="ident">lock</span>();
         <span class="kw">if</span> <span class="op">!</span><span class="ident">interrupter</span>.<span class="ident">event_ring_is_empty</span>() {
@@ -118,10 +113,7 @@
             <span class="comment">// component is sending interrupt at the same time.</span>
             <span class="comment">// This might result in one more interrupt than we want. It&#39;s handled by</span>
             <span class="comment">// kernel correctly.</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">interrupter</span>.<span class="ident">interrupt</span>() {
-                <span class="macro">error!</span>(<span class="string">&quot;cannot send interrupt: {}&quot;</span>, <span class="ident">e</span>);
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(());
-            }
+            <span class="ident">interrupter</span>.<span class="ident">interrupt</span>().<span class="ident">context</span>(<span class="string">&quot;cannot send interrupt&quot;</span>)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }

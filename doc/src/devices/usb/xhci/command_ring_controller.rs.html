@@ -404,6 +404,8 @@
 };
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::xhci_regs</span>::{<span class="ident">valid_slot_id</span>, <span class="ident">MAX_SLOTS</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::utils::EventLoop</span>;
+
+<span class="kw">use</span> <span class="ident">anyhow::Context</span>;
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">warn</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">SysError</span>, <span class="ident">Event</span>};
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
@@ -720,7 +722,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">descriptor</span>: <span class="ident">TransferDescriptor</span>,
         <span class="ident">complete_event</span>: <span class="ident">Event</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="comment">// Command descriptor always consist of a single TRB.</span>
         <span class="macro">assert_eq!</span>(<span class="ident">descriptor</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="kw">let</span> <span class="ident">atrb</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">descriptor</span>[<span class="number">0</span>];
@@ -771,9 +773,7 @@
                 }
             }
         };
-        <span class="ident">command_result</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-            <span class="macro">error!</span>(<span class="string">&quot;command failed: {}&quot;</span>, <span class="ident">e</span>);
-        })
+        <span class="ident">command_result</span>.<span class="ident">context</span>(<span class="string">&quot;command ring TRB failed&quot;</span>)
     }
 }
 </code></pre></div>

@@ -86,6 +86,8 @@
 <span id="86">86</span>
 <span id="87">87</span>
 <span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -94,7 +96,9 @@
     <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">RingBufferControllerError</span>, <span class="ident">RingBufferController</span>, <span class="ident">TransferDescriptorHandler</span>,
 };
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::utils::EventLoop</span>;
-<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Event</span>};
+
+<span class="kw">use</span> <span class="ident">anyhow::Context</span>;
+<span class="kw">use</span> <span class="ident">base::Event</span>;
 <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
 <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
@@ -124,7 +128,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">descriptor</span>: <span class="ident">TransferDescriptor</span>,
         <span class="ident">completion_event</span>: <span class="ident">Event</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">xhci_transfer</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">transfer_manager</span>.<span class="ident">create_transfer</span>(
             <span class="self">self</span>.<span class="ident">mem</span>.<span class="ident">clone</span>(),
             <span class="self">self</span>.<span class="ident">port</span>.<span class="ident">clone</span>(),
@@ -134,9 +138,9 @@
             <span class="ident">descriptor</span>,
             <span class="ident">completion_event</span>,
         );
-        <span class="ident">xhci_transfer</span>.<span class="ident">send_to_backend_if_valid</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-            <span class="macro">error!</span>(<span class="string">&quot;failed to send transfer to backend: {}&quot;</span>, <span class="ident">e</span>);
-        })
+        <span class="ident">xhci_transfer</span>
+            .<span class="ident">send_to_backend_if_valid</span>()
+            .<span class="ident">context</span>(<span class="string">&quot;failed to send transfer to backend&quot;</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">stop</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {

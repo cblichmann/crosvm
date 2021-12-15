@@ -250,6 +250,7 @@
 <span id="250">250</span>
 <span id="251">251</span>
 <span id="252">252</span>
+<span id="253">253</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -300,7 +301,7 @@
 
 <span class="doccomment">/// Interface for event handler.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">EventHandler</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
-    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">EventLoop</span> {
@@ -351,39 +352,40 @@
                         }
                     };
                     <span class="kw">for</span> <span class="ident">event</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">events</span> {
-                        <span class="kw">if</span> <span class="ident">event</span>.<span class="ident">token</span>().<span class="ident">as_raw_descriptor</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">stop_evt</span>.<span class="ident">as_raw_descriptor</span>() {
+                        <span class="kw">let</span> <span class="ident">fd</span> <span class="op">=</span> <span class="ident">event</span>.<span class="ident">token</span>().<span class="ident">as_raw_descriptor</span>();
+                        <span class="kw">if</span> <span class="ident">fd</span> <span class="op">=</span><span class="op">=</span> <span class="ident">stop_evt</span>.<span class="ident">as_raw_descriptor</span>() {
                             <span class="kw">return</span>;
+                        }
+
+                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">locked</span> <span class="op">=</span> <span class="ident">fd_callbacks</span>.<span class="ident">lock</span>();
+                        <span class="kw">let</span> <span class="ident">weak_handler</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">locked</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">fd</span>) {
+                            <span class="prelude-val">Some</span>(<span class="ident">cb</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cb</span>.<span class="ident">clone</span>(),
+                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                                <span class="macro">warn!</span>(<span class="string">&quot;callback for fd {} already removed&quot;</span>, <span class="ident">fd</span>);
+                                <span class="kw">continue</span>;
+                            }
+                        };
+
+                        <span class="comment">// If the file descriptor is hung up, remove it after calling the handler</span>
+                        <span class="comment">// one final time.</span>
+                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">remove</span> <span class="op">=</span> <span class="ident">event</span>.<span class="ident">hungup</span>();
+
+                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">handler</span>) <span class="op">=</span> <span class="ident">weak_handler</span>.<span class="ident">upgrade</span>() {
+                            <span class="comment">// Drop lock before triggering the event.</span>
+                            <span class="ident">drop</span>(<span class="ident">locked</span>);
+                            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">handler</span>.<span class="ident">on_event</span>() {
+                                <span class="macro">error!</span>(<span class="string">&quot;removing event handler due to error: {:#}&quot;</span>, <span class="ident">e</span>);
+                                <span class="ident">remove</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                            }
+                            <span class="ident">locked</span> <span class="op">=</span> <span class="ident">fd_callbacks</span>.<span class="ident">lock</span>();
                         } <span class="kw">else</span> {
-                            <span class="kw">let</span> <span class="ident">fd</span> <span class="op">=</span> <span class="ident">event</span>.<span class="ident">token</span>().<span class="ident">as_raw_descriptor</span>();
-                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">locked</span> <span class="op">=</span> <span class="ident">fd_callbacks</span>.<span class="ident">lock</span>();
-                            <span class="kw">let</span> <span class="ident">weak_handler</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">locked</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">fd</span>) {
-                                <span class="prelude-val">Some</span>(<span class="ident">cb</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cb</span>.<span class="ident">clone</span>(),
-                                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                                    <span class="macro">warn!</span>(<span class="string">&quot;callback for fd {} already removed&quot;</span>, <span class="ident">fd</span>);
-                                    <span class="kw">continue</span>;
-                                }
-                            };
-                            <span class="kw">match</span> <span class="ident">weak_handler</span>.<span class="ident">upgrade</span>() {
-                                <span class="prelude-val">Some</span>(<span class="ident">handler</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                                    <span class="comment">// Drop lock before triggering the event.</span>
-                                    <span class="ident">drop</span>(<span class="ident">locked</span>);
-                                    <span class="kw">match</span> <span class="ident">handler</span>.<span class="ident">on_event</span>() {
-                                        <span class="prelude-val">Ok</span>(()) <span class="op">=</span><span class="op">&gt;</span> {}
-                                        <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                                            <span class="macro">error!</span>(<span class="string">&quot;event loop stopping due to handle event error&quot;</span>);
-                                            <span class="ident">fail_handle</span>.<span class="ident">fail</span>();
-                                            <span class="kw">return</span>;
-                                        }
-                                    };
-                                }
-                                <span class="comment">// If the handler is already gone, we remove the fd.</span>
-                                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">poll_ctx</span>.<span class="ident">delete</span>(<span class="kw-2">&amp;</span><span class="ident">Descriptor</span>(<span class="ident">fd</span>));
-                                    <span class="kw">if</span> <span class="ident">locked</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">fd</span>).<span class="ident">is_none</span>() {
-                                        <span class="macro">error!</span>(<span class="string">&quot;fail to remove handler for file descriptor {}&quot;</span>, <span class="ident">fd</span>);
-                                    }
-                                }
-                            };
+                            <span class="comment">// If the handler is already gone, we remove the fd.</span>
+                            <span class="ident">remove</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                        }
+
+                        <span class="kw">if</span> <span class="ident">remove</span> {
+                            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">poll_ctx</span>.<span class="ident">delete</span>(<span class="kw-2">&amp;</span><span class="ident">event</span>.<span class="ident">token</span>());
+                            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">locked</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">fd</span>);
                         }
                     }
                 }
@@ -460,7 +462,7 @@
     }
 
     <span class="kw">impl</span> <span class="ident">EventHandler</span> <span class="kw">for</span> <span class="ident">EventLoopTestHandler</span> {
-        <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">on_event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
             <span class="self">self</span>.<span class="ident">evt</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
             <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">val</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>() <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             <span class="self">self</span>.<span class="ident">cvar</span>.<span class="ident">notify_one</span>();
