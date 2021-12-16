@@ -3826,6 +3826,15 @@
 <span id="3826">3826</span>
 <span id="3827">3827</span>
 <span id="3828">3828</span>
+<span id="3829">3829</span>
+<span id="3830">3830</span>
+<span id="3831">3831</span>
+<span id="3832">3832</span>
+<span id="3833">3833</span>
+<span id="3834">3834</span>
+<span id="3835">3835</span>
+<span id="3836">3836</span>
+<span id="3837">3837</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -6039,6 +6048,15 @@
         ));
     }
     <span class="kw">if</span> <span class="ident">cfg</span>.<span class="ident">host_cpu_topology</span> {
+        <span class="kw">if</span> <span class="ident">cfg</span>.<span class="ident">no_smt</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::ExpectedArgument</span>(
+                <span class="string">&quot;`host-cpu-topology` cannot be set at the same time as `no_smt`, since \
+                the smt of the Guest is the same as that of the Host when \
+                `host-cpu-topology` is set.&quot;</span>
+                    .<span class="ident">to_owned</span>(),
+            ));
+        }
+
         <span class="comment">// Safe because we pass a flag for this call and the host supports this system call</span>
         <span class="kw">let</span> <span class="ident">pcpu_count</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::sysconf</span>(<span class="ident">libc::_SC_NPROCESSORS_CONF</span>) } <span class="kw">as</span> <span class="ident">usize</span>;
         <span class="kw">if</span> <span class="ident">cfg</span>.<span class="ident">vcpu_count</span>.<span class="ident">is_some</span>() {
