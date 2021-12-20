@@ -4549,7 +4549,7 @@
 
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;libvda&quot;</span>)]</span>
             <span class="comment">// Render node for libvda.</span>
-            <span class="kw">if</span> <span class="ident">backend</span> <span class="op">=</span><span class="op">=</span> <span class="ident">VideoBackendType::Libvda</span> {
+            <span class="kw">if</span> <span class="ident">backend</span> <span class="op">=</span><span class="op">=</span> <span class="ident">VideoBackendType::Libvda</span> <span class="op">|</span><span class="op">|</span> <span class="ident">backend</span> <span class="op">=</span><span class="op">=</span> <span class="ident">VideoBackendType::LibvdaVD</span> {
                 <span class="comment">// follow the implementation at:</span>
                 <span class="comment">// https://source.corp.google.com/chromeos_public/src/platform/minigbm/cros_gralloc/cros_gralloc_driver.cc;l=90;bpv=0;cl=c06cc9cccb3cf3c7f9d2aec706c27c34cd6162a0</span>
                 <span class="kw">const</span> <span class="ident">DRM_NUM_NODES</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">63</span>;
