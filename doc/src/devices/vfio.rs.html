@@ -1364,7 +1364,7 @@
         <span class="ident"><span class="self">Self</span>::new_inner</span>(<span class="bool-val">true</span> <span class="comment">/* host_iommu */</span>)
     }
 
-    <span class="doccomment">/// Open VfioContainer with IOMMU enabled.</span>
+    <span class="doccomment">/// Open VfioContainer with IOMMU disabled.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_noiommu</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="ident"><span class="self">Self</span>::new_inner</span>(<span class="bool-val">false</span> <span class="comment">/* host_iommu */</span>)
     }
