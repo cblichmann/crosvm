@@ -894,6 +894,27 @@
 <span id="894">894</span>
 <span id="895">895</span>
 <span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -913,7 +934,7 @@
 <span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
 <span class="kw">use</span> <span class="ident">std::thread</span>;
 
-<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">Event</span>, <span class="ident">EventType</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>, <span class="ident">WaitContext</span>};
+<span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Event</span>, <span class="ident">EventType</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>, <span class="ident">WaitContext</span>};
 <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">DataInit</span>, <span class="ident">Le32</span>};
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">recv</span>, <span class="ident">MSG_DONTWAIT</span>, <span class="ident">MSG_PEEK</span>};
 <span class="kw">use</span> <span class="ident">resources::Alloc</span>;
@@ -1637,7 +1658,13 @@
 
 <span class="kw">impl</span> <span class="ident">VirtioDevice</span> <span class="kw">for</span> <span class="ident">VirtioVhostUser</span> {
     <span class="kw">fn</span> <span class="ident">keep_rds</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">RawDescriptor</span><span class="op">&gt;</span> {
-        <span class="macro">vec!</span>[]
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rds</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kill_evt</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">kill_evt</span> {
+            <span class="ident">rds</span>.<span class="ident">push</span>(<span class="ident">kill_evt</span>.<span class="ident">as_raw_descriptor</span>());
+        }
+
+        <span class="ident">rds</span>
     }
 
     <span class="kw">fn</span> <span class="ident">device_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
@@ -1786,8 +1813,23 @@
     }
 
     <span class="kw">fn</span> <span class="ident">reset</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="comment">// TODO</span>
-        <span class="bool-val">true</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kill_evt</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">kill_evt</span>.<span class="ident">take</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">kill_evt</span>.<span class="ident">write</span>(<span class="number">1</span>) {
+                <span class="macro">error!</span>(<span class="string">&quot;failed to notify the kill event: {}&quot;</span>, <span class="ident">e</span>);
+                <span class="kw">return</span> <span class="bool-val">false</span>;
+            }
+        }
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">worker_thread</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">worker_thread</span>.<span class="ident">take</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">worker_thread</span>.<span class="ident">join</span>() {
+                <span class="macro">error!</span>(<span class="string">&quot;failed to get back resources: {:?}&quot;</span>, <span class="ident">e</span>);
+                <span class="kw">return</span> <span class="bool-val">false</span>;
+            }
+        }
+
+        <span class="comment">// TODO(abhishekbh): Disconnect from sibling and reset</span>
+        <span class="comment">// `sibling_connected`.</span>
+        <span class="bool-val">false</span>
     }
 }
 </code></pre></div>
