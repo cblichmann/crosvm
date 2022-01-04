@@ -1228,6 +1228,7 @@
 <span id="1228">1228</span>
 <span id="1229">1229</span>
 <span id="1230">1230</span>
+<span id="1231">1231</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -1833,6 +1834,7 @@
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="ident">name_str</span>);
         <span class="kw">let</span> <span class="ident">dev</span> <span class="op">=</span> <span class="ident">group</span>.<span class="ident">lock</span>().<span class="ident">get_device</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">regions</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::get_regions</span>(<span class="kw-2">&amp;</span><span class="ident">dev</span>)<span class="question-mark">?</span>;
+        <span class="ident">group</span>.<span class="ident">lock</span>().<span class="ident">add_device_num</span>();
         <span class="kw">let</span> <span class="ident">group_descriptor</span> <span class="op">=</span> <span class="ident">group</span>.<span class="ident">lock</span>().<span class="ident">as_raw_descriptor</span>();
 
         <span class="prelude-val">Ok</span>(<span class="ident">VfioDevice</span> {
