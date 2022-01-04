@@ -238,10 +238,10 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::virtio_pci_device</span>::<span class="kw-2">*</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::wl</span>::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">std::cmp</span>;
 <span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
 
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">virtio_sys::virtio_ring::VIRTIO_RING_F_EVENT_IDX</span>;
 
 <span class="kw">const</span> <span class="ident">DEVICE_RESET</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0</span>;
@@ -350,7 +350,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">base_features</span>(<span class="ident">protected_vm</span>: <span class="ident">ProtectionType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">features</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">VIRTIO_F_VERSION_1</span> <span class="op">|</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">VIRTIO_RING_F_EVENT_IDX</span>;
 
-    <span class="kw">if</span> <span class="ident">protected_vm</span> <span class="op">=</span><span class="op">=</span> <span class="ident">ProtectionType::Protected</span> {
+    <span class="kw">if</span> <span class="ident">protected_vm</span> <span class="op">!</span><span class="op">=</span> <span class="ident">ProtectionType::Unprotected</span> {
         <span class="ident">features</span> <span class="op">|</span><span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">VIRTIO_F_ACCESS_PLATFORM</span>;
     }
 

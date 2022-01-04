@@ -363,7 +363,6 @@
 <span id="363">363</span>
 <span id="364">364</span>
 <span id="365">365</span>
-<span id="366">366</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -382,11 +381,10 @@
     <span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">read_raw_stdin</span>, <span class="ident">safe_descriptor_from_path</span>, <span class="ident">syslog</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Event</span>,
     <span class="ident">RawDescriptor</span>,
 };
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">minijail::Minijail</span>;
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">thiserror::Error</span> <span class="kw">as</span> <span class="ident">ThisError</span>;
-
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ProtectionType</span>;
 
 <span class="attribute">#[<span class="ident">sorted</span>]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">ThisError</span>, <span class="ident">Debug</span>)]</span>

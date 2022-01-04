@@ -3837,6 +3837,11 @@
 <span id="3837">3837</span>
 <span id="3838">3838</span>
 <span id="3839">3839</span>
+<span id="3840">3840</span>
+<span id="3841">3841</span>
+<span id="3842">3842</span>
+<span id="3843">3843</span>
+<span id="3844">3844</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -3888,12 +3893,13 @@
 <span class="kw">use</span> <span class="ident">devices::BusRange</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;audio&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">devices</span>::{<span class="ident">Ac97Backend</span>, <span class="ident">Ac97Parameters</span>};
-<span class="kw">use</span> <span class="ident">devices</span>::{<span class="ident">PciAddress</span>, <span class="ident">PciClassCode</span>, <span class="ident">ProtectionType</span>, <span class="ident">StubPciParameters</span>};
+<span class="kw">use</span> <span class="ident">devices</span>::{<span class="ident">PciAddress</span>, <span class="ident">PciClassCode</span>, <span class="ident">StubPciParameters</span>};
 <span class="kw">use</span> <span class="ident">disk</span>::{<span class="self">self</span>, <span class="ident">QcowFile</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;composite-disk&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">disk</span>::{
     <span class="ident">create_composite_disk</span>, <span class="ident">create_disk_file</span>, <span class="ident">create_zero_filler</span>, <span class="ident">ImagePartitionType</span>, <span class="ident">PartitionInfo</span>,
 };
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">vm_control</span>::{
     <span class="ident">client</span>::{
         <span class="ident">do_modify_battery</span>, <span class="ident">do_usb_attach</span>, <span class="ident">do_usb_detach</span>, <span class="ident">do_usb_list</span>, <span class="ident">handle_request</span>, <span class="ident">vms_request</span>,
@@ -5823,6 +5829,9 @@
         <span class="string">&quot;protected-vm&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
             <span class="ident">cfg</span>.<span class="ident">protected_vm</span> <span class="op">=</span> <span class="ident">ProtectionType::Protected</span>;
         }
+        <span class="string">&quot;protected-vm-without-firmware&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">cfg</span>.<span class="ident">protected_vm</span> <span class="op">=</span> <span class="ident">ProtectionType::ProtectedWithoutFirmware</span>;
+        }
         <span class="string">&quot;battery&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">params</span> <span class="op">=</span> <span class="ident">parse_battery_options</span>(<span class="ident">value</span>)<span class="question-mark">?</span>;
             <span class="ident">cfg</span>.<span class="ident">battery_type</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">params</span>);
@@ -6289,8 +6298,9 @@ iommu=on|off - indicates whether to enable virtio IOMMU for this device&quot;</s
                               Possible backend values: libvda&quot;</span>),
           <span class="ident">Argument::value</span>(<span class="string">&quot;acpi-table&quot;</span>, <span class="string">&quot;PATH&quot;</span>, <span class="string">&quot;Path to user provided ACPI table&quot;</span>),
           <span class="ident">Argument::flag</span>(<span class="string">&quot;protected-vm&quot;</span>, <span class="string">&quot;(EXPERIMENTAL) prevent host access to guest memory&quot;</span>),
+          <span class="ident">Argument::flag</span>(<span class="string">&quot;protected-vm-without-firmware&quot;</span>, <span class="string">&quot;(EXPERIMENTAL) prevent host access to guest memory, but don&#39;t use protected VM firmware&quot;</span>),
           <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>)]</span>
-          <span class="ident">Argument::value</span>(<span class="string">&quot;swiotlb&quot;</span>, <span class="string">&quot;N&quot;</span>, <span class="string">&quot;(EXPERIMENTAL) Size of virtio swiotlb buffer in MiB (default: 64 if `--protected-vm` is present).&quot;</span>),
+          <span class="ident">Argument::value</span>(<span class="string">&quot;swiotlb&quot;</span>, <span class="string">&quot;N&quot;</span>, <span class="string">&quot;(EXPERIMENTAL) Size of virtio swiotlb buffer in MiB (default: 64 if `--protected-vm` or `--protected-vm-without-firmware` is present).&quot;</span>),
           <span class="ident">Argument::flag_or_value</span>(<span class="string">&quot;battery&quot;</span>,
                                   <span class="string">&quot;[type=TYPE]&quot;</span>,
                                   <span class="string">&quot;Comma separated key=value pairs for setting up battery device

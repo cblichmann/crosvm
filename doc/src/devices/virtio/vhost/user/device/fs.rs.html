@@ -384,6 +384,7 @@
 <span class="kw">use</span> <span class="ident">fuse::Server</span>;
 <span class="kw">use</span> <span class="ident">futures::future</span>::{<span class="ident">AbortHandle</span>, <span class="ident">Abortable</span>};
 <span class="kw">use</span> <span class="ident">getopts::Options</span>;
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">minijail</span>::{<span class="self">self</span>, <span class="ident">Minijail</span>};
 <span class="kw">use</span> <span class="ident">once_cell::sync::OnceCell</span>;
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
@@ -397,7 +398,6 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::virtio::vhost::user::device::handler</span>::{
     <span class="ident">CallEvent</span>, <span class="ident">DeviceRequestHandler</span>, <span class="ident">VhostUserBackend</span>,
 };
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ProtectionType</span>;
 
 <span class="kw">static</span> <span class="ident">FS_EXECUTOR</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">Executor</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OnceCell::new</span>();
 

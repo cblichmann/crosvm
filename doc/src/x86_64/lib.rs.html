@@ -1493,9 +1493,9 @@
 <span class="kw">use</span> <span class="ident">devices::serial_device</span>::{<span class="ident">SerialHardware</span>, <span class="ident">SerialParameters</span>};
 <span class="kw">use</span> <span class="ident">devices</span>::{
     <span class="ident">BusDeviceObj</span>, <span class="ident">BusResumeDevice</span>, <span class="ident">IrqChip</span>, <span class="ident">IrqChipX86_64</span>, <span class="ident">PciAddress</span>, <span class="ident">PciConfigIo</span>, <span class="ident">PciConfigMmio</span>,
-    <span class="ident">PciDevice</span>, <span class="ident">ProtectionType</span>,
+    <span class="ident">PciDevice</span>,
 };
-<span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">HypervisorX86_64</span>, <span class="ident">VcpuX86_64</span>, <span class="ident">VmX86_64</span>};
+<span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">HypervisorX86_64</span>, <span class="ident">ProtectionType</span>, <span class="ident">VcpuX86_64</span>, <span class="ident">VmX86_64</span>};
 <span class="kw">use</span> <span class="ident">minijail::Minijail</span>;
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">resources::SystemAllocator</span>;

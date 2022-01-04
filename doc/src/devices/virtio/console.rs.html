@@ -537,6 +537,7 @@
 <span id="537">537</span>
 <span id="538">538</span>
 <span id="539">539</span>
+<span id="540">540</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -550,6 +551,7 @@
 
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Event</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>, <span class="ident">WaitContext</span>};
 <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">DataInit</span>, <span class="ident">Le16</span>, <span class="ident">Le32</span>};
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
 <span class="kw">use</span> <span class="ident">thiserror::Error</span> <span class="kw">as</span> <span class="ident">ThisError</span>;
@@ -559,7 +561,7 @@
     <span class="ident">base_features</span>, <span class="ident">copy_config</span>, <span class="ident">Interrupt</span>, <span class="ident">Queue</span>, <span class="ident">Reader</span>, <span class="ident">SignalableInterrupt</span>, <span class="ident">VirtioDevice</span>,
     <span class="ident">Writer</span>, <span class="ident">TYPE_CONSOLE</span>,
 };
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">ProtectionType</span>, <span class="ident">SerialDevice</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::SerialDevice</span>;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">QUEUE_SIZE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">256</span>;
 

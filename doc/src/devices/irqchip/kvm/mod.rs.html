@@ -229,6 +229,7 @@
 <span id="229">229</span>
 <span id="230">230</span>
 <span id="231">231</span>
+<span id="232">232</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -411,9 +412,8 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-
     <span class="kw">use</span> <span class="ident">hypervisor::kvm</span>::{<span class="ident">Kvm</span>, <span class="ident">KvmVm</span>};
-    <span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">MPState</span>, <span class="ident">Vm</span>};
+    <span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">MPState</span>, <span class="ident">ProtectionType</span>, <span class="ident">Vm</span>};
     <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
 
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::irqchip</span>::{<span class="ident">IrqChip</span>, <span class="ident">KvmKernelIrqChip</span>};
@@ -427,7 +427,8 @@
     <span class="kw">fn</span> <span class="ident">create_kvm_kernel_irqchip</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">expect</span>(<span class="string">&quot;failed to instantiate Kvm&quot;</span>);
         <span class="kw">let</span> <span class="ident">mem</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">mem</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to instantiate vm&quot;</span>);
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span>
+            <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">mem</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to instantiate vm&quot;</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chip</span> <span class="op">=</span> <span class="ident">KvmKernelIrqChip::new</span>(<span class="ident">vm</span>.<span class="ident">try_clone</span>().<span class="ident">expect</span>(<span class="string">&quot;failed to clone vm&quot;</span>), <span class="number">1</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;failed to instantiate KvmKernelIrqChip&quot;</span>);
@@ -441,7 +442,8 @@
     <span class="kw">fn</span> <span class="ident">mp_state</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">expect</span>(<span class="string">&quot;failed to instantiate Kvm&quot;</span>);
         <span class="kw">let</span> <span class="ident">mem</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">mem</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to instantiate vm&quot;</span>);
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span>
+            <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">mem</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to instantiate vm&quot;</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chip</span> <span class="op">=</span> <span class="ident">KvmKernelIrqChip::new</span>(<span class="ident">vm</span>.<span class="ident">try_clone</span>().<span class="ident">expect</span>(<span class="string">&quot;failed to clone vm&quot;</span>), <span class="number">1</span>)
             .<span class="ident">expect</span>(<span class="string">&quot;failed to instantiate KvmKernelIrqChip&quot;</span>);

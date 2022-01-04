@@ -463,6 +463,7 @@
 <span id="463">463</span>
 <span id="464">464</span>
 <span id="465">465</span>
+<span id="466">466</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -475,9 +476,10 @@
 <span class="kw">use</span> <span class="ident">std::thread</span>::{<span class="self">self</span>};
 
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">Event</span>, <span class="ident">RawDescriptor</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bus::BusAccessInfo</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">BusDevice</span>, <span class="ident">ProtectionType</span>, <span class="ident">SerialDevice</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">BusDevice</span>, <span class="ident">SerialDevice</span>};
 
 <span class="kw">const</span> <span class="ident">LOOP_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0x40</span>;
 

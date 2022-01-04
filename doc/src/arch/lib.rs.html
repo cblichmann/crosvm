@@ -809,10 +809,10 @@
 <span class="kw">use</span> <span class="ident">devices::virtio::VirtioDevice</span>;
 <span class="kw">use</span> <span class="ident">devices</span>::{
     <span class="ident">Bus</span>, <span class="ident">BusDevice</span>, <span class="ident">BusDeviceObj</span>, <span class="ident">BusError</span>, <span class="ident">BusResumeDevice</span>, <span class="ident">HotPlugBus</span>, <span class="ident">IrqChip</span>, <span class="ident">PciAddress</span>,
-    <span class="ident">PciDevice</span>, <span class="ident">PciDeviceError</span>, <span class="ident">PciInterruptPin</span>, <span class="ident">PciRoot</span>, <span class="ident">ProtectionType</span>, <span class="ident">ProxyDevice</span>,
-    <span class="ident">SerialHardware</span>, <span class="ident">SerialParameters</span>, <span class="ident">VfioPlatformDevice</span>,
+    <span class="ident">PciDevice</span>, <span class="ident">PciDeviceError</span>, <span class="ident">PciInterruptPin</span>, <span class="ident">PciRoot</span>, <span class="ident">ProxyDevice</span>, <span class="ident">SerialHardware</span>,
+    <span class="ident">SerialParameters</span>, <span class="ident">VfioPlatformDevice</span>,
 };
-<span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">IoEventAddress</span>, <span class="ident">Vm</span>};
+<span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">IoEventAddress</span>, <span class="ident">ProtectionType</span>, <span class="ident">Vm</span>};
 <span class="kw">use</span> <span class="ident">minijail::Minijail</span>;
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">resources</span>::{<span class="ident">MmioType</span>, <span class="ident">SystemAllocator</span>};

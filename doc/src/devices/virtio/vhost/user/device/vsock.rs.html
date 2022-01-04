@@ -498,8 +498,6 @@
 <span id="498">498</span>
 <span id="499">499</span>
 <span id="500">500</span>
-<span id="501">501</span>
-<span id="502">502</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -524,6 +522,7 @@
 <span class="kw">use</span> <span class="ident">cros_async</span>::{<span class="ident">AsyncWrapper</span>, <span class="ident">Executor</span>};
 <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">DataInit</span>, <span class="ident">Le64</span>};
 <span class="kw">use</span> <span class="ident">getopts::Options</span>;
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">once_cell::sync::OnceCell</span>;
 <span class="kw">use</span> <span class="ident">vhost</span>::{<span class="self">self</span>, <span class="ident">Vhost</span>, <span class="ident">Vsock</span>};
 <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
@@ -536,16 +535,13 @@
     <span class="ident">Error</span>, <span class="prelude-ty">Result</span>, <span class="ident">SlaveReqHandler</span>, <span class="ident">VhostUserSlaveReqHandlerMut</span>,
 };
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">virtio</span>::{
-        <span class="ident">base_features</span>,
-        <span class="ident">vhost</span>::{
-            <span class="ident">user::device::handler</span>::{<span class="ident">create_guest_memory</span>, <span class="ident">vmm_va_to_gpa</span>, <span class="ident">MappingInfo</span>},
-            <span class="ident">vsock</span>,
-        },
-        <span class="ident">Queue</span>,
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::virtio</span>::{
+    <span class="ident">base_features</span>,
+    <span class="ident">vhost</span>::{
+        <span class="ident">user::device::handler</span>::{<span class="ident">create_guest_memory</span>, <span class="ident">vmm_va_to_gpa</span>, <span class="ident">MappingInfo</span>},
+        <span class="ident">vsock</span>,
     },
-    <span class="ident">ProtectionType</span>,
+    <span class="ident">Queue</span>,
 };
 
 <span class="kw">static</span> <span class="ident">VSOCK_EXECUTOR</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">Executor</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OnceCell::new</span>();

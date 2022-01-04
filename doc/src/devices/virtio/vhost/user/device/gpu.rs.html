@@ -523,9 +523,6 @@
 <span id="523">523</span>
 <span id="524">524</span>
 <span id="525">525</span>
-<span id="526">526</span>
-<span id="527">527</span>
-<span id="528">528</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -545,19 +542,16 @@
     <span class="ident">pin_mut</span>,
 };
 <span class="kw">use</span> <span class="ident">getopts::Options</span>;
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">once_cell::sync::OnceCell</span>;
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
 <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
 <span class="kw">use</span> <span class="ident">vmm_vhost::message</span>::{<span class="ident">VhostUserProtocolFeatures</span>, <span class="ident">VhostUserVirtioFeatures</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">virtio</span>::{
-        <span class="self">self</span>, <span class="ident">gpu</span>,
-        <span class="ident">vhost::user::device::handler</span>::{<span class="ident">CallEvent</span>, <span class="ident">DeviceRequestHandler</span>, <span class="ident">VhostUserBackend</span>},
-        <span class="ident">DescriptorChain</span>, <span class="ident">Gpu</span>, <span class="ident">GpuDisplayParameters</span>, <span class="ident">GpuParameters</span>, <span class="ident">Queue</span>, <span class="ident">QueueReader</span>,
-        <span class="ident">VirtioDevice</span>,
-    },
-    <span class="ident">ProtectionType</span>,
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::virtio</span>::{
+    <span class="self">self</span>, <span class="ident">gpu</span>,
+    <span class="ident">vhost::user::device::handler</span>::{<span class="ident">CallEvent</span>, <span class="ident">DeviceRequestHandler</span>, <span class="ident">VhostUserBackend</span>},
+    <span class="ident">DescriptorChain</span>, <span class="ident">Gpu</span>, <span class="ident">GpuDisplayParameters</span>, <span class="ident">GpuParameters</span>, <span class="ident">Queue</span>, <span class="ident">QueueReader</span>, <span class="ident">VirtioDevice</span>,
 };
 
 <span class="kw">static</span> <span class="ident">GPU_EXECUTOR</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">Executor</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OnceCell::new</span>();

@@ -391,6 +391,7 @@
 <span class="kw">use</span> <span class="ident">cros_async</span>::{<span class="ident">AsyncWrapper</span>, <span class="ident">EventAsync</span>, <span class="ident">Executor</span>, <span class="ident">IoSourceExt</span>};
 <span class="kw">use</span> <span class="ident">futures::future</span>::{<span class="ident">AbortHandle</span>, <span class="ident">Abortable</span>};
 <span class="kw">use</span> <span class="ident">getopts::Options</span>;
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">once_cell::sync::OnceCell</span>;
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
 <span class="kw">use</span> <span class="ident">vm_memory::GuestMemory</span>;
@@ -400,7 +401,6 @@
     <span class="ident">CallEvent</span>, <span class="ident">DeviceRequestHandler</span>, <span class="ident">VhostUserBackend</span>,
 };
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::virtio</span>::{<span class="ident">base_features</span>, <span class="ident">wl</span>, <span class="ident">Queue</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ProtectionType</span>;
 
 <span class="kw">static</span> <span class="ident">WL_EXECUTOR</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">Executor</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OnceCell::new</span>();
 

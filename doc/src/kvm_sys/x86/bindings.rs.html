@@ -10959,6 +10959,7 @@
 <span id="10959">10959</span>
 <span id="10960">10960</span>
 <span id="10961">10961</span>
+<span id="10962">10962</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -11358,7 +11359,8 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_VM_MIPS_VZ</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_VM_MIPS_TE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">2</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_S390_SIE_PAGE_OFFSET</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_VM_TYPE_ARM_IPA_SIZE_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">255</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_VM_TYPE_ARM_IPA_SIZE_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0xff</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_VM_TYPE_ARM_PROTECTED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x100</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_CAP_IRQCHIP</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_CAP_HLT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_CAP_MMU_SHADOW_CACHE_CONTROL</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">2</span>;
@@ -11533,7 +11535,7 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_CAP_IOAPIC_NUM_PINS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">8191</span>;
 <span class="comment">// TODO(qwandor): Update this once the pKVM patches are merged upstream with a stable capability ID.</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_CAP_ARM_PROTECTED_VM</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0xffbadab1</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_CAP_ARM_PROTECTED_VM_FLAGS_ENABLE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_CAP_ARM_PROTECTED_VM_FLAGS_SET_FW_IPA</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_CAP_ARM_PROTECTED_VM_FLAGS_INFO</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_IRQ_ROUTING_IRQCHIP</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">KVM_IRQ_ROUTING_MSI</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">2</span>;

@@ -1642,13 +1642,13 @@
     <span class="kw">use</span> <span class="ident">std::mem::size_of_val</span>;
 
     <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">Le32</span>, <span class="ident">Le64</span>};
+    <span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
     <span class="kw">use</span> <span class="ident">tempfile::tempfile</span>;
     <span class="kw">use</span> <span class="ident">vm_memory::GuestAddress</span>;
 
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::virtio::base_features</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::virtio::block::common</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::virtio::descriptor_utils</span>::{<span class="ident">create_descriptor_chain</span>, <span class="ident">DescriptorType</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ProtectionType</span>;
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 

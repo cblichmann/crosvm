@@ -498,7 +498,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">hypervisor::CpuIdEntry</span>;
+    <span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">CpuIdEntry</span>, <span class="ident">ProtectionType</span>};
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">feature_and_vendor_name</span>() {
@@ -506,7 +506,7 @@
         <span class="kw">let</span> <span class="ident">guest_mem</span> <span class="op">=</span>
             <span class="ident">vm_memory::GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">vm_memory::GuestAddress</span>(<span class="number">0</span>), <span class="number">0x10000</span>)]).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">hypervisor::kvm::Kvm::new</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">hypervisor::kvm::KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">guest_mem</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">hypervisor::kvm::KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">guest_mem</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">irq_chip</span> <span class="op">=</span> <span class="ident">devices::KvmKernelIrqChip::new</span>(<span class="ident">vm</span>, <span class="number">1</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">entries</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cpuid</span>.<span class="ident">cpu_id_entries</span>;

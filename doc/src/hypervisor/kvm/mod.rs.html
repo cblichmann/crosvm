@@ -1453,6 +1453,16 @@
 <span id="1453">1453</span>
 <span id="1454">1454</span>
 <span id="1455">1455</span>
+<span id="1456">1456</span>
+<span id="1457">1457</span>
+<span id="1458">1458</span>
+<span id="1459">1459</span>
+<span id="1460">1460</span>
+<span id="1461">1461</span>
+<span id="1462">1462</span>
+<span id="1463">1463</span>
+<span id="1464">1464</span>
+<span id="1465">1465</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -1497,7 +1507,7 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">ClockState</span>, <span class="ident">Datamatch</span>, <span class="ident">DeviceKind</span>, <span class="ident">Hypervisor</span>, <span class="ident">HypervisorCap</span>, <span class="ident">IoEventAddress</span>, <span class="ident">IrqRoute</span>,
-    <span class="ident">IrqSource</span>, <span class="ident">MPState</span>, <span class="ident">MemSlot</span>, <span class="ident">Vcpu</span>, <span class="ident">VcpuExit</span>, <span class="ident">VcpuRunHandle</span>, <span class="ident">Vm</span>, <span class="ident">VmCap</span>,
+    <span class="ident">IrqSource</span>, <span class="ident">MPState</span>, <span class="ident">MemSlot</span>, <span class="ident">ProtectionType</span>, <span class="ident">Vcpu</span>, <span class="ident">VcpuExit</span>, <span class="ident">VcpuRunHandle</span>, <span class="ident">Vm</span>, <span class="ident">VmCap</span>,
 };
 
 <span class="comment">// Wrapper around KVM_SET_USER_MEMORY_REGION ioctl, which creates, modifies, or deletes a mapping</span>
@@ -1618,10 +1628,20 @@
 
 <span class="kw">impl</span> <span class="ident">KvmVm</span> {
     <span class="doccomment">/// Constructs a new `KvmVm` using the given `Kvm` instance.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">kvm</span>: <span class="kw-2">&amp;</span><span class="ident">Kvm</span>, <span class="ident">guest_mem</span>: <span class="ident">GuestMemory</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">KvmVm</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">kvm</span>: <span class="kw-2">&amp;</span><span class="ident">Kvm</span>,
+        <span class="ident">guest_mem</span>: <span class="ident">GuestMemory</span>,
+        <span class="ident">protection_type</span>: <span class="ident">ProtectionType</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">KvmVm</span><span class="op">&gt;</span> {
         <span class="comment">// Safe because we know kvm is a real kvm fd as this module is the only one that can make</span>
         <span class="comment">// Kvm objects.</span>
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ioctl_with_val</span>(<span class="ident">kvm</span>, <span class="ident">KVM_CREATE_VM</span>(), <span class="ident">kvm</span>.<span class="ident">get_vm_type</span>()) };
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+            <span class="ident">ioctl_with_val</span>(
+                <span class="ident">kvm</span>,
+                <span class="ident">KVM_CREATE_VM</span>(),
+                <span class="ident">kvm</span>.<span class="ident">get_vm_type</span>(<span class="ident">protection_type</span>)<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">c_ulong</span>,
+            )
+        };
         <span class="kw">if</span> <span class="ident">ret</span> <span class="op">&lt;</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="ident">errno_result</span>();
         }
@@ -2649,14 +2669,14 @@
     <span class="kw">fn</span> <span class="ident">create_vm</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>)]).<span class="ident">unwrap</span>();
-        <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">clone_vm</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="ident">vm</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
     }
 
@@ -2664,7 +2684,7 @@
     <span class="kw">fn</span> <span class="ident">send_vm</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">_vm</span> <span class="op">=</span> <span class="ident">vm</span>;
         })
@@ -2676,7 +2696,7 @@
     <span class="kw">fn</span> <span class="ident">check_vm_capability</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="ident">vm</span>.<span class="ident">check_raw_capability</span>(<span class="ident">KvmCap::UserMemory</span>));
         <span class="comment">// I assume nobody is testing this on s390</span>
         <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">vm</span>.<span class="ident">check_raw_capability</span>(<span class="ident">KvmCap::S390UserSigp</span>));
@@ -2686,7 +2706,7 @@
     <span class="kw">fn</span> <span class="ident">create_vcpu</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x10000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="ident">vm</span>.<span class="ident">create_vcpu</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
     }
 
@@ -2694,7 +2714,7 @@
     <span class="kw">fn</span> <span class="ident">get_memory</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">obj_addr</span> <span class="op">=</span> <span class="ident">GuestAddress</span>(<span class="number">0xf0</span>);
         <span class="ident">vm</span>.<span class="ident">get_memory</span>().<span class="ident">write_obj_at_addr</span>(<span class="number">67u8</span>, <span class="ident">obj_addr</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">read_val</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="ident">vm</span>.<span class="ident">get_memory</span>().<span class="ident">read_obj_from_addr</span>(<span class="ident">obj_addr</span>).<span class="ident">unwrap</span>();
@@ -2706,7 +2726,7 @@
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span>
             <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>), (<span class="ident">GuestAddress</span>(<span class="number">0x5000</span>), <span class="number">0x5000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">mem_size</span> <span class="op">=</span> <span class="number">0x1000</span>;
         <span class="kw">let</span> <span class="ident">mem</span> <span class="op">=</span> <span class="ident">MemoryMappingBuilder::new</span>(<span class="ident">mem_size</span>).<span class="ident">build</span>().<span class="ident">unwrap</span>();
         <span class="ident">vm</span>.<span class="ident">add_memory_region</span>(<span class="ident">GuestAddress</span>(<span class="number">0x1000</span>), <span class="ident">Box::new</span>(<span class="ident">mem</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>)
@@ -2720,7 +2740,7 @@
     <span class="kw">fn</span> <span class="ident">add_memory_ro</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">mem_size</span> <span class="op">=</span> <span class="number">0x1000</span>;
         <span class="kw">let</span> <span class="ident">mem</span> <span class="op">=</span> <span class="ident">MemoryMappingBuilder::new</span>(<span class="ident">mem_size</span>).<span class="ident">build</span>().<span class="ident">unwrap</span>();
         <span class="ident">vm</span>.<span class="ident">add_memory_region</span>(<span class="ident">GuestAddress</span>(<span class="number">0x1000</span>), <span class="ident">Box::new</span>(<span class="ident">mem</span>), <span class="bool-val">true</span>, <span class="bool-val">false</span>)
@@ -2731,7 +2751,7 @@
     <span class="kw">fn</span> <span class="ident">remove_memory</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">mem_size</span> <span class="op">=</span> <span class="number">0x1000</span>;
         <span class="kw">let</span> <span class="ident">mem</span> <span class="op">=</span> <span class="ident">MemoryMappingBuilder::new</span>(<span class="ident">mem_size</span>).<span class="ident">build</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">mem_ptr</span> <span class="op">=</span> <span class="ident">mem</span>.<span class="ident">as_ptr</span>();
@@ -2747,7 +2767,7 @@
     <span class="kw">fn</span> <span class="ident">remove_invalid_memory</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="ident">vm</span>.<span class="ident">remove_memory_region</span>(<span class="number">0</span>).<span class="ident">is_err</span>());
     }
 
@@ -2755,7 +2775,7 @@
     <span class="kw">fn</span> <span class="ident">overlap_memory</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x10000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">mem_size</span> <span class="op">=</span> <span class="number">0x2000</span>;
         <span class="kw">let</span> <span class="ident">mem</span> <span class="op">=</span> <span class="ident">MemoryMappingBuilder::new</span>(<span class="ident">mem_size</span>).<span class="ident">build</span>().<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="ident">vm</span>
@@ -2768,7 +2788,7 @@
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span>
             <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x1000</span>), (<span class="ident">GuestAddress</span>(<span class="number">0x5000</span>), <span class="number">0x5000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">mem_size</span> <span class="op">=</span> <span class="number">0x1000</span>;
         <span class="kw">let</span> <span class="ident">mem</span> <span class="op">=</span> <span class="ident">MemoryMappingArena::new</span>(<span class="ident">mem_size</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">slot</span> <span class="op">=</span> <span class="ident">vm</span>
@@ -2783,7 +2803,7 @@
     <span class="kw">fn</span> <span class="ident">register_irqfd</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x10000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd1</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd2</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd3</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
@@ -2798,7 +2818,7 @@
     <span class="kw">fn</span> <span class="ident">unregister_irqfd</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x10000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd1</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd2</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd3</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
@@ -2815,7 +2835,7 @@
     <span class="kw">fn</span> <span class="ident">irqfd_resample</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x10000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd1</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd2</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
         <span class="ident">vm</span>.<span class="ident">create_irq_chip</span>().<span class="ident">unwrap</span>();
@@ -2830,7 +2850,7 @@
     <span class="kw">fn</span> <span class="ident">set_signal_mask</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x10000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">vcpu</span> <span class="op">=</span> <span class="ident">vm</span>.<span class="ident">create_vcpu</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
         <span class="ident">vcpu</span>.<span class="ident">set_signal_mask</span>(<span class="kw-2">&amp;</span>[<span class="ident">base::SIGRTMIN</span>() <span class="op">+</span> <span class="number">0</span>]).<span class="ident">unwrap</span>();
     }
@@ -2848,7 +2868,7 @@
     <span class="kw">fn</span> <span class="ident">register_ioevent</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x10000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
         <span class="ident">vm</span>.<span class="ident">register_ioevent</span>(<span class="kw-2">&amp;</span><span class="ident">evtfd</span>, <span class="ident">IoEventAddress::Pio</span>(<span class="number">0xf4</span>), <span class="ident">Datamatch::AnyLength</span>)
             .<span class="ident">unwrap</span>();
@@ -2884,7 +2904,7 @@
     <span class="kw">fn</span> <span class="ident">unregister_ioevent</span>() {
         <span class="kw">let</span> <span class="ident">kvm</span> <span class="op">=</span> <span class="ident">Kvm::new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">gm</span> <span class="op">=</span> <span class="ident">GuestMemory::new</span>(<span class="kw-2">&amp;</span>[(<span class="ident">GuestAddress</span>(<span class="number">0</span>), <span class="number">0x10000</span>)]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">KvmVm::new</span>(<span class="kw-2">&amp;</span><span class="ident">kvm</span>, <span class="ident">gm</span>, <span class="ident">ProtectionType::Unprotected</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">evtfd</span> <span class="op">=</span> <span class="ident">Event::new</span>().<span class="ident">unwrap</span>();
         <span class="ident">vm</span>.<span class="ident">register_ioevent</span>(<span class="kw-2">&amp;</span><span class="ident">evtfd</span>, <span class="ident">IoEventAddress::Pio</span>(<span class="number">0xf4</span>), <span class="ident">Datamatch::AnyLength</span>)
             .<span class="ident">unwrap</span>();

@@ -309,6 +309,7 @@
 <span id="309">309</span>
 <span id="310">310</span>
 <span id="311">311</span>
+<span id="312">312</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -318,7 +319,8 @@
 
 <span class="kw">use</span> <span class="ident">base::Event</span>;
 <span class="kw">use</span> <span class="ident">devices::serial_device</span>::{<span class="ident">SerialHardware</span>, <span class="ident">SerialParameters</span>, <span class="ident">SerialType</span>};
-<span class="kw">use</span> <span class="ident">devices</span>::{<span class="ident">Bus</span>, <span class="ident">ProtectionType</span>, <span class="ident">ProxyDevice</span>, <span class="ident">Serial</span>};
+<span class="kw">use</span> <span class="ident">devices</span>::{<span class="ident">Bus</span>, <span class="ident">ProxyDevice</span>, <span class="ident">Serial</span>};
+<span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">minijail::Minijail</span>;
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
