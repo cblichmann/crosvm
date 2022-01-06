@@ -1191,6 +1191,19 @@
 <span id="1191">1191</span>
 <span id="1192">1192</span>
 <span id="1193">1193</span>
+<span id="1194">1194</span>
+<span id="1195">1195</span>
+<span id="1196">1196</span>
+<span id="1197">1197</span>
+<span id="1198">1198</span>
+<span id="1199">1199</span>
+<span id="1200">1200</span>
+<span id="1201">1201</span>
+<span id="1202">1202</span>
+<span id="1203">1203</span>
+<span id="1204">1204</span>
+<span id="1205">1205</span>
+<span id="1206">1206</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -1673,12 +1686,19 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">VmIrqRequest</span> {
     <span class="doccomment">/// Allocate one gsi, and associate gsi to irqfd with register_irqfd()</span>
-    <span class="ident">AllocateOneMsi</span> { <span class="ident">irqfd</span>: <span class="ident">Event</span> },
+    <span class="ident">AllocateOneMsi</span> {
+        <span class="ident">irqfd</span>: <span class="ident">Event</span>,
+    },
     <span class="doccomment">/// Add one msi route entry into the IRQ chip.</span>
     <span class="ident">AddMsiRoute</span> {
         <span class="ident">gsi</span>: <span class="ident">u32</span>,
         <span class="ident">msi_address</span>: <span class="ident">u64</span>,
         <span class="ident">msi_data</span>: <span class="ident">u32</span>,
+    },
+    <span class="comment">// unregister_irqfs() and release gsi</span>
+    <span class="ident">ReleaseOneIrq</span> {
+        <span class="ident">gsi</span>: <span class="ident">u32</span>,
+        <span class="ident">irqfd</span>: <span class="ident">Event</span>,
     },
 }
 
@@ -1688,6 +1708,7 @@
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">IrqSetup</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">Event</span>(<span class="ident">u32</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Event</span>),
     <span class="ident">Route</span>(<span class="ident">IrqRoute</span>),
+    <span class="ident">UnRegister</span>(<span class="ident">u32</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Event</span>),
 }
 
 <span class="kw">impl</span> <span class="ident">VmIrqRequest</span> {
@@ -1731,6 +1752,11 @@
                     <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VmIrqResponse::Ok</span>,
                     <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VmIrqResponse::Err</span>(<span class="ident">e</span>),
                 }
+            }
+            <span class="ident">ReleaseOneIrq</span> { <span class="ident">gsi</span>, <span class="kw-2">ref</span> <span class="ident">irqfd</span> } <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">set_up_irq</span>(<span class="ident">IrqSetup::UnRegister</span>(<span class="ident">gsi</span>, <span class="ident">irqfd</span>));
+                <span class="ident">sys_allocator</span>.<span class="ident">release_irq</span>(<span class="ident">gsi</span>);
+                <span class="ident">VmIrqResponse::Ok</span>
             }
         }
     }

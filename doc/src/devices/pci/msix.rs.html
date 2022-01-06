@@ -578,6 +578,19 @@
 <span id="578">578</span>
 <span id="579">579</span>
 <span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -1084,6 +1097,19 @@
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">irq_vec</span>.<span class="ident">get</span>(<span class="ident">vector</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">irq</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">irq</span>.<span class="ident">irqfd</span>),
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+        }
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">destroy</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">irq</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">irq_vec</span>.<span class="ident">pop</span>() {
+            <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">VmIrqRequest::ReleaseOneIrq</span> {
+                <span class="ident">gsi</span>: <span class="ident">irq</span>.<span class="ident">gsi</span>,
+                <span class="ident">irqfd</span>: <span class="ident">irq</span>.<span class="ident">irqfd</span>,
+            };
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">msi_device_socket</span>.<span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="ident">request</span>).<span class="ident">is_err</span>() {
+                <span class="kw">continue</span>;
+            }
+            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">msi_device_socket</span>.<span class="ident">recv</span>::<span class="op">&lt;</span><span class="ident">VmIrqResponse</span><span class="op">&gt;</span>();
         }
     }
 }

@@ -65,6 +65,10 @@
 <span id="65">65</span>
 <span id="66">66</span>
 <span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -96,6 +100,10 @@
     <span class="ident">PmemDevice</span>(<span class="ident">usize</span>),
     <span class="doccomment">/// pstore region.</span>
     <span class="ident">Pstore</span>,
+    <span class="doccomment">/// A PCI bridge window with associated bus, dev, function.</span>
+    <span class="ident">PciBridgeWindow</span> { <span class="ident">bus</span>: <span class="ident">u8</span>, <span class="ident">dev</span>: <span class="ident">u8</span>, <span class="ident">func</span>: <span class="ident">u8</span> },
+    <span class="doccomment">/// A PCI bridge prefetch window with associated bus, dev, function.</span>
+    <span class="ident">PciBridgePrefetchWindow</span> { <span class="ident">bus</span>: <span class="ident">u8</span>, <span class="ident">dev</span>: <span class="ident">u8</span>, <span class="ident">func</span>: <span class="ident">u8</span> },
 }
 
 <span class="attribute">#[<span class="ident">sorted</span>]</span>

@@ -3508,6 +3508,13 @@
 <span id="3508">3508</span>
 <span id="3509">3509</span>
 <span id="3510">3510</span>
+<span id="3511">3511</span>
+<span id="3512">3512</span>
+<span id="3513">3513</span>
+<span id="3514">3514</span>
+<span id="3515">3515</span>
+<span id="3516">3516</span>
+<span id="3517">3517</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -5264,6 +5271,8 @@
         <span class="ident">Tube::pair</span>().<span class="ident">context</span>(<span class="string">&quot;failed to create tube&quot;</span>)<span class="question-mark">?</span>;
     <span class="ident">control_tubes</span>.<span class="ident">push</span>(<span class="ident">TaggedControlTube::VmMemory</span>(<span class="ident">vfio_host_tube_mem</span>));
 
+    <span class="kw">let</span> <span class="ident">hotplug</span> <span class="op">=</span> <span class="ident">bus_num</span>.<span class="ident">is_some</span>();
+
     <span class="kw">let</span> <span class="ident">vfio_device</span> <span class="op">=</span>
         <span class="ident">VfioDevice::new_passthrough</span>(<span class="kw-2">&amp;</span><span class="ident">vfio_path</span>, <span class="ident">vm</span>, <span class="ident">vfio_container</span>.<span class="ident">clone</span>(), <span class="ident">iommu_enabled</span>)
             .<span class="ident">context</span>(<span class="string">&quot;failed to create vfio device&quot;</span>)<span class="question-mark">?</span>;
@@ -5287,7 +5296,11 @@
         <span class="ident">endpoints</span>.<span class="ident">insert</span>(<span class="ident">endpoint_addr</span>.<span class="ident">unwrap</span>().<span class="ident">to_u32</span>(), <span class="ident">vfio_container</span>);
     }
 
-    <span class="prelude-val">Ok</span>((<span class="ident">vfio_pci_device</span>, <span class="ident">simple_jail</span>(<span class="ident">cfg</span>, <span class="string">&quot;vfio_device&quot;</span>)<span class="question-mark">?</span>))
+    <span class="kw">if</span> <span class="ident">hotplug</span> {
+        <span class="prelude-val">Ok</span>((<span class="ident">vfio_pci_device</span>, <span class="prelude-val">None</span>))
+    } <span class="kw">else</span> {
+        <span class="prelude-val">Ok</span>((<span class="ident">vfio_pci_device</span>, <span class="ident">simple_jail</span>(<span class="ident">cfg</span>, <span class="string">&quot;vfio_device&quot;</span>)<span class="question-mark">?</span>))
+    }
 }
 
 <span class="kw">fn</span> <span class="ident">create_vfio_platform_device</span>(
@@ -6896,6 +6909,7 @@
                                                     }
                                                 }
                                                 <span class="ident">IrqSetup::Route</span>(<span class="ident">route</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">irq_chip</span>.<span class="ident">route_irq</span>(<span class="ident">route</span>),
+                                                <span class="ident">IrqSetup::UnRegister</span>(<span class="ident">irq</span>, <span class="ident">ev</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">irq_chip</span>.<span class="ident">unregister_irq_event</span>(<span class="ident">irq</span>, <span class="ident">ev</span>),
                                             },
                                             <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">sys_allocator</span>,
                                         )

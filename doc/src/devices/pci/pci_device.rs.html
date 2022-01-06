@@ -545,6 +545,14 @@
 <span id="545">545</span>
 <span id="546">546</span>
 <span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -730,14 +738,14 @@
                 <span class="comment">// Enable memory, add new_mmio into mmio_bus</span>
                 <span class="kw">if</span> <span class="ident">new_command_reg</span> <span class="op">&amp;</span> <span class="ident">COMMAND_REG_MEMORY_SPACE_MASK</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="kw">for</span> (<span class="ident">range</span>, <span class="ident">bus_type</span>) <span class="kw">in</span> <span class="ident">new_ranges</span>.<span class="ident">iter</span>() {
-                        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">bus_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BusType::Mmio</span> {
+                        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">bus_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BusType::Mmio</span> <span class="op">&amp;&amp;</span> <span class="ident">range</span>.<span class="ident">base</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                             <span class="ident">result</span>.<span class="ident">mmio_add</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">range</span>);
                         }
                     }
                 } <span class="kw">else</span> {
                     <span class="comment">// Disable memory, remove old_mmio from mmio_bus</span>
                     <span class="kw">for</span> (<span class="ident">range</span>, <span class="ident">bus_type</span>) <span class="kw">in</span> <span class="ident">old_ranges</span>.<span class="ident">iter</span>() {
-                        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">bus_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BusType::Mmio</span> {
+                        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">bus_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BusType::Mmio</span> <span class="op">&amp;&amp;</span> <span class="ident">range</span>.<span class="ident">base</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                             <span class="ident">result</span>.<span class="ident">mmio_remove</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">range</span>);
                         }
                     }
@@ -747,14 +755,14 @@
                 <span class="comment">// Enable IO, add new_io into io_bus</span>
                 <span class="kw">if</span> <span class="ident">new_command_reg</span> <span class="op">&amp;</span> <span class="ident">COMMAND_REG_IO_SPACE_MASK</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="kw">for</span> (<span class="ident">range</span>, <span class="ident">bus_type</span>) <span class="kw">in</span> <span class="ident">new_ranges</span>.<span class="ident">iter</span>() {
-                        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">bus_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BusType::Io</span> {
+                        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">bus_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BusType::Io</span> <span class="op">&amp;&amp;</span> <span class="ident">range</span>.<span class="ident">base</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                             <span class="ident">result</span>.<span class="ident">io_add</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">range</span>);
                         }
                     }
                 } <span class="kw">else</span> {
                     <span class="comment">// Disable IO, remove old_io from io_bus</span>
                     <span class="kw">for</span> (<span class="ident">range</span>, <span class="ident">bus_type</span>) <span class="kw">in</span> <span class="ident">old_ranges</span>.<span class="ident">iter</span>() {
-                        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">bus_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BusType::Io</span> {
+                        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">bus_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BusType::Io</span> <span class="op">&amp;&amp;</span> <span class="ident">range</span>.<span class="ident">base</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                             <span class="ident">result</span>.<span class="ident">io_remove</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">range</span>);
                         }
                     }
@@ -778,11 +786,19 @@
                 }
                 <span class="kw">if</span> <span class="ident">old_range</span>.<span class="ident">base</span> <span class="op">!</span><span class="op">=</span> <span class="ident">new_range</span>.<span class="ident">base</span> {
                     <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">new_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">BusType::Mmio</span> {
-                        <span class="ident">result</span>.<span class="ident">mmio_remove</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">old_range</span>);
-                        <span class="ident">result</span>.<span class="ident">mmio_add</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">new_range</span>);
+                        <span class="kw">if</span> <span class="ident">old_range</span>.<span class="ident">base</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+                            <span class="ident">result</span>.<span class="ident">mmio_remove</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">old_range</span>);
+                        }
+                        <span class="kw">if</span> <span class="ident">new_range</span>.<span class="ident">base</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+                            <span class="ident">result</span>.<span class="ident">mmio_add</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">new_range</span>);
+                        }
                     } <span class="kw">else</span> {
-                        <span class="ident">result</span>.<span class="ident">io_remove</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">old_range</span>);
-                        <span class="ident">result</span>.<span class="ident">io_add</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">new_range</span>);
+                        <span class="kw">if</span> <span class="ident">old_range</span>.<span class="ident">base</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+                            <span class="ident">result</span>.<span class="ident">io_remove</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">old_range</span>);
+                        }
+                        <span class="kw">if</span> <span class="ident">new_range</span>.<span class="ident">base</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+                            <span class="ident">result</span>.<span class="ident">io_add</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">new_range</span>);
+                        }
                     }
                 }
             }

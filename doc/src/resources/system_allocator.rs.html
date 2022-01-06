@@ -305,6 +305,11 @@
 <span id="305">305</span>
 <span id="306">306</span>
 <span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -434,6 +439,11 @@
             .<span class="ident">allocate</span>(<span class="number">1</span>, <span class="ident">id</span>, <span class="string">&quot;irq-auto&quot;</span>.<span class="ident">to_string</span>())
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">u32</span>)
             .<span class="ident">ok</span>()
+    }
+
+    <span class="doccomment">/// release irq to system irq number pool</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">release_irq</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">irq</span>: <span class="ident">u32</span>) {
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">irq_allocator</span>.<span class="ident">release_containing</span>(<span class="ident">irq</span>.<span class="ident">into</span>());
     }
 
     <span class="doccomment">/// Reserves the next available system irq number.</span>
