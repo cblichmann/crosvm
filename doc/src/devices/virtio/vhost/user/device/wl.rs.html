@@ -367,9 +367,6 @@
 <span id="367">367</span>
 <span id="368">368</span>
 <span id="369">369</span>
-<span id="370">370</span>
-<span id="371">371</span>
-<span id="372">372</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -383,6 +380,7 @@
 <span class="kw">use</span> <span class="ident">std::time</span>::{<span class="ident">Duration</span>, <span class="ident">Instant</span>};
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">anyhow</span>, <span class="ident">bail</span>, <span class="ident">Context</span>};
+<span class="kw">use</span> <span class="ident">argh::FromArgs</span>;
 <span class="kw">use</span> <span class="ident">base</span>::{
     <span class="ident">clone_descriptor</span>, <span class="ident">error</span>,
     <span class="ident">net</span>::{<span class="ident">UnixSeqpacket</span>, <span class="ident">UnixSeqpacketListener</span>, <span class="ident">UnlinkUnixSeqpacketListener</span>},
@@ -390,7 +388,6 @@
 };
 <span class="kw">use</span> <span class="ident">cros_async</span>::{<span class="ident">AsyncWrapper</span>, <span class="ident">EventAsync</span>, <span class="ident">Executor</span>, <span class="ident">IoSourceExt</span>};
 <span class="kw">use</span> <span class="ident">futures::future</span>::{<span class="ident">AbortHandle</span>, <span class="ident">Abortable</span>};
-<span class="kw">use</span> <span class="ident">getopts::Options</span>;
 <span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">once_cell::sync::OnceCell</span>;
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
@@ -625,85 +622,82 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">parse_wayland_sock</span>(<span class="ident">value</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">PathBuf</span>)<span class="op">&gt;</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">parse_wayland_sock</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">PathBuf</span>), <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">components</span> <span class="op">=</span> <span class="ident">value</span>.<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>);
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">PathBuf::from</span>(
-        <span class="ident">components</span>
-            .<span class="ident">next</span>()
-            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">anyhow!</span>(<span class="string">&quot;missing socket path&quot;</span>))<span class="question-mark">?</span>,
-    );
+    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">PathBuf::from</span>(<span class="kw">match</span> <span class="ident">components</span>.<span class="ident">next</span>() {
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;missing socket path&quot;</span>.<span class="ident">to_string</span>()),
+        <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">c</span>,
+    });
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
     <span class="kw">for</span> <span class="ident">c</span> <span class="kw">in</span> <span class="ident">components</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kv</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">splitn</span>(<span class="number">2</span>, <span class="string">&#39;=&#39;</span>);
         <span class="kw">let</span> (<span class="ident">kind</span>, <span class="ident">value</span>) <span class="op">=</span> <span class="kw">match</span> (<span class="ident">kv</span>.<span class="ident">next</span>(), <span class="ident">kv</span>.<span class="ident">next</span>()) {
             (<span class="prelude-val">Some</span>(<span class="ident">kind</span>), <span class="prelude-val">Some</span>(<span class="ident">value</span>)) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">kind</span>, <span class="ident">value</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;option must be of the form `kind=value`: {}&quot;</span>, <span class="ident">c</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;option must be of the form `kind=value`: {}&quot;</span>, <span class="ident">c</span>)),
         };
         <span class="kw">match</span> <span class="ident">kind</span> {
             <span class="string">&quot;name&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">value</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail!</span>(<span class="string">&quot;unrecognized option: {}&quot;</span>, <span class="ident">kind</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;unrecognized option: {}&quot;</span>, <span class="ident">kind</span>)),
         }
     }
 
     <span class="prelude-val">Ok</span>((<span class="ident">name</span>.<span class="ident">to_string</span>(), <span class="ident">path</span>))
 }
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">FromArgs</span>)]</span>
+<span class="attribute">#[<span class="ident">argh</span>(<span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>)]</span>
+<span class="kw">struct</span> <span class="ident">Options</span> {
+    <span class="attribute">#[<span class="ident">argh</span>(
+        <span class="ident">option</span>,
+        <span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;path to bind a listening vhost-user socket&quot;</span>,
+        <span class="ident">arg_name</span> <span class="op">=</span> <span class="string">&quot;PATH&quot;</span>
+    )]</span>
+    <span class="ident">socket</span>: <span class="ident">String</span>,
+    <span class="attribute">#[<span class="ident">argh</span>(
+        <span class="ident">option</span>,
+        <span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;path to a socket for wayland-specific messages&quot;</span>,
+        <span class="ident">arg_name</span> <span class="op">=</span> <span class="string">&quot;PATH&quot;</span>
+    )]</span>
+    <span class="ident">vm_socket</span>: <span class="ident">String</span>,
+    <span class="attribute">#[<span class="ident">argh</span>(
+        <span class="ident">option</span>,
+        <span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;path to one or more Wayland sockets. The unnamed socket is used for\
+        displaying virtual screens while the named ones are used for IPC&quot;</span>,
+        <span class="ident">from_str_fn</span>(<span class="ident">parse_wayland_sock</span>),
+        <span class="ident">arg_name</span> <span class="op">=</span> <span class="string">&quot;PATH[,name=NAME]&quot;</span>
+    )]</span>
+    <span class="ident">wayland_sock</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">PathBuf</span>)<span class="op">&gt;</span>,
+    <span class="attribute">#[<span class="ident">argh</span>(
+        <span class="ident">option</span>,
+        <span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;path to the GPU resource bridge&quot;</span>,
+        <span class="ident">arg_name</span> <span class="op">=</span> <span class="string">&quot;PATH&quot;</span>
+    )]</span>
+    <span class="ident">resource_bridge</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+}
+
 <span class="doccomment">/// Starts a vhost-user wayland device.</span>
 <span class="doccomment">/// Returns an error if the given `args` is invalid or the device fails to run.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_wl_device</span>(<span class="ident">program_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">args</span>: <span class="ident">std::env::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">Options::new</span>();
-    <span class="ident">opts</span>.<span class="ident">optflag</span>(<span class="string">&quot;h&quot;</span>, <span class="string">&quot;help&quot;</span>, <span class="string">&quot;print this help menu&quot;</span>);
-    <span class="ident">opts</span>.<span class="ident">reqopt</span>(
-        <span class="string">&quot;&quot;</span>,
-        <span class="string">&quot;socket&quot;</span>,
-        <span class="string">&quot;path to bind a listening vhost-user socket&quot;</span>,
-        <span class="string">&quot;PATH&quot;</span>,
-    );
-    <span class="ident">opts</span>.<span class="ident">reqopt</span>(
-        <span class="string">&quot;&quot;</span>,
-        <span class="string">&quot;vm-socket&quot;</span>,
-        <span class="string">&quot;path to a socket for wayland-specific messages&quot;</span>,
-        <span class="string">&quot;PATH&quot;</span>,
-    );
-    <span class="ident">opts</span>.<span class="ident">optmulti</span>(
-        <span class="string">&quot;&quot;</span>,
-        <span class="string">&quot;wayland-sock&quot;</span>,
-        <span class="string">&quot;Path to one or more Wayland sockets. The unnamed socket is used for displaying virtual \
-         screens while the named ones are used for IPC&quot;</span>,
-        <span class="string">&quot;PATH[,name=NAME]&quot;</span>,
-    );
-    <span class="ident">opts</span>.<span class="ident">optopt</span>(
-        <span class="string">&quot;&quot;</span>,
-        <span class="string">&quot;resource-bridge&quot;</span>,
-        <span class="string">&quot;path to the GPU resource bridge&quot;</span>,
-        <span class="string">&quot;PATH&quot;</span>,
-    );
-
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">opts</span>.<span class="ident">parse</span>(<span class="ident">args</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">m</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">m</span>,
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_wl_device</span>(<span class="ident">program_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">Options</span> {
+        <span class="ident">vm_socket</span>,
+        <span class="ident">wayland_sock</span>,
+        <span class="ident">socket</span>,
+        <span class="ident">resource_bridge</span>,
+    } <span class="op">=</span> <span class="kw">match</span> <span class="ident">Options::from_args</span>(<span class="kw-2">&amp;</span>[<span class="ident">program_name</span>], <span class="ident">args</span>) {
+        <span class="prelude-val">Ok</span>(<span class="ident">opts</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">opts</span>,
         <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="macro">bail!</span>(<span class="string">&quot;failed to parse arguments: {}&quot;</span>, <span class="ident">e</span>);
+            <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">status</span>.<span class="ident">is_err</span>() {
+                <span class="macro">bail!</span>(<span class="ident">e</span>.<span class="ident">output</span>);
+            } <span class="kw">else</span> {
+                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>.<span class="ident">output</span>);
+            }
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
     };
 
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">opt_present</span>(<span class="string">&quot;h&quot;</span>) {
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">opts</span>.<span class="ident">usage</span>(<span class="ident">program_name</span>));
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-    }
+    <span class="kw">let</span> <span class="ident">wayland_paths</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">wayland_sock</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
 
-    <span class="comment">// We can safely `unwrap()` this because it is a required option.</span>
-    <span class="kw">let</span> <span class="ident">socket</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">opt_str</span>(<span class="string">&quot;socket&quot;</span>).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">wayland_paths</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">opt_strs</span>(<span class="string">&quot;wayland-sock&quot;</span>)
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">map</span>(<span class="ident">parse_wayland_sock</span>)
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">anyhow::Result</span><span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="ident">wayland_paths</span>.<span class="ident">is_empty</span>() {
-        <span class="macro">bail!</span>(<span class="string">&quot;at least one wayland socket must be provided&quot;</span>);
-    }
-
-    <span class="kw">let</span> <span class="ident">resource_bridge</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">opt_str</span>(<span class="string">&quot;resource-bridge&quot;</span>)
+    <span class="kw">let</span> <span class="ident">resource_bridge</span> <span class="op">=</span> <span class="ident">resource_bridge</span>
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">deadline</span> <span class="op">=</span> <span class="ident">Instant::now</span>() <span class="op">+</span> <span class="ident">Duration::from_secs</span>(<span class="number">5</span>);
             <span class="kw">loop</span> {
@@ -726,7 +720,7 @@
     <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">WL_EXECUTOR</span>.<span class="ident">set</span>(<span class="ident">ex</span>.<span class="ident">clone</span>());
 
     <span class="comment">// We can safely `unwrap()` this because it is a required option.</span>
-    <span class="kw">let</span> <span class="ident">vm_listener</span> <span class="op">=</span> <span class="ident">UnixSeqpacketListener::bind</span>(<span class="ident">matches</span>.<span class="ident">opt_str</span>(<span class="string">&quot;vm-socket&quot;</span>).<span class="ident">unwrap</span>())
+    <span class="kw">let</span> <span class="ident">vm_listener</span> <span class="op">=</span> <span class="ident">UnixSeqpacketListener::bind</span>(<span class="ident">vm_socket</span>)
         .<span class="ident">map</span>(<span class="ident">UnlinkUnixSeqpacketListener</span>)
         .<span class="ident">context</span>(<span class="string">&quot;failed to create listening socket&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">vm_socket</span> <span class="op">=</span> <span class="ident">vm_listener</span>

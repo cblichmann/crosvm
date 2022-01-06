@@ -348,13 +348,6 @@
 <span id="348">348</span>
 <span id="349">349</span>
 <span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
-<span id="354">354</span>
-<span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -366,8 +359,8 @@
 <span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">atomic::AtomicU64</span>, <span class="ident">atomic::Ordering</span>, <span class="ident">Arc</span>};
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">anyhow</span>, <span class="ident">bail</span>, <span class="ident">Context</span>};
+<span class="kw">use</span> <span class="ident">argh::FromArgs</span>;
 <span class="kw">use</span> <span class="ident">futures::future</span>::{<span class="ident">AbortHandle</span>, <span class="ident">Abortable</span>};
-<span class="kw">use</span> <span class="ident">getopts::Options</span>;
 <span class="kw">use</span> <span class="ident">once_cell::sync::OnceCell</span>;
 <span class="kw">use</span> <span class="ident">sync::Mutex</span>;
 <span class="kw">use</span> <span class="ident">vmm_vhost::message</span>::<span class="kw-2">*</span>;
@@ -410,7 +403,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// * `ex_cell`: `OnceCell` that must be initialized with an executor which is used in this device thread.</span>
     <span class="doccomment">/// * `filename`: Name of the disk image file.</span>
-    <span class="doccomment">/// * `options`: Vector of flie options.</span>
+    <span class="doccomment">/// * `options`: Vector of file options.</span>
     <span class="doccomment">///   - `read-only`</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">ex_cell</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">Executor</span><span class="op">&gt;</span>,
@@ -660,53 +653,46 @@
     }
 }
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">FromArgs</span>)]</span>
+<span class="attribute">#[<span class="ident">argh</span>(<span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>)]</span>
+<span class="kw">struct</span> <span class="ident">Options</span> {
+    <span class="attribute">#[<span class="ident">argh</span>(
+        <span class="ident">option</span>,
+        <span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;path and options of the disk file.&quot;</span>,
+        <span class="ident">arg_name</span> <span class="op">=</span> <span class="string">&quot;PATH&lt;:read-only&gt;&quot;</span>
+    )]</span>
+    <span class="ident">file</span>: <span class="ident">String</span>,
+    <span class="attribute">#[<span class="ident">argh</span>(<span class="ident">option</span>, <span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;path to a socket&quot;</span>, <span class="ident">arg_name</span> <span class="op">=</span> <span class="string">&quot;PATH&quot;</span>)]</span>
+    <span class="ident">socket</span>: <span class="ident">String</span>,
+}
+
 <span class="doccomment">/// Starts a vhost-user block device.</span>
 <span class="doccomment">/// Returns an error if the given `args` is invalid or the device fails to run.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_block_device</span>(<span class="ident">program_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">args</span>: <span class="ident">std::env::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">Options::new</span>();
-    <span class="ident">opts</span>.<span class="ident">optopt</span>(
-        <span class="string">&quot;&quot;</span>,
-        <span class="string">&quot;file&quot;</span>,
-        <span class="string">&quot;path and options of the disk file&quot;</span>,
-        <span class="string">&quot;PATH&lt;:read-only&gt;&quot;</span>,
-    );
-    <span class="ident">opts</span>.<span class="ident">optflag</span>(<span class="string">&quot;h&quot;</span>, <span class="string">&quot;help&quot;</span>, <span class="string">&quot;print this help menu&quot;</span>);
-    <span class="ident">opts</span>.<span class="ident">optopt</span>(<span class="string">&quot;&quot;</span>, <span class="string">&quot;socket&quot;</span>, <span class="string">&quot;path to a socket&quot;</span>, <span class="string">&quot;PATH&quot;</span>);
-
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">opts</span>.<span class="ident">parse</span>(<span class="ident">args</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">m</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">m</span>,
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_block_device</span>(<span class="ident">program_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">Options::from_args</span>(<span class="kw-2">&amp;</span>[<span class="ident">program_name</span>], <span class="ident">args</span>) {
+        <span class="prelude-val">Ok</span>(<span class="ident">opts</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">opts</span>,
         <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="macro">bail!</span>(<span class="string">&quot;failed to parse arguments: {}&quot;</span>, <span class="ident">e</span>);
+            <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">status</span>.<span class="ident">is_err</span>() {
+                <span class="macro">bail!</span>(<span class="ident">e</span>.<span class="ident">output</span>);
+            } <span class="kw">else</span> {
+                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>.<span class="ident">output</span>);
+            }
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
     };
-
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">opt_present</span>(<span class="string">&quot;h&quot;</span>) {
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">opts</span>.<span class="ident">usage</span>(<span class="ident">program_name</span>));
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-    }
-
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">opt_present</span>(<span class="string">&quot;file&quot;</span>) {
-        <span class="macro">bail!</span>(<span class="string">&quot;Must specify the file for the block device.&quot;</span>);
-    }
-
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">matches</span>.<span class="ident">opt_present</span>(<span class="string">&quot;socket&quot;</span>) {
-        <span class="macro">bail!</span>(<span class="string">&quot;Must specify the socket for the vhost user device.&quot;</span>);
-    }
 
     <span class="kw">let</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executor::new</span>().<span class="ident">context</span>(<span class="string">&quot;failed to create executor&quot;</span>)<span class="question-mark">?</span>;
     <span class="ident">BLOCK_EXECUTOR</span>
         .<span class="ident">set</span>(<span class="ident">ex</span>.<span class="ident">clone</span>())
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">anyhow!</span>(<span class="string">&quot;failed to set executor&quot;</span>))<span class="question-mark">?</span>;
 
-    <span class="comment">// We can unwrap after `opt_str()` safely because they are required options.</span>
-    <span class="kw">let</span> <span class="ident">socket</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">opt_str</span>(<span class="string">&quot;socket&quot;</span>).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">filearg</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">opt_str</span>(<span class="string">&quot;file&quot;</span>).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">fileopts</span> <span class="op">=</span> <span class="ident">filearg</span>.<span class="ident">split</span>(<span class="string">&#39;:&#39;</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-    <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">fileopts</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">context</span>(<span class="string">&quot;Must specify the filename&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">block</span> <span class="op">=</span> <span class="ident">BlockBackend::new</span>(<span class="ident">BLOCK_EXECUTOR</span>.<span class="ident">clone</span>(), <span class="ident">filename</span>, <span class="ident">fileopts</span>[<span class="number">1</span>..].<span class="ident">to_vec</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fileopts</span> <span class="op">=</span> <span class="ident">opts</span>.<span class="ident">file</span>.<span class="ident">split</span>(<span class="string">&quot;:&quot;</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+    <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">fileopts</span>.<span class="ident">remove</span>(<span class="number">0</span>);
+
+    <span class="kw">let</span> <span class="ident">block</span> <span class="op">=</span> <span class="ident">BlockBackend::new</span>(<span class="ident">BLOCK_EXECUTOR</span>.<span class="ident">clone</span>(), <span class="ident">filename</span>, <span class="ident">fileopts</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">handler</span> <span class="op">=</span> <span class="ident">DeviceRequestHandler::new</span>(<span class="ident">block</span>);
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">ex</span>.<span class="ident">run_until</span>(<span class="ident">handler</span>.<span class="ident">run</span>(<span class="ident">socket</span>, <span class="kw-2">&amp;</span><span class="ident">ex</span>)) {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">ex</span>.<span class="ident">run_until</span>(<span class="ident">handler</span>.<span class="ident">run</span>(<span class="ident">opts</span>.<span class="ident">socket</span>, <span class="kw-2">&amp;</span><span class="ident">ex</span>)) {
         <span class="macro">bail!</span>(<span class="string">&quot;error occurred: {}&quot;</span>, <span class="ident">e</span>);
     }
 

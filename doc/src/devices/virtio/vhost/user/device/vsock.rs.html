@@ -480,24 +480,6 @@
 <span id="480">480</span>
 <span id="481">481</span>
 <span id="482">482</span>
-<span id="483">483</span>
-<span id="484">484</span>
-<span id="485">485</span>
-<span id="486">486</span>
-<span id="487">487</span>
-<span id="488">488</span>
-<span id="489">489</span>
-<span id="490">490</span>
-<span id="491">491</span>
-<span id="492">492</span>
-<span id="493">493</span>
-<span id="494">494</span>
-<span id="495">495</span>
-<span id="496">496</span>
-<span id="497">497</span>
-<span id="498">498</span>
-<span id="499">499</span>
-<span id="500">500</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -515,13 +497,13 @@
 };
 
 <span class="kw">use</span> <span class="ident">anyhow</span>::{<span class="ident">bail</span>, <span class="ident">Context</span>};
+<span class="kw">use</span> <span class="ident">argh::FromArgs</span>;
 <span class="kw">use</span> <span class="ident">base</span>::{
     <span class="ident">clear_fd_flags</span>, <span class="ident">error</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Event</span>, <span class="ident">FromRawDescriptor</span>, <span class="ident">IntoRawDescriptor</span>,
     <span class="ident">SafeDescriptor</span>, <span class="ident">UnlinkUnixListener</span>,
 };
 <span class="kw">use</span> <span class="ident">cros_async</span>::{<span class="ident">AsyncWrapper</span>, <span class="ident">Executor</span>};
 <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">DataInit</span>, <span class="ident">Le64</span>};
-<span class="kw">use</span> <span class="ident">getopts::Options</span>;
 <span class="kw">use</span> <span class="ident">hypervisor::ProtectionType</span>;
 <span class="kw">use</span> <span class="ident">once_cell::sync::OnceCell</span>;
 <span class="kw">use</span> <span class="ident">vhost</span>::{<span class="self">self</span>, <span class="ident">Vhost</span>, <span class="ident">Vsock</span>};
@@ -930,71 +912,53 @@
     }
 }
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">FromArgs</span>)]</span>
+<span class="attribute">#[<span class="ident">argh</span>(<span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>)]</span>
+<span class="kw">struct</span> <span class="ident">Options</span> {
+    <span class="attribute">#[<span class="ident">argh</span>(
+        <span class="ident">option</span>,
+        <span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;path to bind a listening vhost-user socket&quot;</span>,
+        <span class="ident">arg_name</span> <span class="op">=</span> <span class="string">&quot;PATH&quot;</span>
+    )]</span>
+    <span class="ident">socket</span>: <span class="ident">String</span>,
+    <span class="attribute">#[<span class="ident">argh</span>(
+        <span class="ident">option</span>,
+        <span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;the vsock context id for this device&quot;</span>,
+        <span class="ident">arg_name</span> <span class="op">=</span> <span class="string">&quot;INT&quot;</span>
+    )]</span>
+    <span class="ident">cid</span>: <span class="ident">u64</span>,
+    <span class="attribute">#[<span class="ident">argh</span>(
+        <span class="ident">option</span>,
+        <span class="ident">description</span> <span class="op">=</span> <span class="string">&quot;path to the vhost-vsock control socket&quot;</span>,
+        <span class="ident">default</span> <span class="op">=</span> <span class="string">&quot;String::from(\&quot;/dev/vhost-vsock\&quot;)&quot;</span>,
+        <span class="ident">arg_name</span> <span class="op">=</span> <span class="string">&quot;PATH&quot;</span>
+    )]</span>
+    <span class="ident">vhost_socket</span>: <span class="ident">String</span>,
+}
+
 <span class="doccomment">/// Returns an error if the given `args` is invalid or the device fails to run.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_vsock_device</span>(<span class="ident">program_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">args</span>: <span class="ident">std::env::Args</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">Options::new</span>();
-    <span class="ident">opts</span>.<span class="ident">optflag</span>(<span class="string">&quot;h&quot;</span>, <span class="string">&quot;help&quot;</span>, <span class="string">&quot;print this help menu&quot;</span>);
-    <span class="ident">opts</span>.<span class="ident">optopt</span>(
-        <span class="string">&quot;s&quot;</span>,
-        <span class="string">&quot;socket&quot;</span>,
-        <span class="string">&quot;path to bind a listening vhost-user socket&quot;</span>,
-        <span class="string">&quot;PATH&quot;</span>,
-    );
-    <span class="ident">opts</span>.<span class="ident">optopt</span>(<span class="string">&quot;c&quot;</span>, <span class="string">&quot;cid&quot;</span>, <span class="string">&quot;the vsock context id for this device&quot;</span>, <span class="string">&quot;INT&quot;</span>);
-    <span class="ident">opts</span>.<span class="ident">optopt</span>(
-        <span class="string">&quot;&quot;</span>,
-        <span class="string">&quot;vhost-socket&quot;</span>,
-        <span class="string">&quot;path to the vhost-vsock control socket (default: \&quot;/dev/vhost-vsock\&quot;)&quot;</span>,
-        <span class="string">&quot;PATH&quot;</span>,
-    );
-
-    <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">opts</span>.<span class="ident">parse</span>(<span class="ident">args</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">m</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">m</span>,
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_vsock_device</span>(<span class="ident">program_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">args</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">Options::from_args</span>(<span class="kw-2">&amp;</span>[<span class="ident">program_name</span>], <span class="ident">args</span>) {
+        <span class="prelude-val">Ok</span>(<span class="ident">opts</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">opts</span>,
         <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="macro">bail!</span>(<span class="string">&quot;failed to parse arguments: {}&quot;</span>, <span class="ident">e</span>);
+            <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">status</span>.<span class="ident">is_err</span>() {
+                <span class="macro">bail!</span>(<span class="ident">e</span>.<span class="ident">output</span>);
+            } <span class="kw">else</span> {
+                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>.<span class="ident">output</span>);
+            }
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
-    };
-
-    <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">opt_present</span>(<span class="string">&quot;h&quot;</span>) {
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">opts</span>.<span class="ident">usage</span>(<span class="ident">program_name</span>));
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-    }
-
-    <span class="comment">// We can safely `unwrap()` this because it is a required option.</span>
-    <span class="kw">let</span> <span class="ident">socket</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">opt_str</span>(<span class="string">&quot;socket&quot;</span>) {
-        <span class="ident">s</span>
-    } <span class="kw">else</span> {
-        <span class="macro">println!</span>(<span class="string">&quot;`--socket` is required&quot;</span>);
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">opts</span>.<span class="ident">short_usage</span>(<span class="ident">program_name</span>));
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-    };
-
-    <span class="kw">let</span> <span class="ident">cid</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cid</span>) <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">opt_str</span>(<span class="string">&quot;cid&quot;</span>)
-        .<span class="ident">as_deref</span>()
-        .<span class="ident">map</span>(<span class="ident">str::parse</span>)
-        .<span class="ident">transpose</span>()<span class="question-mark">?</span>
-    {
-        <span class="ident">cid</span>
-    } <span class="kw">else</span> {
-        <span class="macro">println!</span>(<span class="string">&quot;`--cid` is required&quot;</span>);
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">opts</span>.<span class="ident">short_usage</span>(<span class="ident">program_name</span>));
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     };
 
     <span class="kw">let</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executor::new</span>().<span class="ident">context</span>(<span class="string">&quot;failed to create executor&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">VSOCK_EXECUTOR</span>.<span class="ident">set</span>(<span class="ident">ex</span>.<span class="ident">clone</span>());
 
-    <span class="kw">let</span> <span class="ident">vhost_socket</span> <span class="op">=</span> <span class="ident">matches</span>
-        .<span class="ident">opt_str</span>(<span class="string">&quot;vhost-socket&quot;</span>)
-        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;/dev/vhost-vsock&quot;</span>.<span class="ident">to_string</span>());
-
-    <span class="kw">let</span> <span class="ident">backend</span> <span class="op">=</span> <span class="ident">VsockBackend::new</span>(<span class="ident">cid</span>, <span class="ident">vhost_socket</span>)
+    <span class="kw">let</span> <span class="ident">backend</span> <span class="op">=</span> <span class="ident">VsockBackend::new</span>(<span class="ident">opts</span>.<span class="ident">cid</span>, <span class="ident">opts</span>.<span class="ident">vhost_socket</span>)
         .<span class="ident">map</span>(<span class="ident">Mutex::new</span>)
         .<span class="ident">map</span>(<span class="ident">Arc::new</span>)<span class="question-mark">?</span>;
 
     <span class="comment">// TODO: Replace the `and_then` with `Result::flatten` once it is stabilized.</span>
-    <span class="ident">ex</span>.<span class="ident">run_until</span>(<span class="ident">run_device</span>(<span class="kw-2">&amp;</span><span class="ident">ex</span>, <span class="ident">socket</span>, <span class="ident">backend</span>))
+    <span class="ident">ex</span>.<span class="ident">run_until</span>(<span class="ident">run_device</span>(<span class="kw-2">&amp;</span><span class="ident">ex</span>, <span class="ident">opts</span>.<span class="ident">socket</span>, <span class="ident">backend</span>))
         .<span class="ident">context</span>(<span class="string">&quot;failed to run vsock device&quot;</span>)
         .<span class="ident">and_then</span>(<span class="ident">convert::identity</span>)
 }
