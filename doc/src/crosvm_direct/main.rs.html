@@ -6926,7 +6926,7 @@ with a &#39;--backing_file&#39;.&quot;</span>
             <span class="bool-val">true</span>
         }
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
-    } <span class="op">|</span><span class="op">|</span> <span class="macro">cfg!</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;direct&quot;</span>); <span class="comment">// TODO(dtor): remove default for crosvm-direct after transition</span>
+    };
 
     <span class="kw">let</span> <span class="ident">command</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">cmd_arg</span> {
         <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">c</span>,
