@@ -1611,9 +1611,27 @@
 <span id="1611">1611</span>
 <span id="1612">1612</span>
 <span id="1613">1613</span>
+<span id="1614">1614</span>
+<span id="1615">1615</span>
+<span id="1616">1616</span>
+<span id="1617">1617</span>
+<span id="1618">1618</span>
+<span id="1619">1619</span>
+<span id="1620">1620</span>
+<span id="1621">1621</span>
+<span id="1622">1622</span>
+<span id="1623">1623</span>
+<span id="1624">1624</span>
+<span id="1625">1625</span>
+<span id="1626">1626</span>
+<span id="1627">1627</span>
+<span id="1628">1628</span>
+<span id="1629">1629</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
+
+<span class="kw">use</span> <span class="ident">std::arch::x86_64::__cpuid</span>;
 
 <span class="kw">use</span> <span class="ident">base::IoctlNr</span>;
 
@@ -1685,6 +1703,20 @@
         } <span class="kw">else</span> {
             <span class="macro">error!</span>(<span class="string">&quot;Protected mode is not supported on x86_64.&quot;</span>);
             <span class="prelude-val">Err</span>(<span class="ident">Error::new</span>(<span class="ident">libc::EINVAL</span>))
+        }
+    }
+
+    <span class="doccomment">/// Get the size of guest physical addresses in bits.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_guest_phys_addr_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
+        <span class="comment">// Get host cpu max physical address bits.</span>
+        <span class="comment">// Assume the guest physical address size is the same as the host.</span>
+        <span class="kw">let</span> <span class="ident">highest_ext_function</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">__cpuid</span>(<span class="number">0x80000000</span>) };
+        <span class="kw">if</span> <span class="ident">highest_ext_function</span>.<span class="ident">eax</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0x80000008</span> {
+            <span class="kw">let</span> <span class="ident">addr_size</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">__cpuid</span>(<span class="number">0x80000008</span>) };
+            <span class="comment">// Low 8 bits of 0x80000008 leaf: host physical address size in bits.</span>
+            <span class="ident">addr_size</span>.<span class="ident">eax</span> <span class="kw">as</span> <span class="ident">u8</span>
+        } <span class="kw">else</span> {
+            <span class="number">36</span>
         }
     }
 }

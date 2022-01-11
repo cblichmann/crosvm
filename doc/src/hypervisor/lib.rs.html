@@ -452,6 +452,9 @@
 <span id="452">452</span>
 <span id="453">453</span>
 <span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -505,6 +508,9 @@
     <span class="doccomment">/// on the particular `Vm` instance. This method is encouraged because it more accurately</span>
     <span class="doccomment">/// reflects the usable capabilities.</span>
     <span class="kw">fn</span> <span class="ident">check_capability</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">c</span>: <span class="ident">VmCap</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
+
+    <span class="doccomment">/// Get the guest physical address size in bits.</span>
+    <span class="kw">fn</span> <span class="ident">get_guest_phys_addr_bits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span>;
 
     <span class="doccomment">/// Gets the guest-mapped memory for the Vm.</span>
     <span class="kw">fn</span> <span class="ident">get_memory</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">GuestMemory</span>;

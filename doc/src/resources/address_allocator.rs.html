@@ -649,6 +649,24 @@
 <span id="649">649</span>
 <span id="650">650</span>
 <span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -677,6 +695,8 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AddressAllocator</span> {
+    <span class="ident">pool_base</span>: <span class="ident">u64</span>,
+    <span class="ident">pool_size</span>: <span class="ident">u64</span>,
     <span class="ident">alignment</span>: <span class="ident">u64</span>,
     <span class="ident">allocs</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Alloc</span>, (<span class="ident">u64</span>, <span class="ident">u64</span>, <span class="ident">String</span>)<span class="op">&gt;</span>,
     <span class="ident">regions</span>: <span class="ident">BTreeSet</span><span class="op">&lt;</span>(<span class="ident">u64</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>,
@@ -707,10 +727,26 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">regions</span> <span class="op">=</span> <span class="ident">BTreeSet::new</span>();
         <span class="ident">regions</span>.<span class="ident">insert</span>((<span class="ident">pool_base</span>, <span class="ident">pool_end</span>));
         <span class="prelude-val">Ok</span>(<span class="ident">AddressAllocator</span> {
+            <span class="ident">pool_base</span>,
+            <span class="ident">pool_size</span>,
             <span class="ident">alignment</span>,
             <span class="ident">allocs</span>: <span class="ident">HashMap::new</span>(),
             <span class="ident">regions</span>,
         })
+    }
+
+    <span class="doccomment">/// Gets the starting address of the allocator.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This returns the original `pool_base` value provided to `AddressAllocator::new()`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pool_base</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+        <span class="self">self</span>.<span class="ident">pool_base</span>
+    }
+
+    <span class="doccomment">/// Gets the size of the allocator&#39;s address range in bytes.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This returns the original `pool_size` value provided to `AddressAllocator::new()`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pool_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+        <span class="self">self</span>.<span class="ident">pool_size</span>
     }
 
     <span class="kw">fn</span> <span class="ident">internal_allocate_with_align</span>(

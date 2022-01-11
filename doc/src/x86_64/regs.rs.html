@@ -400,6 +400,11 @@
 <span id="400">400</span>
 <span id="401">401</span>
 <span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -407,7 +412,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">mem</span>, <span class="ident">result</span>};
 
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="self">self</span>, <span class="ident">warn</span>};
-<span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">Fpu</span>, <span class="ident">Register</span>, <span class="ident">Regs</span>, <span class="ident">Sregs</span>, <span class="ident">VcpuX86_64</span>};
+<span class="kw">use</span> <span class="ident">hypervisor</span>::{<span class="ident">Fpu</span>, <span class="ident">Register</span>, <span class="ident">Regs</span>, <span class="ident">Sregs</span>, <span class="ident">VcpuX86_64</span>, <span class="ident">Vm</span>};
 <span class="kw">use</span> <span class="ident">remain::sorted</span>;
 <span class="kw">use</span> <span class="ident">thiserror::Error</span>;
 <span class="kw">use</span> <span class="ident">vm_memory</span>::{<span class="ident">GuestAddress</span>, <span class="ident">GuestMemory</span>};
@@ -495,7 +500,12 @@
     <span class="ident">vecs</span>
 }
 
-<span class="kw">fn</span> <span class="ident">append_mtrr_entries</span>(<span class="ident">vpu</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">VcpuX86_64</span>, <span class="ident">pci_start</span>: <span class="ident">u64</span>, <span class="ident">entries</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Register</span><span class="op">&gt;</span>) {
+<span class="kw">fn</span> <span class="ident">append_mtrr_entries</span>(
+    <span class="ident">vm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Vm</span>,
+    <span class="ident">vpu</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">VcpuX86_64</span>,
+    <span class="ident">pci_start</span>: <span class="ident">u64</span>,
+    <span class="ident">entries</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Register</span><span class="op">&gt;</span>,
+) {
     <span class="comment">// Get VAR MTRR num from MSR_MTRRcap</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">msrs</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">Register</span> {
         <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_MTRRcap</span>,
@@ -519,7 +529,7 @@
         <span class="kw">return</span>;
     }
 
-    <span class="kw">let</span> <span class="ident">phys_mask</span>: <span class="ident">u64</span> <span class="op">=</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident"><span class="kw">crate</span>::cpuid::phy_max_address_bits</span>()) <span class="op">-</span> <span class="number">1</span>;
+    <span class="kw">let</span> <span class="ident">phys_mask</span>: <span class="ident">u64</span> <span class="op">=</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">vm</span>.<span class="ident">get_guest_phys_addr_bits</span>()) <span class="op">-</span> <span class="number">1</span>;
     <span class="kw">for</span> (<span class="ident">idx</span>, (<span class="ident">base</span>, <span class="ident">len</span>)) <span class="kw">in</span> <span class="ident">vecs</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
         <span class="kw">let</span> <span class="ident">reg_idx</span> <span class="op">=</span> <span class="ident">idx</span> <span class="kw">as</span> <span class="ident">u32</span> <span class="op">*</span> <span class="number">2</span>;
         <span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">Register</span> {
@@ -539,7 +549,7 @@
     });
 }
 
-<span class="kw">fn</span> <span class="ident">create_msr_entries</span>(<span class="ident">vcpu</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">VcpuX86_64</span>, <span class="ident">pci_start</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Register</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">create_msr_entries</span>(<span class="ident">vm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Vm</span>, <span class="ident">vcpu</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">VcpuX86_64</span>, <span class="ident">pci_start</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Register</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> <span class="op">=</span> <span class="macro">vec!</span>[
         <span class="ident">Register</span> {
             <span class="ident">id</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_IA32_SYSENTER_CS</span>,
@@ -584,7 +594,7 @@
             <span class="ident">value</span>: <span class="ident"><span class="kw">crate</span>::msr_index::MSR_IA32_MISC_ENABLE_FAST_STRING</span> <span class="kw">as</span> <span class="ident">u64</span>,
         },
     ];
-    <span class="ident">append_mtrr_entries</span>(<span class="ident">vcpu</span>, <span class="ident">pci_start</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">entries</span>);
+    <span class="ident">append_mtrr_entries</span>(<span class="ident">vm</span>, <span class="ident">vcpu</span>, <span class="ident">pci_start</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">entries</span>);
     <span class="ident">entries</span>
 }
 
@@ -593,8 +603,8 @@
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// * `vcpu` - Structure for the vcpu that holds the vcpu fd.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">setup_msrs</span>(<span class="ident">vcpu</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">VcpuX86_64</span>, <span class="ident">pci_start</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">msrs</span> <span class="op">=</span> <span class="ident">create_msr_entries</span>(<span class="ident">vcpu</span>, <span class="ident">pci_start</span>);
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">setup_msrs</span>(<span class="ident">vm</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Vm</span>, <span class="ident">vcpu</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">VcpuX86_64</span>, <span class="ident">pci_start</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">msrs</span> <span class="op">=</span> <span class="ident">create_msr_entries</span>(<span class="ident">vm</span>, <span class="ident">vcpu</span>, <span class="ident">pci_start</span>);
     <span class="ident">vcpu</span>.<span class="ident">set_msrs</span>(<span class="kw-2">&amp;</span><span class="ident">msrs</span>).<span class="ident">map_err</span>(<span class="ident">Error::MsrIoctlFailed</span>)
 }
 
