@@ -175,6 +175,59 @@
 <span id="175">175</span>
 <span id="176">176</span>
 <span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -182,21 +235,36 @@
 <span class="kw">use</span> <span class="ident">data_model</span>::{<span class="ident">DataInit</span>, <span class="ident">Le16</span>, <span class="ident">SLe32</span>};
 <span class="kw">use</span> <span class="ident">std::mem::size_of</span>;
 
-<span class="kw">const</span> <span class="ident">EV_SYN</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x00</span>;
-<span class="kw">const</span> <span class="ident">EV_KEY</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x01</span>;
-<span class="kw">const</span> <span class="ident">EV_REL</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x02</span>;
-<span class="kw">const</span> <span class="ident">EV_ABS</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x03</span>;
-<span class="kw">const</span> <span class="ident">SYN_REPORT</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0</span>;
-<span class="kw">const</span> <span class="ident">REL_X</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x00</span>;
-<span class="kw">const</span> <span class="ident">REL_Y</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x01</span>;
-<span class="kw">const</span> <span class="ident">ABS_MT_TRACKING_ID</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x39</span>;
-<span class="kw">const</span> <span class="ident">ABS_MT_SLOT</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x2f</span>;
-<span class="kw">const</span> <span class="ident">ABS_MT_POSITION_X</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x35</span>;
-<span class="kw">const</span> <span class="ident">ABS_MT_POSITION_Y</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x36</span>;
-<span class="kw">const</span> <span class="ident">ABS_X</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x00</span>;
-<span class="kw">const</span> <span class="ident">ABS_Y</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x01</span>;
-<span class="kw">const</span> <span class="ident">BTN_TOUCH</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x14a</span>;
-<span class="kw">const</span> <span class="ident">BTN_TOOL_FINGER</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x145</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EV_SYN</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x00</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EV_KEY</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x01</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EV_REL</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x02</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EV_ABS</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x03</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SYN_REPORT</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">REL_X</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x00</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">REL_Y</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x01</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_X</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x00</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_Y</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x01</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_PRESSURE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x18</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_TILT_X</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x1a</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_TILT_Y</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x1b</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_TOOL_WIDTH</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x1c</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BTN_TOUCH</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x14a</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BTN_TOOL_FINGER</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x145</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_SLOT</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x2f</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_TOUCH_MAJOR</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x30</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_TOUCH_MINOR</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x31</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_WIDTH_MAJOR</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x32</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_WIDTH_MINOR</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x33</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_ORIENTATION</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x34</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_POSITION_X</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x35</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_POSITION_Y</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x36</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_TOOL_TYPE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x37</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_BLOB_ID</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x38</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_TRACKING_ID</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x39</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_PRESSURE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x3a</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_DISTANCE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x3b</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_TOOL_X</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x3c</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABS_MT_TOOL_Y</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x3d</span>;
 
 <span class="doccomment">/// Allows a raw input event of the implementor&#39;s type to be decoded into</span>
 <span class="doccomment">/// a virtio_input_event.</span>
@@ -349,6 +417,44 @@
             <span class="ident">type_</span>: <span class="ident">Le16::from</span>(<span class="ident">EV_KEY</span>),
             <span class="ident">code</span>: <span class="ident">Le16::from</span>(<span class="ident">code</span>),
             <span class="ident">value</span>: <span class="ident">SLe32::from</span>(<span class="kw">if</span> <span class="ident">pressed</span> { <span class="number">1</span> } <span class="kw">else</span> { <span class="number">0</span> }),
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_valid_mt_event</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">type_</span>.<span class="ident">to_native</span>() {
+            <span class="ident">EV_KEY</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">to_native</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">BTN_TOUCH</span>,
+            <span class="ident">EV_ABS</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">matches!</span>(
+                <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">to_native</span>(),
+                <span class="ident">ABS_MT_SLOT</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_TOUCH_MAJOR</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_TOUCH_MINOR</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_WIDTH_MAJOR</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_WIDTH_MINOR</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_ORIENTATION</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_POSITION_X</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_POSITION_Y</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_TOOL_TYPE</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_BLOB_ID</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_TRACKING_ID</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_PRESSURE</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_DISTANCE</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_TOOL_X</span>
+                    <span class="op">|</span> <span class="ident">ABS_MT_TOOL_Y</span>
+            ),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_valid_st_event</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">type_</span>.<span class="ident">to_native</span>() {
+            <span class="ident">EV_KEY</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">to_native</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">BTN_TOUCH</span>,
+            <span class="ident">EV_ABS</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">matches!</span>(
+                <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">to_native</span>(),
+                <span class="ident">ABS_X</span> <span class="op">|</span> <span class="ident">ABS_Y</span> <span class="op">|</span> <span class="ident">ABS_PRESSURE</span> <span class="op">|</span> <span class="ident">ABS_TILT_X</span> <span class="op">|</span> <span class="ident">ABS_TILT_Y</span> <span class="op">|</span> <span class="ident">ABS_TOOL_WIDTH</span>
+            ),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         }
     }
 }
