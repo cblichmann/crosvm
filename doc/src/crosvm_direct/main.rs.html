@@ -3848,6 +3848,10 @@
 <span id="3848">3848</span>
 <span id="3849">3849</span>
 <span id="3850">3850</span>
+<span id="3851">3851</span>
+<span id="3852">3852</span>
+<span id="3853">3853</span>
+<span id="3854">3854</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -6008,6 +6012,9 @@
         <span class="string">&quot;stub-pci-device&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
             <span class="ident">cfg</span>.<span class="ident">stub_pci_devices</span>.<span class="ident">push</span>(<span class="ident">parse_stub_pci_parameters</span>(<span class="ident">value</span>)<span class="question-mark">?</span>);
         }
+        <span class="string">&quot;vvu-proxy&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cfg</span>.<span class="ident">vvu_proxy</span>.<span class="ident">push</span>(<span class="ident">VhostUserOption</span> {
+            <span class="ident">socket</span>: <span class="ident">PathBuf::from</span>(<span class="ident">value</span>.<span class="ident">unwrap</span>()),
+        }),
         <span class="string">&quot;help&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::PrintHelp</span>),
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable!</span>(),
     }
@@ -6326,6 +6333,7 @@ iommu=on|off - indicates whether to enable virtio IOMMU for this device&quot;</s
           <span class="ident">Argument::value</span>(<span class="string">&quot;vhost-user-wl&quot;</span>, <span class="string">&quot;SOCKET_PATH:TUBE_PATH&quot;</span>, <span class="string">&quot;Paths to a vhost-user socket for wayland and a Tube socket for additional wayland-specific messages&quot;</span>),
           <span class="ident">Argument::value</span>(<span class="string">&quot;vhost-user-fs&quot;</span>, <span class="string">&quot;SOCKET_PATH:TAG&quot;</span>,
                           <span class="string">&quot;Path to a socket path for vhost-user fs, and tag for the shared dir&quot;</span>),
+          <span class="ident">Argument::value</span>(<span class="string">&quot;vvu-proxy&quot;</span>, <span class="string">&quot;SOCKET_PATH&quot;</span>, <span class="string">&quot;Socket path for the Virtio Vhost User proxy device&quot;</span>),
           <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;direct&quot;</span>)]</span>
           <span class="ident">Argument::value</span>(<span class="string">&quot;direct-pmio&quot;</span>, <span class="string">&quot;PATH@RANGE[,RANGE[,...]]&quot;</span>, <span class="string">&quot;Path and ranges for direct port mapped I/O access. RANGE may be decimal or hex (starting with 0x).&quot;</span>),
           <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;direct&quot;</span>)]</span>

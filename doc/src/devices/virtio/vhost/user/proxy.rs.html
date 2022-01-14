@@ -912,9 +912,6 @@
 <span id="912">912</span>
 <span id="913">913</span>
 <span id="914">914</span>
-<span id="915">915</span>
-<span id="916">916</span>
-<span id="917">917</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -931,7 +928,6 @@
 <span class="kw">use</span> <span class="ident">std::io::Write</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::io::AsRawFd</span>;
 <span class="kw">use</span> <span class="ident">std::os::unix::net::UnixListener</span>;
-<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
 <span class="kw">use</span> <span class="ident">std::thread</span>;
 
 <span class="kw">use</span> <span class="ident">base</span>::{<span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">AsRawDescriptor</span>, <span class="ident">Event</span>, <span class="ident">EventType</span>, <span class="ident">PollToken</span>, <span class="ident">RawDescriptor</span>, <span class="ident">WaitContext</span>};
@@ -1465,8 +1461,11 @@
 }
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VirtioVhostUser</span> {
-    <span class="comment">// Path to open and accept a socket connection from the Vhost-user sibling.</span>
-    <span class="ident">sibling_socket_path</span>: <span class="ident">PathBuf</span>,
+    <span class="ident">base_features</span>: <span class="ident">u64</span>,
+
+    <span class="comment">// Bound socket waiting to accept a socket connection from the Vhost-user</span>
+    <span class="comment">// sibling.</span>
+    <span class="ident">listener</span>: <span class="ident">UnixListener</span>,
 
     <span class="comment">// Device configuration.</span>
     <span class="ident">config</span>: <span class="ident">VirtioVhostUserConfig</span>,
@@ -1488,9 +1487,10 @@
 }
 
 <span class="kw">impl</span> <span class="ident">VirtioVhostUser</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">sibling_socket_path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">VirtioVhostUser</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">base_features</span>: <span class="ident">u64</span>, <span class="ident">listener</span>: <span class="ident">UnixListener</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">VirtioVhostUser</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">VirtioVhostUser</span> {
-            <span class="ident">sibling_socket_path</span>: <span class="ident">sibling_socket_path</span>.<span class="ident">to_owned</span>(),
+            <span class="ident">base_features</span>,
+            <span class="ident">listener</span>,
             <span class="ident">config</span>: <span class="ident">VirtioVhostUserConfig</span> {
                 <span class="ident">status</span>: <span class="ident">Le32::from</span>(<span class="number">0</span>),
                 <span class="ident">max_vhost_queues</span>: <span class="ident">Le32::from</span>(<span class="ident">MAX_VHOST_DEVICE_QUEUES</span> <span class="kw">as</span> <span class="ident">u32</span>),
@@ -1586,15 +1586,7 @@
         };
         <span class="self">self</span>.<span class="ident">kill_evt</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">self_kill_evt</span>);
 
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">UnixListener::bind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sibling_socket_path</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">listener</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">listener</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">error!</span>(<span class="string">&quot;failed to bind listener: {}&quot;</span>, <span class="ident">e</span>);
-                <span class="kw">return</span>;
-            }
-        };
-
-        <span class="kw">let</span> <span class="ident">socket</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">listener</span>.<span class="ident">accept</span>() {
+        <span class="kw">let</span> <span class="ident">socket</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">listener</span>.<span class="ident">accept</span>() {
             <span class="prelude-val">Ok</span>((<span class="ident">socket</span>, <span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">socket</span>,
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">error!</span>(<span class="string">&quot;failed to accept connection: {}&quot;</span>, <span class="ident">e</span>);
@@ -1657,13 +1649,15 @@
 }
 
 <span class="kw">impl</span> <span class="ident">VirtioDevice</span> <span class="kw">for</span> <span class="ident">VirtioVhostUser</span> {
-    <span class="kw">fn</span> <span class="ident">keep_rds</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">RawDescriptor</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rds</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+    <span class="kw">fn</span> <span class="ident">features</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+        <span class="self">self</span>.<span class="ident">base_features</span>
+    }
 
+    <span class="kw">fn</span> <span class="ident">keep_rds</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">RawDescriptor</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rds</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="self">self</span>.<span class="ident">listener</span>.<span class="ident">as_raw_fd</span>()];
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kill_evt</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">kill_evt</span> {
             <span class="ident">rds</span>.<span class="ident">push</span>(<span class="ident">kill_evt</span>.<span class="ident">as_raw_descriptor</span>());
         }
-
         <span class="ident">rds</span>
     }
 
