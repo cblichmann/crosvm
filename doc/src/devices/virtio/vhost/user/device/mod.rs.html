@@ -22,12 +22,18 @@
 <span id="22">22</span>
 <span id="23">23</span>
 <span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
 
 <span class="kw">mod</span> <span class="ident">block</span>;
 <span class="kw">mod</span> <span class="ident">console</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;audio_cras&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">cras_snd</span>;
 <span class="kw">mod</span> <span class="ident">fs</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gpu&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">gpu</span>;
@@ -40,6 +46,8 @@
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">block::run_block_device</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">console::run_console_device</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;audio_cras&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">cras_snd::run_cras_snd_device</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">fs::run_fs_device</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gpu&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gpu::run_gpu_device</span>;
