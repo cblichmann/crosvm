@@ -415,6 +415,45 @@ testing. The file system must be named &quot;mtd*&quot; or &quot;ubi*&quot;.</p>
 <pre><code class="language-bash">crosvm run --shared-dir &quot;/:mtdfake:type=fs:cache=always&quot; \
     -p &quot;rootfstype=virtiofs root=mtdfake&quot; vmlinux
 </code></pre>
+<h2 id="network-device"><a class="header" href="#network-device">Network device</a></h2>
+<p>The most convenient way to provide a network device to a guest is to setup a persistent TAP
+interface on the host. This section will explain how to do this for basic IPv4 connectivity.</p>
+<pre><code class="language-bash">sudo ip tuntap add mode tap user $USER vnet_hdr crosvm_tap
+sudo ip addr add 192.168.10.1/24 dev crosvm_tap
+sudo ip link set crosvm_tap up
+</code></pre>
+<p>These commands create a TAP interface named <code>crosvm_tap</code> that is accessible to the current user,
+configure the host to use the IP address <code>192.168.10.1</code>, and bring the interface up.</p>
+<p>The next step is to make sure that traffic from/to this interface is properly routed:</p>
+<pre><code class="language-bash">sudo sysctl net.ipv4.ip_forward=1
+# Network interface used to connect to the internet.
+HOST_DEV=$(ip route get 8.8.8.8 | awk -- '{printf $5}')
+sudo iptables -t nat -A POSTROUTING -o &quot;${HOST_DEV}&quot; -j MASQUERADE
+sudo iptables -A FORWARD -i &quot;${HOST_DEV}&quot; -o crosvm_tap -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo iptables -A FORWARD -i crosvm_tap -o &quot;${HOST_DEV}&quot; -j ACCEPT
+</code></pre>
+<p>The interface is now configured and can be used by crosvm:</p>
+<pre><code class="language-bash">crosvm run \
+  ...
+  --tap-name crosvm_tap \
+  ...
+</code></pre>
+<p>Provided the guest kernel had support for <code>VIRTIO_NET</code>, the network device should be visible and
+configurable from the guest:</p>
+<pre><code class="language-bash"># Replace with the actual network interface name of the guest
+# (use &quot;ip addr&quot; to list the interfaces)
+GUEST_DEV=enp0s5
+sudo ip addr add 192.168.10.2/24 dev &quot;${GUEST_DEV}&quot;
+sudo ip link set &quot;${GUEST_DEV}&quot; up
+sudo ip route add default via 192.168.10.1
+# &quot;8.8.8.8&quot; is chosen arbitrarily as a default, please replace with your local (or preferred global)
+# DNS provider, which should be visible in `/etc/resolv.conf` on the host.
+echo &quot;nameserver 8.8.8.8&quot; | sudo tee /etc/resolv.conf
+</code></pre>
+<p>These commands assign IP address <code>192.168.10.2</code> to the guest, activate the interface, and route
+all network traffic to the host. The last line also ensures DNS will work.</p>
+<p>Please refer to your distribution's documentation for instructions on how to make these settings
+persistent for the host and guest if desired.</p>
 <h2 id="control-socket"><a class="header" href="#control-socket">Control Socket</a></h2>
 <p>If the control socket was enabled with <code>-s</code>, the main process can be controlled
 while crosvm is running. To tell crosvm to stop and exit, for example:</p>
