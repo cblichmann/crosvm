@@ -470,6 +470,10 @@
 <span id="470">470</span>
 <span id="471">471</span>
 <span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2020 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -585,6 +589,7 @@
         <span class="ident">out_size</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">u64</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="kw">fn</span> <span class="ident">stream_renderer_resource_unmap</span>(<span class="ident">res_handle</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">fn</span> <span class="ident">stream_renderer_resource_map_info</span>(<span class="ident">res_handle</span>: <span class="ident">u32</span>, <span class="ident">map_info</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
 }
 
 <span class="doccomment">/// The virtio-gpu backend state tracker which supports accelerated rendering.</span>
@@ -704,9 +709,12 @@
         }))
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::unnecessary_wraps</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">map_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_resource_id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RutabagaResult</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">RUTABAGA_MAP_CACHE_WC</span>)
+    <span class="kw">fn</span> <span class="ident">map_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">resource_id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RutabagaResult</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map_info</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">stream_renderer_resource_map_info</span>(<span class="ident">resource_id</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">map_info</span>) };
+        <span class="ident">ret_to_res</span>(<span class="ident">ret</span>)<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(<span class="ident">map_info</span>)
     }
 }
 
