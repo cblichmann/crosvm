@@ -137,7 +137,44 @@
                         <h1 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h1>
 <p>This page describes how to prepare VM artifacts and run crosvm with them. If you
 haven't built crosvm yet, please read the <a href="../building_crosvm/index.html">Building crosvm</a> section first.</p>
-<h2 id="get-a-kernel"><a class="header" href="#get-a-kernel">Get a Kernel</a></h2>
+<p>The example code is available in <a href="https://source.chromium.org/chromiumos/chromiumos/codesearch/+/main:src/platform/crosvm/tools/examples">tools/examples</a>.</p>
+<h2 id="run-a-simple-guest-os-using-virt-builder"><a class="header" href="#run-a-simple-guest-os-using-virt-builder">Run a simple Guest OS (using virt-builder)</a></h2>
+<p>To run a VM with crosvm, we need two things: A kernel binary and a rootfs. You
+can build those <a href="#using-a-custom-kernel-and-rootfs">yourself</a> or use prebuilt
+cloud/vm images that some linux distributions provide.</p>
+<h3 id="build-the-guest-os-image"><a class="header" href="#build-the-guest-os-image">Build the Guest OS image</a></h3>
+<p>One of the more convenient ways to customize these VM images is to use
+<a href="https://libguestfs.org/virt-builder.1.html">virt-builder</a> from the <code>libguestfs-tools</code> package.</p>
+<pre><code class="language-bash">    # Build a simple ubuntu image and create a user with no password.
+    virt-builder ubuntu-20.04 \
+        --run-command &quot;useradd -m -g sudo -p '' $USER ; chage -d 0 $USER&quot; \
+        -o ./rootfs
+</code></pre>
+<h3 id="extract-the-kernel-and-initrd"><a class="header" href="#extract-the-kernel-and-initrd">Extract the Kernel (And initrd)</a></h3>
+<p>Crosvm directly runs the kernel instead of using the bootloader. So we need to
+extract the kernel binary from the image. <a href="https://libguestfs.org/virt-builder.1.html">virt-builder</a> has a tool for that:</p>
+<pre><code class="language-bash">    virt-builder --get-kernel ./rootfs -o .
+</code></pre>
+<p>The kernel binary is going to be saved in the same directory.</p>
+<p>Note: Most distributions use an init ramdisk, which is extracted at the same
+time and needs to be passed to crosvm as well.</p>
+<h3 id="launch-the-vm"><a class="header" href="#launch-the-vm">Launch the VM</a></h3>
+<p>With all the files in place, crosvm can be run:</p>
+<pre><code class="language-bash"># Run crosvm without sandboxing.
+# The rootfs is an image of a partitioned hard drive, so we need to tell
+# the kernel which partition to use (vda5 in case of ubuntu-20.04).
+cargo run --features=all-linux -- run \
+    --disable-sandbox \
+    --rwroot ./rootfs \
+    --initrd ./initrd.img-* \
+    -p &quot;root=/dev/vda5&quot; \
+    ./vmlinuz-*
+</code></pre>
+<h2 id="using-a-custom-kernel-and-rootfs"><a class="header" href="#using-a-custom-kernel-and-rootfs">Using a custom Kernel and rootfs</a></h2>
+<p>Instead of using prebuilt images, you can build a custom kernel and use
+debootstrab to build a rootfs. The resulting artifacts can be used just like the
+ones above.</p>
+<h3 id="build-a-kernel"><a class="header" href="#build-a-kernel">Build a kernel</a></h3>
 <p>Because crosvm usually runs the latest stable Chrome OS kernel, that is the most
 convenient one to use. If you are using the chroot for Chromium OS development,
 you already have the kernel source. Otherwise, you can clone it:</p>
@@ -151,7 +188,7 @@ make -j$(nproc) bzImage
 <p>This kernel does not build any modules, nor does it support loading them, so
 there is no need to worry about an initramfs, although they are supported in
 crosvm.</p>
-<h2 id="get-a-rootfs-disk"><a class="header" href="#get-a-rootfs-disk">Get a rootfs disk</a></h2>
+<h3 id="build-a-rootfs-disk"><a class="header" href="#build-a-rootfs-disk">Build a rootfs disk</a></h3>
 <p>This stage enjoys the most flexibility. There aren't any special requirements
 for a rootfs in crosvm, but you will at a minimum need an init binary. This
 could even be <code>/bin/bash</code> if that is enough for your purposes. To get you
@@ -174,27 +211,13 @@ sudo umount &quot;${CHROOT_PATH}&quot;
 </code></pre>
 <blockquote>
 <p>Note: If you run crosvm on a testing device (e.g. Chromebook in Developer
-mode),　another option is to share the host's rootfs with the guest via
+mode), another option is to share the host's rootfs with the guest via
 virtiofs. See the <a href="./usage.html#with-virtiofs">virtiofs usage</a>.</p>
 </blockquote>
-<!-- TODO: Is it possible to use a prebuilt Debian image downloaded from the official site? -->
-<h2 id="create-a-disk-image"><a class="header" href="#create-a-disk-image">Create a disk image</a></h2>
 <p>You can simply create a disk image as follows:</p>
 <pre><code class="language-bash">fallocate --length 4G disk.img
 mkfs.ext4 ./disk.img
 </code></pre>
-<h2 id="launch-a-vm"><a class="header" href="#launch-a-vm">Launch a VM</a></h2>
-<p>Now, you can start a VM with the <code>crosvm run</code> command. Note that the user must
-be added to a group which can access <code>/dev/kvm</code> (usually <code>kvm</code>).</p>
-<pre><code class="language-bash">./target/debug/crosvm run \
-  --disable-sandbox \
-  --rwroot /path/to/debian.ext4 \
-  --rwdisk /path/to/disk.img \
-  -p 'init=/bin/bash' \
-  /path/to/kernel/vmlinux
-</code></pre>
-<p>Once the guest started, disk.img will be available as <code>/dev/vdb</code> in the guest.
-For more advanced usage, see the next section.</p>
 
                     </main>
 
