@@ -3856,6 +3856,18 @@
 <span id="3856">3856</span>
 <span id="3857">3857</span>
 <span id="3858">3858</span>
+<span id="3859">3859</span>
+<span id="3860">3860</span>
+<span id="3861">3861</span>
+<span id="3862">3862</span>
+<span id="3863">3863</span>
+<span id="3864">3864</span>
+<span id="3865">3865</span>
+<span id="3866">3866</span>
+<span id="3867">3867</span>
+<span id="3868">3868</span>
+<span id="3869">3869</span>
+<span id="3870">3870</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -4417,6 +4429,8 @@
     <span class="ident">gpu_params</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">GpuParameters</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">argument::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache_path</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache_size</span> <span class="op">=</span> <span class="prelude-val">None</span>;
 
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">s</span> {
         <span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">s</span>
@@ -4435,6 +4449,8 @@
                             })<span class="question-mark">?</span>,
                         )
                 }
+                <span class="string">&quot;cache-path&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cache_path</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>.<span class="ident">to_string</span>()),
+                <span class="string">&quot;cache-size&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cache_size</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>.<span class="ident">to_string</span>()),
                 <span class="string">&quot;&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {}
                 <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::UnknownArgument</span>(<span class="macro">format!</span>(
@@ -4447,7 +4463,11 @@
     }
 
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="ident">path</span> {
-        <span class="ident">gpu_params</span>.<span class="ident">render_server</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">GpuRenderServerParameters</span> { <span class="ident">path</span>: <span class="ident">p</span> });
+        <span class="ident">gpu_params</span>.<span class="ident">render_server</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">GpuRenderServerParameters</span> {
+            <span class="ident">path</span>: <span class="ident">p</span>,
+            <span class="ident">cache_path</span>,
+            <span class="ident">cache_size</span>,
+        });
         <span class="prelude-val">Ok</span>(())
     } <span class="kw">else</span> {
         <span class="prelude-val">Err</span>(<span class="ident">argument::Error::InvalidValue</span> {
@@ -6281,7 +6301,9 @@
                               surfaceless[=true|=false] - If the backend should use a surfaceless context for rendering.
                               angle[=true|=false] - If the gfxstream backend should use ANGLE (OpenGL on Vulkan) as its native OpenGL driver.
                               syncfd[=true|=false] - If the gfxstream backend should support EGL_ANDROID_native_fence_sync
-                              vulkan[=true|=false] - If the backend should support vulkan&quot;</span>),
+                              vulkan[=true|=false] - If the backend should support vulkan
+                              cache-path=PATH - The path to the virtio-gpu device shader cache.
+                              cache-size=SIZE - The maximum size of the shader cache.&quot;</span>),
           <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;gpu&quot;</span>)]</span>
           <span class="ident">Argument::flag_or_value</span>(<span class="string">&quot;gpu-display&quot;</span>,
                                   <span class="string">&quot;[width=INT,height=INT]&quot;</span>,
@@ -6294,7 +6316,9 @@
                                   <span class="string">&quot;[path=PATH]&quot;</span>,
                                   <span class="string">&quot;(EXPERIMENTAL) Comma separated key=value pairs for setting up a render server for the virtio-gpu device
                               Possible key values:
-                              path=PATH - The path to the render server executable.&quot;</span>),
+                              path=PATH - The path to the render server executable.
+                              cache-path=PATH - The path to the render server shader cache.
+                              cache-size=SIZE - The maximum size of the shader cache.&quot;</span>),
           <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;tpm&quot;</span>)]</span>
           <span class="ident">Argument::flag</span>(<span class="string">&quot;software-tpm&quot;</span>, <span class="string">&quot;enable a software emulated trusted platform module device&quot;</span>),
           <span class="ident">Argument::value</span>(<span class="string">&quot;evdev&quot;</span>, <span class="string">&quot;PATH&quot;</span>, <span class="string">&quot;Path to an event device node. The device will be grabbed (unusable from the host) and made available to the guest with the same configuration it shows on the host&quot;</span>),
