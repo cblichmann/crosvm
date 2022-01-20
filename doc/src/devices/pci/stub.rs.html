@@ -167,10 +167,6 @@
 <span id="167">167</span>
 <span id="168">168</span>
 <span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2021 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -202,7 +198,6 @@
     <span class="kw">pub</span> <span class="ident">class</span>: <span class="ident">PciClassCode</span>,
     <span class="kw">pub</span> <span class="ident">subclass</span>: <span class="ident">u8</span>,
     <span class="kw">pub</span> <span class="ident">programming_interface</span>: <span class="ident">u8</span>,
-    <span class="kw">pub</span> <span class="ident">multifunction</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">subsystem_vendor_id</span>: <span class="ident">u16</span>,
     <span class="kw">pub</span> <span class="ident">subsystem_device_id</span>: <span class="ident">u16</span>,
     <span class="kw">pub</span> <span class="ident">revision_id</span>: <span class="ident">u8</span>,
@@ -241,7 +236,6 @@
                 <span class="ident">config</span>.<span class="ident">programming_interface</span>,
             )),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="ident">config</span>.<span class="ident">multifunction</span>,
             <span class="ident">config</span>.<span class="ident">subsystem_vendor_id</span>,
             <span class="ident">config</span>.<span class="ident">subsystem_device_id</span>,
             <span class="ident">config</span>.<span class="ident">revision_id</span>,
@@ -314,7 +308,6 @@
         <span class="ident">class</span>: <span class="ident">PciClassCode::MultimediaController</span>,
         <span class="ident">subclass</span>: <span class="number">5</span>,
         <span class="ident">programming_interface</span>: <span class="number">6</span>,
-        <span class="ident">multifunction</span>: <span class="bool-val">true</span>,
         <span class="ident">subsystem_vendor_id</span>: <span class="number">7</span>,
         <span class="ident">subsystem_device_id</span>: <span class="number">8</span>,
         <span class="ident">revision_id</span>: <span class="number">9</span>,
@@ -326,7 +319,6 @@
 
         <span class="macro">assert_eq!</span>(<span class="ident">device</span>.<span class="ident">read_config_register</span>(<span class="number">0</span>), <span class="number">0x0003_0002</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">device</span>.<span class="ident">read_config_register</span>(<span class="number">2</span>), <span class="number">0x04_05_06_09</span>);
-        <span class="macro">assert!</span>((<span class="ident">device</span>.<span class="ident">read_config_register</span>(<span class="number">3</span>) <span class="op">&amp;</span> <span class="number">0x0080_0000</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">device</span>.<span class="ident">read_config_register</span>(<span class="number">11</span>), <span class="number">0x0008_0007</span>);
     }
 

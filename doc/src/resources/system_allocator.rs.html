@@ -310,6 +310,8 @@
 <span id="310">310</span>
 <span id="311">311</span>
 <span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -398,22 +400,22 @@
         <span class="kw">let</span> <span class="ident">page_size</span> <span class="op">=</span> <span class="ident">pagesize</span>() <span class="kw">as</span> <span class="ident">u64</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">SystemAllocator</span> {
             <span class="ident">io_address_space</span>: <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">b</span>), <span class="prelude-val">Some</span>(<span class="ident">s</span>)) <span class="op">=</span> (<span class="ident">io_base</span>, <span class="ident">io_size</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">AddressAllocator::new</span>(<span class="ident">b</span>, <span class="ident">s</span>, <span class="prelude-val">Some</span>(<span class="number">0x400</span>))<span class="question-mark">?</span>)
+                <span class="prelude-val">Some</span>(<span class="ident">AddressAllocator::new</span>(<span class="ident">b</span>, <span class="ident">s</span>, <span class="prelude-val">Some</span>(<span class="number">0x400</span>), <span class="prelude-val">None</span>)<span class="question-mark">?</span>)
             } <span class="kw">else</span> {
                 <span class="prelude-val">None</span>
             },
             <span class="ident">mmio_address_spaces</span>: [
                 <span class="comment">// MmioType::Low</span>
-                <span class="ident">AddressAllocator::new</span>(<span class="ident">low_base</span>, <span class="ident">low_size</span>, <span class="prelude-val">Some</span>(<span class="ident">page_size</span>))<span class="question-mark">?</span>,
+                <span class="ident">AddressAllocator::new</span>(<span class="ident">low_base</span>, <span class="ident">low_size</span>, <span class="prelude-val">Some</span>(<span class="ident">page_size</span>), <span class="prelude-val">None</span>)<span class="question-mark">?</span>,
                 <span class="comment">// MmioType::High</span>
-                <span class="ident">AddressAllocator::new</span>(<span class="ident">high_base</span>, <span class="ident">high_size</span>, <span class="prelude-val">Some</span>(<span class="ident">page_size</span>))<span class="question-mark">?</span>,
+                <span class="ident">AddressAllocator::new</span>(<span class="ident">high_base</span>, <span class="ident">high_size</span>, <span class="prelude-val">Some</span>(<span class="ident">page_size</span>), <span class="prelude-val">None</span>)<span class="question-mark">?</span>,
             ],
 
             <span class="ident">pci_allocator</span>: <span class="ident">BTreeMap::new</span>(),
 
             <span class="ident">mmio_platform_address_spaces</span>: <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">b</span>), <span class="prelude-val">Some</span>(<span class="ident">s</span>)) <span class="op">=</span> (<span class="ident">platform_base</span>, <span class="ident">platform_size</span>)
             {
-                <span class="prelude-val">Some</span>(<span class="ident">AddressAllocator::new</span>(<span class="ident">b</span>, <span class="ident">s</span>, <span class="prelude-val">Some</span>(<span class="ident">page_size</span>))<span class="question-mark">?</span>)
+                <span class="prelude-val">Some</span>(<span class="ident">AddressAllocator::new</span>(<span class="ident">b</span>, <span class="ident">s</span>, <span class="prelude-val">Some</span>(<span class="ident">page_size</span>), <span class="prelude-val">None</span>)<span class="question-mark">?</span>)
             } <span class="kw">else</span> {
                 <span class="prelude-val">None</span>
             },
@@ -422,6 +424,7 @@
                 <span class="ident">first_irq</span> <span class="kw">as</span> <span class="ident">u64</span>,
                 <span class="number">1024</span> <span class="op">-</span> <span class="ident">first_irq</span> <span class="kw">as</span> <span class="ident">u64</span>,
                 <span class="prelude-val">Some</span>(<span class="number">1</span>),
+                <span class="prelude-val">None</span>,
             )<span class="question-mark">?</span>,
             <span class="ident">next_anon_id</span>: <span class="number">0</span>,
         })
@@ -460,9 +463,10 @@
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">pci_allocator</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">bus</span>).<span class="ident">is_none</span>() {
             <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">bus</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> { <span class="number">8</span> } <span class="kw">else</span> { <span class="number">0</span> };
 
-            <span class="comment">// Each bus supports up to  32(devices) x 8(functions) with default</span>
-            <span class="comment">// alignment allocating device with mandatory function number zero.</span>
-            <span class="kw">match</span> <span class="ident">AddressAllocator::new</span>(<span class="ident">base</span>, (<span class="number">32</span> <span class="op">*</span> <span class="number">8</span>) <span class="op">-</span> <span class="ident">base</span>, <span class="prelude-val">Some</span>(<span class="number">8</span>)) {
+            <span class="comment">// Each bus supports up to 32 (devices) x 8 (functions).</span>
+            <span class="comment">// Prefer allocating at device granularity (preferred_align = 8), but fall back to</span>
+            <span class="comment">// allocating individual functions (min_align = 1) when we run out of devices.</span>
+            <span class="kw">match</span> <span class="ident">AddressAllocator::new</span>(<span class="ident">base</span>, (<span class="number">32</span> <span class="op">*</span> <span class="number">8</span>) <span class="op">-</span> <span class="ident">base</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">8</span>)) {
                 <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">pci_allocator</span>.<span class="ident">insert</span>(<span class="ident">bus</span>, <span class="ident">v</span>),
                 <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
             };

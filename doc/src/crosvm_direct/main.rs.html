@@ -3864,10 +3864,6 @@
 <span id="3864">3864</span>
 <span id="3865">3865</span>
 <span id="3866">3866</span>
-<span id="3867">3867</span>
-<span id="3868">3868</span>
-<span id="3869">3869</span>
-<span id="3870">3870</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -4867,7 +4863,6 @@
         <span class="ident">class</span>: <span class="ident">PciClassCode::Other</span>,
         <span class="ident">subclass</span>: <span class="number">0</span>,
         <span class="ident">programming_interface</span>: <span class="number">0</span>,
-        <span class="ident">multifunction</span>: <span class="bool-val">false</span>,
         <span class="ident">subsystem_device_id</span>: <span class="number">0</span>,
         <span class="ident">subsystem_vendor_id</span>: <span class="number">0</span>,
         <span class="ident">revision_id</span>: <span class="number">0</span>,
@@ -4883,7 +4878,6 @@
                 <span class="ident">params</span>.<span class="ident">subclass</span> <span class="op">=</span> (<span class="ident">class</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">8</span>) <span class="kw">as</span> <span class="ident">u8</span>;
                 <span class="ident">params</span>.<span class="ident">programming_interface</span> <span class="op">=</span> <span class="ident">class</span> <span class="kw">as</span> <span class="ident">u8</span>;
             }
-            <span class="string">&quot;multifunction&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">params</span>.<span class="ident">multifunction</span> <span class="op">=</span> <span class="ident">opt</span>.<span class="ident">parse_or</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>(<span class="bool-val">true</span>)<span class="question-mark">?</span>,
             <span class="string">&quot;subsystem_vendor&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">params</span>.<span class="ident">subsystem_vendor_id</span> <span class="op">=</span> <span class="ident">opt</span>.<span class="ident">parse_numeric</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
             <span class="string">&quot;subsystem_device&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">params</span>.<span class="ident">subsystem_device_id</span> <span class="op">=</span> <span class="ident">opt</span>.<span class="ident">parse_numeric</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
             <span class="string">&quot;revision&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">params</span>.<span class="ident">revision_id</span> <span class="op">=</span> <span class="ident">opt</span>.<span class="ident">parse_numeric</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
@@ -6376,12 +6370,11 @@ iommu=on|off - indicates whether to enable virtio IOMMU for this device&quot;</s
           <span class="ident">Argument::flag</span>(<span class="string">&quot;no-legacy&quot;</span>, <span class="string">&quot;Don&#39;t use legacy KBD/RTC devices emulation&quot;</span>),
           <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>))]</span>
           <span class="ident">Argument::flag</span>(<span class="string">&quot;host-cpu-topology&quot;</span>, <span class="string">&quot;Use mirror cpu topology of Host for Guest VM&quot;</span>),
-          <span class="ident">Argument::value</span>(<span class="string">&quot;stub-pci-device&quot;</span>, <span class="string">&quot;DOMAIN:BUS:DEVICE.FUNCTION[,vendor=NUM][,device=NUM][,class=NUM][,multifunction][,subsystem_vendor=NUM][,subsystem_device=NUM][,revision=NUM]&quot;</span>, <span class="string">&quot;Comma-separated key=value pairs for setting up a stub PCI device that just enumerates. The first option in the list must specify a PCI address to claim.
+          <span class="ident">Argument::value</span>(<span class="string">&quot;stub-pci-device&quot;</span>, <span class="string">&quot;DOMAIN:BUS:DEVICE.FUNCTION[,vendor=NUM][,device=NUM][,class=NUM][,subsystem_vendor=NUM][,subsystem_device=NUM][,revision=NUM]&quot;</span>, <span class="string">&quot;Comma-separated key=value pairs for setting up a stub PCI device that just enumerates. The first option in the list must specify a PCI address to claim.
                               Optional further parameters
                               vendor=NUM - PCI vendor ID
                               device=NUM - PCI device ID
                               class=NUM - PCI class (including class code, subclass, and programming interface)
-                              multifunction - whether to set the multifunction flag
                               subsystem_vendor=NUM - PCI subsystem vendor ID
                               subsystem_device=NUM - PCI subsystem device ID
                               revision=NUM - revision&quot;</span>),
@@ -7683,7 +7676,7 @@ with a &#39;--backing_file&#39;.&quot;</span>
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">parse_stub_pci</span>() {
-        <span class="kw">let</span> <span class="ident">params</span> <span class="op">=</span> <span class="ident">parse_stub_pci_parameters</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;0000:01:02.3,vendor=0xfffe,device=0xfffd,class=0xffc1c2,multifunction=true,subsystem_vendor=0xfffc,subsystem_device=0xfffb,revision=0xa&quot;</span>)).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">params</span> <span class="op">=</span> <span class="ident">parse_stub_pci_parameters</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;0000:01:02.3,vendor=0xfffe,device=0xfffd,class=0xffc1c2,subsystem_vendor=0xfffc,subsystem_device=0xfffb,revision=0xa&quot;</span>)).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">address</span>.<span class="ident">bus</span>, <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">address</span>.<span class="ident">dev</span>, <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">address</span>.<span class="ident">func</span>, <span class="number">3</span>);
@@ -7692,7 +7685,6 @@ with a &#39;--backing_file&#39;.&quot;</span>
         <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">class</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="ident">PciClassCode::Other</span> <span class="kw">as</span> <span class="ident">u8</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">subclass</span>, <span class="number">0xc1</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">programming_interface</span>, <span class="number">0xc2</span>);
-        <span class="macro">assert!</span>(<span class="ident">params</span>.<span class="ident">multifunction</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">subsystem_vendor_id</span>, <span class="number">0xfffc</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">subsystem_device_id</span>, <span class="number">0xfffb</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">revision_id</span>, <span class="number">0xa</span>);

@@ -316,6 +316,9 @@
 <span id="316">316</span>
 <span id="317">317</span>
 <span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -428,7 +431,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciSerialBusSubClass::Usb</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">UsbControllerProgrammingInterface::Usb3HostController</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0</span>,
             <span class="number">0</span>,
             <span class="number">0</span>,
@@ -532,9 +534,13 @@
         <span class="ident">irq_num</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">u32</span>, <span class="ident">PciInterruptPin</span>)<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">gsi</span> <span class="op">=</span> <span class="ident">irq_num</span><span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">pin</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pci_address</span>.<span class="ident">map_or</span>(
+            <span class="ident">PciInterruptPin::IntA</span>,
+            <span class="ident">PciConfiguration::suggested_interrupt_pin</span>,
+        );
         <span class="kw">match</span> <span class="ident">mem::replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">state</span>, <span class="ident">XhciControllerState::Unknown</span>) {
             <span class="ident">XhciControllerState::Created</span> { <span class="ident">device_provider</span> } <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="self">self</span>.<span class="ident">config_regs</span>.<span class="ident">set_irq</span>(<span class="ident">gsi</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="ident">PciInterruptPin::IntA</span>);
+                <span class="self">self</span>.<span class="ident">config_regs</span>.<span class="ident">set_irq</span>(<span class="ident">gsi</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="ident">pin</span>);
                 <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="ident">XhciControllerState::IrqAssigned</span> {
                     <span class="ident">device_provider</span>,
                     <span class="ident">irq_evt</span>: <span class="ident">irq_evt</span>.<span class="ident">try_clone</span>().<span class="ident">ok</span>()<span class="question-mark">?</span>,
@@ -545,7 +551,7 @@
                 <span class="macro">error!</span>(<span class="string">&quot;xhci controller is in a wrong state&quot;</span>);
             }
         }
-        <span class="prelude-val">Some</span>((<span class="ident">gsi</span>, <span class="ident">PciInterruptPin::IntA</span>))
+        <span class="prelude-val">Some</span>((<span class="ident">gsi</span>, <span class="ident">pin</span>))
     }
 
     <span class="kw">fn</span> <span class="ident">allocate_io_bars</span>(

@@ -1258,28 +1258,6 @@
 <span id="1258">1258</span>
 <span id="1259">1259</span>
 <span id="1260">1260</span>
-<span id="1261">1261</span>
-<span id="1262">1262</span>
-<span id="1263">1263</span>
-<span id="1264">1264</span>
-<span id="1265">1265</span>
-<span id="1266">1266</span>
-<span id="1267">1267</span>
-<span id="1268">1268</span>
-<span id="1269">1269</span>
-<span id="1270">1270</span>
-<span id="1271">1271</span>
-<span id="1272">1272</span>
-<span id="1273">1273</span>
-<span id="1274">1274</span>
-<span id="1275">1275</span>
-<span id="1276">1276</span>
-<span id="1277">1277</span>
-<span id="1278">1278</span>
-<span id="1279">1279</span>
-<span id="1280">1280</span>
-<span id="1281">1281</span>
-<span id="1282">1282</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -1292,7 +1270,7 @@
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">thiserror::Error</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::pci::PciInterruptPin</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::pci</span>::{<span class="ident">PciAddress</span>, <span class="ident">PciInterruptPin</span>};
 
 <span class="comment">// The number of 32bit registers in the config space, 256 bytes.</span>
 <span class="kw">const</span> <span class="ident">NUM_CONFIGURATION_REGISTERS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">64</span>;
@@ -1302,6 +1280,8 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">COMMAND_REG_MEMORY_SPACE_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0002</span>;
 <span class="kw">const</span> <span class="ident">STATUS_REG</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">const</span> <span class="ident">STATUS_REG_CAPABILITIES_USED_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0010_0000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">HEADER_TYPE_REG</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">HEADER_TYPE_MULTIFUNCTION_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0080_0000</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BAR0_REG</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">4</span>;
 <span class="kw">const</span> <span class="ident">BAR_IO_ADDR_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0xffff_fffc</span>;
 <span class="kw">const</span> <span class="ident">BAR_IO_MIN_SIZE</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">4</span>;
@@ -1591,7 +1571,6 @@
         <span class="ident">subclass</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">PciSubclass</span>,
         <span class="ident">programming_interface</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">PciProgrammingInterface</span><span class="op">&gt;</span>,
         <span class="ident">header_type</span>: <span class="ident">PciHeaderType</span>,
-        <span class="ident">multifunction</span>: <span class="ident">bool</span>,
         <span class="ident">subsystem_vendor_id</span>: <span class="ident">u16</span>,
         <span class="ident">subsystem_id</span>: <span class="ident">u16</span>,
         <span class="ident">revision_id</span>: <span class="ident">u8</span>,
@@ -1632,10 +1611,6 @@
                 <span class="ident">writable_bits</span>[<span class="number">15</span>] <span class="op">=</span> <span class="number">0xffff_00ff</span>; <span class="comment">// Bridge control (r/w), interrupt line (r/w)</span>
             }
         };
-        <span class="comment">// Multifunction is indicated by the highest bit in the header_type field.</span>
-        <span class="kw">if</span> <span class="ident">multifunction</span> {
-            <span class="ident">registers</span>[<span class="number">3</span>] <span class="op">|</span><span class="op">=</span> <span class="number">0x0080_0000</span>;
-        }
 
         <span class="ident">PciConfiguration</span> {
             <span class="ident">registers</span>,
@@ -1928,6 +1903,15 @@
         <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="ident">offset</span> <span class="op">+</span> <span class="ident">len</span>;
         (<span class="ident">next</span> <span class="op">+</span> <span class="number">3</span>) <span class="op">&amp;</span> <span class="op">!</span><span class="number">3</span>
     }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">suggested_interrupt_pin</span>(<span class="ident">pci_address</span>: <span class="ident">PciAddress</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PciInterruptPin</span> {
+        <span class="kw">match</span> <span class="ident">pci_address</span>.<span class="ident">func</span> <span class="op">%</span> <span class="number">4</span> {
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PciInterruptPin::IntA</span>,
+            <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PciInterruptPin::IntB</span>,
+            <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PciInterruptPin::IntC</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PciInterruptPin::IntD</span>,
+        }
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">PciBarConfiguration</span> {
@@ -2033,7 +2017,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">None</span>,
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
@@ -2096,7 +2079,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
@@ -2112,24 +2094,6 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">multifunction</span>() {
-        <span class="kw">let</span> <span class="ident">cfg</span> <span class="op">=</span> <span class="ident">PciConfiguration::new</span>(
-            <span class="number">0x1234</span>,
-            <span class="number">0x5678</span>,
-            <span class="ident">PciClassCode::MultimediaController</span>,
-            <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
-            <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">true</span>,
-            <span class="number">0xABCD</span>,
-            <span class="number">0x2468</span>,
-            <span class="number">0</span>,
-        );
-
-        <span class="macro">assert!</span>((<span class="ident">cfg</span>.<span class="ident">read_reg</span>(<span class="number">3</span>) <span class="op">&amp;</span> <span class="number">0x0080_0000</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">read_only_bits</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cfg</span> <span class="op">=</span> <span class="ident">PciConfiguration::new</span>(
             <span class="number">0x1234</span>,
@@ -2138,7 +2102,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
@@ -2159,7 +2122,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
@@ -2182,7 +2144,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
@@ -2230,7 +2191,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
@@ -2277,7 +2237,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
@@ -2321,7 +2280,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
@@ -2444,7 +2402,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
@@ -2502,7 +2459,6 @@
             <span class="kw-2">&amp;</span><span class="ident">PciMultimediaSubclass::AudioController</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">TestPI::Test</span>),
             <span class="ident">PciHeaderType::Device</span>,
-            <span class="bool-val">false</span>,
             <span class="number">0xABCD</span>,
             <span class="number">0x2468</span>,
             <span class="number">0</span>,
