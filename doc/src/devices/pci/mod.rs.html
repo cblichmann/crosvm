@@ -49,6 +49,8 @@
 <span id="49">49</span>
 <span id="50">50</span>
 <span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2018 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -63,6 +65,7 @@
 <span class="kw">mod</span> <span class="ident">ac97_mixer</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;audio&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">ac97_regs</span>;
+<span class="kw">mod</span> <span class="ident">coiommu</span>;
 <span class="kw">mod</span> <span class="ident">msix</span>;
 <span class="kw">mod</span> <span class="ident">pci_configuration</span>;
 <span class="kw">mod</span> <span class="ident">pci_device</span>;
@@ -73,6 +76,7 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;audio&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::ac97</span>::{<span class="ident">Ac97Backend</span>, <span class="ident">Ac97Dev</span>, <span class="ident">Ac97Parameters</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::coiommu::CoIommuDev</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::msix</span>::{<span class="ident">MsixCap</span>, <span class="ident">MsixConfig</span>, <span class="ident">MsixStatus</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::pci_configuration</span>::{
     <span class="ident">PciBarConfiguration</span>, <span class="ident">PciBarIndex</span>, <span class="ident">PciBarPrefetchable</span>, <span class="ident">PciBarRegionType</span>, <span class="ident">PciCapability</span>,
