@@ -1204,6 +1204,8 @@
 <span id="1204">1204</span>
 <span id="1205">1205</span>
 <span id="1206">1206</span>
+<span id="1207">1207</span>
+<span id="1208">1208</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -1494,6 +1496,7 @@
         <span class="ident">size</span>: <span class="ident">usize</span>,
         <span class="ident">offset</span>: <span class="ident">u64</span>,
         <span class="ident">gpa</span>: <span class="ident">u64</span>,
+        <span class="ident">read_only</span>: <span class="ident">bool</span>,
     },
 }
 
@@ -1645,6 +1648,7 @@
                 <span class="ident">size</span>,
                 <span class="ident">offset</span>,
                 <span class="ident">gpa</span>,
+                <span class="ident">read_only</span>,
             } <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">mmap</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">MemoryMappingBuilder::new</span>(<span class="ident">size</span>)
                     .<span class="ident">from_descriptor</span>(<span class="ident">descriptor</span>)
@@ -1654,7 +1658,7 @@
                     <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>,
                     <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="ident">VmMemoryResponse::Err</span>(<span class="ident">SysError::new</span>(<span class="ident">EINVAL</span>)),
                 };
-                <span class="kw">match</span> <span class="ident">vm</span>.<span class="ident">add_memory_region</span>(<span class="ident">GuestAddress</span>(<span class="ident">gpa</span>), <span class="ident">Box::new</span>(<span class="ident">mmap</span>), <span class="bool-val">false</span>, <span class="bool-val">false</span>) {
+                <span class="kw">match</span> <span class="ident">vm</span>.<span class="ident">add_memory_region</span>(<span class="ident">GuestAddress</span>(<span class="ident">gpa</span>), <span class="ident">Box::new</span>(<span class="ident">mmap</span>), <span class="ident">read_only</span>, <span class="bool-val">false</span>) {
                     <span class="prelude-val">Ok</span>(<span class="ident">slot</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VmMemoryResponse::RegisterMemory</span> { <span class="ident">pfn</span>: <span class="number">0</span>, <span class="ident">slot</span> },
                     <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VmMemoryResponse::Err</span>(<span class="ident">e</span>),
                 }
