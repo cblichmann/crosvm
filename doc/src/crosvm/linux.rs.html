@@ -3743,6 +3743,7 @@
 <span id="3743">3743</span>
 <span id="3744">3744</span>
 <span id="3745">3745</span>
+<span id="3746">3746</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -5804,6 +5805,7 @@
                 <span class="ident">coiommu_tube</span>,
                 <span class="ident">coiommu_attached_endpoints</span>,
                 <span class="ident">vcpu_count</span>,
+                <span class="ident">cfg</span>.<span class="ident">coiommu_param</span>.<span class="ident">unwrap_or_default</span>(),
             )
             .<span class="ident">context</span>(<span class="string">&quot;failed to create coiommu device&quot;</span>)<span class="question-mark">?</span>;
 

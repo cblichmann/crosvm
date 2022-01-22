@@ -3902,6 +3902,71 @@
 <span id="3902">3902</span>
 <span id="3903">3903</span>
 <span id="3904">3904</span>
+<span id="3905">3905</span>
+<span id="3906">3906</span>
+<span id="3907">3907</span>
+<span id="3908">3908</span>
+<span id="3909">3909</span>
+<span id="3910">3910</span>
+<span id="3911">3911</span>
+<span id="3912">3912</span>
+<span id="3913">3913</span>
+<span id="3914">3914</span>
+<span id="3915">3915</span>
+<span id="3916">3916</span>
+<span id="3917">3917</span>
+<span id="3918">3918</span>
+<span id="3919">3919</span>
+<span id="3920">3920</span>
+<span id="3921">3921</span>
+<span id="3922">3922</span>
+<span id="3923">3923</span>
+<span id="3924">3924</span>
+<span id="3925">3925</span>
+<span id="3926">3926</span>
+<span id="3927">3927</span>
+<span id="3928">3928</span>
+<span id="3929">3929</span>
+<span id="3930">3930</span>
+<span id="3931">3931</span>
+<span id="3932">3932</span>
+<span id="3933">3933</span>
+<span id="3934">3934</span>
+<span id="3935">3935</span>
+<span id="3936">3936</span>
+<span id="3937">3937</span>
+<span id="3938">3938</span>
+<span id="3939">3939</span>
+<span id="3940">3940</span>
+<span id="3941">3941</span>
+<span id="3942">3942</span>
+<span id="3943">3943</span>
+<span id="3944">3944</span>
+<span id="3945">3945</span>
+<span id="3946">3946</span>
+<span id="3947">3947</span>
+<span id="3948">3948</span>
+<span id="3949">3949</span>
+<span id="3950">3950</span>
+<span id="3951">3951</span>
+<span id="3952">3952</span>
+<span id="3953">3953</span>
+<span id="3954">3954</span>
+<span id="3955">3955</span>
+<span id="3956">3956</span>
+<span id="3957">3957</span>
+<span id="3958">3958</span>
+<span id="3959">3959</span>
+<span id="3960">3960</span>
+<span id="3961">3961</span>
+<span id="3962">3962</span>
+<span id="3963">3963</span>
+<span id="3964">3964</span>
+<span id="3965">3965</span>
+<span id="3966">3966</span>
+<span id="3967">3967</span>
+<span id="3968">3968</span>
+<span id="3969">3969</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2017 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -6073,6 +6138,63 @@
         <span class="string">&quot;vvu-proxy&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cfg</span>.<span class="ident">vvu_proxy</span>.<span class="ident">push</span>(<span class="ident">VhostUserOption</span> {
             <span class="ident">socket</span>: <span class="ident">PathBuf::from</span>(<span class="ident">value</span>.<span class="ident">unwrap</span>()),
         }),
+        <span class="string">&quot;coiommu&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span>: <span class="ident">devices::CoIommuParameters</span> <span class="op">=</span> <span class="ident">Default::default</span>();
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span> <span class="ident">value</span> {
+                <span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">v</span>
+                    .<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>)
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">frag</span><span class="op">|</span> <span class="ident">frag</span>.<span class="ident">splitn</span>(<span class="number">2</span>, <span class="string">&#39;=&#39;</span>))
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">kv</span><span class="op">|</span> (<span class="ident">kv</span>.<span class="ident">next</span>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>), <span class="ident">kv</span>.<span class="ident">next</span>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>)));
+
+                <span class="kw">for</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">opts</span> {
+                    <span class="kw">match</span> <span class="ident">k</span> {
+                        <span class="string">&quot;unpin_policy&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="ident">params</span>.<span class="ident">unpin_policy</span> <span class="op">=</span> <span class="ident">v</span>
+                                .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">devices::CoIommuUnpinPolicy</span><span class="op">&gt;</span>()
+                                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">argument::Error::UnknownArgument</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>
+                        }
+                        <span class="string">&quot;unpin_interval&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="ident">params</span>.<span class="ident">unpin_interval</span> <span class="op">=</span>
+                                <span class="ident">Duration::from_secs</span>(<span class="ident">v</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+                                    <span class="ident">argument::Error::UnknownArgument</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>))
+                                })<span class="question-mark">?</span>)
+                        }
+                        <span class="string">&quot;unpin_limit&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="kw">let</span> <span class="ident">limit</span> <span class="op">=</span> <span class="ident">v</span>
+                                .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>()
+                                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">argument::Error::UnknownArgument</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>;
+
+                            <span class="kw">if</span> <span class="ident">limit</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::InvalidValue</span> {
+                                    <span class="ident">value</span>: <span class="ident">v</span>.<span class="ident">to_owned</span>(),
+                                    <span class="ident">expected</span>: <span class="ident">String::from</span>(<span class="string">&quot;Please use non-zero unpin_limit value&quot;</span>),
+                                });
+                            }
+
+                            <span class="ident">params</span>.<span class="ident">unpin_limit</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">limit</span>)
+                        }
+                        <span class="string">&quot;unpin_gen_threshold&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="ident">params</span>.<span class="ident">unpin_gen_threshold</span> <span class="op">=</span> <span class="ident">v</span>
+                                .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>()
+                                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">argument::Error::UnknownArgument</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>)))<span class="question-mark">?</span>
+                        }
+                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::UnknownArgument</span>(<span class="macro">format!</span>(
+                                <span class="string">&quot;coiommu parameter {}&quot;</span>,
+                                <span class="ident">k</span>
+                            )));
+                        }
+                    }
+                }
+            }
+
+            <span class="kw">if</span> <span class="ident">cfg</span>.<span class="ident">coiommu_param</span>.<span class="ident">is_some</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::TooManyArguments</span>(
+                    <span class="string">&quot;coiommu param already given&quot;</span>.<span class="ident">to_owned</span>(),
+                ));
+            }
+            <span class="ident">cfg</span>.<span class="ident">coiommu_param</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">params</span>);
+        }
         <span class="string">&quot;help&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">argument::Error::PrintHelp</span>),
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable!</span>(),
     }
@@ -6416,6 +6538,14 @@ iommu=on|off - indicates whether to enable virtio IOMMU for this device&quot;</s
                               subsystem_vendor=NUM - PCI subsystem vendor ID
                               subsystem_device=NUM - PCI subsystem device ID
                               revision=NUM - revision&quot;</span>),
+          <span class="ident">Argument::flag_or_value</span>(<span class="string">&quot;coiommu&quot;</span>,
+                          <span class="string">&quot;unpin_policy=POLICY,unpin_interval=NUM,unpin_limit=NUM,unpin_gen_threshold=NUM &quot;</span>,
+                          <span class="string">&quot;Comma separated key=value pairs for setting up coiommu devices.
+                              Possible key values:
+                              unpin_policy=lru - LRU unpin policy.
+                              unpin_interval=NUM - Unpin interval time in seconds.
+                              unpin_limit=NUM - Unpin limit for each unpin cycle, in unit of page count. 0 is invalid.
+                              unpin_gen_threshold=NUM -  Number of unpin intervals a pinned page must be busy for to be aged into the older which is less frequently checked generation.&quot;</span>),
           <span class="ident">Argument::short_flag</span>(<span class="string">&#39;h&#39;</span>, <span class="string">&quot;help&quot;</span>, <span class="string">&quot;Print help message.&quot;</span>)];
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cfg</span> <span class="op">=</span> <span class="ident">Config::default</span>();

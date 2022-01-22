@@ -516,6 +516,8 @@
 <span id="516">516</span>
 <span id="517">517</span>
 <span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
 </pre><pre class="rust"><code><span class="comment">// Copyright 2019 The Chromium OS Authors. All rights reserved.</span>
 <span class="comment">// Use of this source code is governed by a BSD-style license that can be</span>
 <span class="comment">// found in the LICENSE file.</span>
@@ -931,6 +933,7 @@
     <span class="kw">pub</span> <span class="ident">host_cpu_topology</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">stub_pci_devices</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StubPciParameters</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">vvu_proxy</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">VhostUserOption</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">coiommu_param</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">devices::CoIommuParameters</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Config</span> {
@@ -1031,6 +1034,7 @@
             <span class="ident">no_legacy</span>: <span class="bool-val">false</span>,
             <span class="ident">host_cpu_topology</span>: <span class="bool-val">false</span>,
             <span class="ident">stub_pci_devices</span>: <span class="ident">Vec::new</span>(),
+            <span class="ident">coiommu_param</span>: <span class="prelude-val">None</span>,
         }
     }
 }
